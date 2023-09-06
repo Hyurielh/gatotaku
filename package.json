@@ -1,6 +1,6 @@
 {
   "name": "gatotaku",
-  "private": true,
+  "private": false,
   "homepage": "https://hyurielh.github.io/gatotaku",
   "version": "0.0.0",
   "type": "module",
