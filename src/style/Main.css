@@ -1,0 +1,13 @@
+.main{
+    /* Color verde opaco */	
+    
+}
+.main-title{
+    /* Color blanco */	
+    background-color: rgba(0, 128, 0, 0.4);
+    font-size: 12px;
+    padding: 5px;
+    text-align: center;
+    margin: 10px;
+    font-weight: 200;
+}
