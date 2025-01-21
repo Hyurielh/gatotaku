@@ -1,10 +1,14 @@
 import type { Product } from '../types/database';
+import { useCart } from '../context/CartContext';
+import { ShoppingCart } from 'lucide-react';
 
 interface ProductDetailsProps {
   product: Product;
 }
 
 export function ProductDetails({ product }: ProductDetailsProps) {
+  const { addItem } = useCart();
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-start">
@@ -21,10 +25,11 @@ export function ProductDetails({ product }: ProductDetailsProps) {
       </div>
       <p className="mt-2 text-gray-600">{product.description}</p>
       <button 
-        className="mt-4 w-full bg-black text-white py-2 px-4 rounded-md hover:bg-gray-900 transition-colors"
+        onClick={() => addItem(product)}
+        className="mt-4 w-full bg-black text-white py-2 px-4 rounded-md hover:bg-gray-900 transition-colors flex items-center justify-center gap-2"
         aria-label={`Agregar ${product.name} al carrito`}
       >
-        <i className="fas fa-shopping-cart mr-2" aria-hidden="true"></i>
+        <ShoppingCart size={20} />
         Agregar al carrito
       </button>
     </div>
