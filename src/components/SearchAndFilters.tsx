@@ -1,15 +1,28 @@
-import React from 'react';
-import type { Category, Anime, Filters } from '../types/database';
+import type { Category, Anime, Filters, Product } from '../types/database';
 import { Search } from 'lucide-react';
 
 interface SearchAndFiltersProps {
   categories: Category[];
   animes: Anime[];
   filters: Filters;
+  products: Product[];
   onFilterChange: (filters: Filters) => void;
 }
 
-export function SearchAndFilters({ categories, animes, filters, onFilterChange }: SearchAndFiltersProps) {
+// Filtrar categorias y animes con productos
+const filterCategoriesWithProducts = (categories: Category[], products: Product[]) => {
+  return categories.filter((category) => {
+    return products.some((product) => product.category_id === category.id);
+  });
+};
+
+const filterAnimesWithProducts = (animes: Anime[], products: Product[]) => {
+  return animes.filter((anime) => {
+    return products.some((product) => product.anime_id === anime.id);
+  });
+};
+
+export function SearchAndFilters({ categories, animes, filters, products, onFilterChange }: SearchAndFiltersProps) {
   const handleChange = (key: keyof Filters, value: string) => {
     onFilterChange({ ...filters, [key]: value });
   };
@@ -29,6 +42,8 @@ export function SearchAndFilters({ categories, animes, filters, onFilterChange }
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        { /* Filtrar categorias y animes con productos */ }
+        {filterCategoriesWithProducts(categories, products).length > 0 && (
         <select
           value={filters.category}
           onChange={(e) => handleChange('category', e.target.value)}
@@ -36,13 +51,15 @@ export function SearchAndFilters({ categories, animes, filters, onFilterChange }
           aria-label="Filtrar por categoría"
         >
           <option value="">Todas las categorías</option>
-          {categories.map((category) => (
+          {filterCategoriesWithProducts(categories, products).map((category) => (
             <option key={category.id} value={category.id}>
               {category.name}
             </option>
           ))}
-        </select>
-
+        </select> 
+      )}
+      
+      {filterAnimesWithProducts(animes, products).length > 0 && (
         <select
           value={filters.anime}
           onChange={(e) => handleChange('anime', e.target.value)}
@@ -50,12 +67,13 @@ export function SearchAndFilters({ categories, animes, filters, onFilterChange }
           aria-label="Filtrar por anime"
         >
           <option value="">Todos los animes</option>
-          {animes.map((anime) => (
+          {filterAnimesWithProducts(animes, products).map((anime) => (
             <option key={anime.id} value={anime.id}>
               {anime.name}
             </option>
           ))}
         </select>
+      )}
 
         <select
           value={filters.sortBy}

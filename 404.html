@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>404 Not Found</title>
+  </head>
+  <body>
+    <script>
+      // Redirigir al enrutador de React para manejar la ruta correctamente
+      var path = window.location.pathname;
+      if (path !== '/gatotaku') {
+        // Redirige a la ruta base de la app para que el enrutador React maneje la URL
+        window.location.replace('/gatotaku');
+      }
+    </script>
+  </body>
+</html>

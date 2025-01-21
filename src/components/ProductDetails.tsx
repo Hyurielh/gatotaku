@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Product } from '../types/database';
 
 interface ProductDetailsProps {
@@ -11,10 +10,13 @@ export function ProductDetails({ product }: ProductDetailsProps) {
       <div className="flex justify-between items-start">
         <div>
           <h2 className="text-xl font-semibold text-gray-900">{product.name}</h2>
-          <span className="text-sm text-orange-500">{product.category}</span>
+          <div className="flex gap-2 text-sm text-orange-500">
+            {product.category_ref && <span>{product.category_ref.name}</span>}
+            {product.anime && <span>• {product.anime.name}</span>}
+          </div>
         </div>
         <span className="text-lg font-bold text-orange-500">
-          ${product.price.toFixed(2)}
+          C${product.price.toFixed(2)}
         </span>
       </div>
       <p className="mt-2 text-gray-600">{product.description}</p>

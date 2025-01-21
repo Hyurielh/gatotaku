@@ -73,7 +73,8 @@ export default function AdminPanel() {
 
     const productData = {
       ...formData,
-      price: numericPrice
+      price: numericPrice,
+      category: formData.category_id // Mapear category_id a category
     };
     
     try {
