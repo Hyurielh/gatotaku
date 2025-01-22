@@ -27,9 +27,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setItems(currentItems => {
       const existingItem = currentItems.find(item => item.product.id === product.id);
       if (existingItem) {
+        // Verificar si hay suficiente stock
+        if (existingItem.quantity >= product.stock) {
+          return currentItems; // No agregar más si no hay stock
+        }
         return currentItems.map(item =>
           item.product.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: Math.min(item.quantity + 1, product.stock) }
             : item
         );
       }
@@ -44,11 +48,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const updateQuantity = (productId: string, quantity: number) => {
     if (quantity < 1) return;
-    setItems(currentItems =>
-      currentItems.map(item =>
+    setItems(currentItems => {
+      const item = currentItems.find(item => item.product.id === productId);
+      if (!item) return currentItems;
+      
+      // Verificar si hay suficiente stock
+      if (quantity > item.product.stock) {
+        return currentItems; // No actualizar si excede el stock
+      }
+      
+      return currentItems.map(item =>
         item.product.id === productId ? { ...item, quantity } : item
-      )
-    );
+      );
+    });
   };
 
   const clearCart = () => {

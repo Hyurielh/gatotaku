@@ -15,7 +15,8 @@ export default function AdminPanel() {
     category_id: '',
     anime_id: '',
     description: '',
-    images: ['']
+    images: [''],
+    stock: 0
   });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -72,9 +73,13 @@ export default function AdminPanel() {
     }
 
     const productData = {
-      ...formData,
+      name: formData.name,
       price: numericPrice,
-      category: formData.category_id // Mapear category_id a category
+      category_id: formData.category_id,
+      anime_id: formData.anime_id,
+      description: formData.description,
+      images: formData.images,
+      stock: formData.stock
     };
     
     try {
@@ -99,7 +104,8 @@ export default function AdminPanel() {
         category_id: '',
         anime_id: '',
         description: '',
-        images: ['']
+        images: [''],
+        stock: 0
       });
       setEditingId(null);
       fetchProducts();
@@ -133,7 +139,8 @@ export default function AdminPanel() {
       category_id: product.category_id || '',
       anime_id: product.anime_id || '',
       description: product.description,
-      images: product.images
+      images: product.images,
+      stock: product.stock || 0
     });
     setEditingId(product.id);
   }
@@ -193,19 +200,35 @@ export default function AdminPanel() {
               />
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Precio
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                className="w-full p-2 border rounded"
-                required
-              />
+            <div className="mb-4 flex gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700">Precio</label>
+                <div className="mt-1 relative rounded-md shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span className="text-gray-500 sm:text-sm">C$</span>
+                  </div>
+                  <input
+                    type="number"
+                    name="price"
+                    step="0.01"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    className="mt-1 block w-full pl-8 pr-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="w-32">
+                <label className="block text-sm font-medium text-gray-700">Stock</label>
+                <input
+                  type="number"
+                  name="stock"
+                  value={formData.stock}
+                  onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) || 0 })}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                  min="0"
+                />
+              </div>
             </div>
             
             <div>
@@ -261,9 +284,7 @@ export default function AdminPanel() {
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Imágenes
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Imágenes</label>
             {formData.images.map((url, index) => (
               <div key={index} className="flex gap-2 mb-2">
                 <input
@@ -305,7 +326,8 @@ export default function AdminPanel() {
                     category_id: '',
                     anime_id: '',
                     description: '',
-                    images: ['']
+                    images: [''],
+                    stock: 0
                   });
                   setEditingId(null);
                 }}
@@ -338,6 +360,9 @@ export default function AdminPanel() {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Anime
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Stock
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Acciones
@@ -375,6 +400,11 @@ export default function AdminPanel() {
                     <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                       {product.anime?.name}
                     </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">
+                      {product.stock}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <button

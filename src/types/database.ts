@@ -14,11 +14,11 @@ export interface Product {
   id: string;
   name: string;
   price: number;
-  category: string;
-  category_id?: string;
-  anime_id?: string;
   description: string;
   images: string[];
+  category_id: string;
+  anime_id: string;
+  stock: number;
   created_at: string;
   updated_at: string;
   anime?: Anime;
@@ -32,6 +32,7 @@ export interface ProductInput {
   anime_id: string;
   description: string;
   images: string[];
+  stock: number;
 }
 
 export interface Filters {
