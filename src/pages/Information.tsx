@@ -1,4 +1,4 @@
-import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Suspense } from 'react';
 import About from './About';
 import PaymentMethods from './PaymentMethods';
@@ -8,6 +8,7 @@ import Layaway from './Layaway';
 
 const Information = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -18,31 +19,31 @@ const Information = () => {
           <nav className="flex flex-col space-y-2">
             <Link 
               to="/information/about" 
-              className={`p-2 rounded hover:bg-gray-100 ${location.pathname === '/information/about' ? 'bg-gray-100 font-semibold' : ''}`}
+              className={`nav-link ${location.pathname === '/information/about' ? 'active' : ''}`}
             >
               Sobre Nosotros
             </Link>
             <Link 
               to="/information/payment-methods" 
-              className={`p-2 rounded hover:bg-gray-100 ${location.pathname === '/information/payment-methods' ? 'bg-gray-100 font-semibold' : ''}`}
+              className={`nav-link ${location.pathname === '/information/payment-methods' ? 'active' : ''}`}
             >
               Métodos de Pago
             </Link>
             <Link 
               to="/information/shipping" 
-              className={`p-2 rounded hover:bg-gray-100 ${location.pathname === '/information/shipping' ? 'bg-gray-100 font-semibold' : ''}`}
+              className={`nav-link ${location.pathname === '/information/shipping' ? 'active' : ''}`}
             >
               Envíos
             </Link>
             <Link 
               to="/information/refunds" 
-              className={`p-2 rounded hover:bg-gray-100 ${location.pathname === '/information/refunds' ? 'bg-gray-100 font-semibold' : ''}`}
+              className={`nav-link ${location.pathname === '/information/refunds' ? 'active' : ''}`}
             >
               Política de Reembolsos
             </Link>
             <Link 
               to="/information/layaway" 
-              className={`p-2 rounded hover:bg-gray-100 ${location.pathname === '/information/layaway' ? 'bg-gray-100 font-semibold' : ''}`}
+              className={`nav-link ${location.pathname === '/information/layaway' ? 'active' : ''}`}
             >
               Sistema de Apartado
             </Link>
@@ -55,20 +56,36 @@ const Information = () => {
             <Routes>
               <Route index element={
                 <div className="prose max-w-none">
-                  <h1 className="text-4xl font-bold mb-8">Información General</h1>
-                  <p className="mb-4">
-                    Bienvenido a la sección de información de Gatotaku. Aquí encontrarás todo lo que necesitas saber sobre:
+                  <h1 className="section-title">Información General</h1>
+                  <p className="info-text mb-6">
+                    Bienvenido a la sección de información de Gatotaku. Aquí encontrarás todo lo que necesitas saber sobre nuestros servicios:
                   </p>
-                  <ul className="list-disc pl-6">
-                    <li>Nuestros métodos de pago disponibles</li>
-                    <li>Políticas de envío y tiempos de entrega</li>
-                    <li>Política de reembolsos</li>
-                    <li>Sistema de apartado</li>
-                    <li>Y más información sobre nosotros</li>
-                  </ul>
-                  <p className="mt-4">
-                    Selecciona una opción del menú para obtener información detallada sobre cada tema.
-                  </p>
+                  <div className="grid gap-4">
+                    <Link to="/information/payment-methods" className="card hover:border-orange-600">
+                      <h2 className="text-xl font-semibold text-orange-600">Métodos de Pago</h2>
+                      <p className="text-gray-600">Conoce nuestras opciones de pago disponibles</p>
+                    </Link>
+                    
+                    <Link to="/information/shipping" className="card hover:border-orange-600">
+                      <h2 className="text-xl font-semibold text-orange-600">Envíos</h2>
+                      <p className="text-gray-600">Información sobre entregas y costos de envío</p>
+                    </Link>
+                    
+                    <Link to="/information/refunds" className="card hover:border-orange-600">
+                      <h2 className="text-xl font-semibold text-orange-600">Política de Reembolsos</h2>
+                      <p className="text-gray-600">Conoce nuestras políticas de devolución</p>
+                    </Link>
+                    
+                    <Link to="/information/layaway" className="card hover:border-orange-600">
+                      <h2 className="text-xl font-semibold text-orange-600">Sistema de Apartado</h2>
+                      <p className="text-gray-600">Información sobre cómo apartar productos</p>
+                    </Link>
+                    
+                    <Link to="/information/about" className="card hover:border-orange-600">
+                      <h2 className="text-xl font-semibold text-orange-600">Sobre Nosotros</h2>
+                      <p className="text-gray-600">Conoce más sobre Gatotaku</p>
+                    </Link>
+                  </div>
                 </div>
               } />
               <Route path="/about" element={<About />} />

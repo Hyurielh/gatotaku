@@ -1,36 +1,75 @@
+import { FaClock, FaExclamationTriangle, FaCheckCircle } from 'react-icons/fa';
+
 const Refunds = () => {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-4xl font-bold mb-8">Política de Reembolsos</h1>
-      <div className="space-y-8">
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Condiciones para Reembolso</h2>
-          <ul className="list-disc pl-5 space-y-2">
-            <li>El producto debe estar sin usar y en su empaque original</li>
-            <li>Debes notificarnos dentro de los primeros 7 días después de recibir tu pedido</li>
-            <li>Debes presentar el comprobante de compra</li>
-          </ul>
+    <div className="space-y-8">
+      <h1 className="section-title">Política de Reembolsos</h1>
+
+      <div className="card">
+        <div className="flex items-start space-x-4">
+          <div className="icon-container">
+            <FaClock className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold mb-2 text-gray-800">Tiempo Límite</h2>
+            <p className="info-text">
+              Tienes hasta 3 días después de recibir tu producto para solicitar un reembolso.
+            </p>
+            <div className="mt-2 p-3 bg-orange-50 rounded-md border border-orange-200">
+              <p className="text-sm text-orange-700">
+                No se aceptarán solicitudes de reembolso después de este período.
+              </p>
+            </div>
+          </div>
         </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Proceso de Reembolso</h2>
-          <ol className="list-decimal pl-5 space-y-2">
-            <li>Contacta a nuestro servicio al cliente</li>
-            <li>Proporciona el número de orden y razón del reembolso</li>
-            <li>Recibirás instrucciones para devolver el producto</li>
-            <li>Una vez recibido y verificado, procesaremos tu reembolso</li>
-          </ol>
+      </div>
+
+      <div className="card">
+        <div className="flex items-start space-x-4">
+          <div className="icon-container">
+            <FaExclamationTriangle className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold mb-2 text-gray-800">Condiciones</h2>
+            <ul className="space-y-2">
+              <li className="list-item">
+                <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
+                <span>El producto debe estar en su empaque original</span>
+              </li>
+              <li className="list-item">
+                <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
+                <span>No debe mostrar señales de uso o daño</span>
+              </li>
+              <li className="list-item">
+                <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
+                <span>Debes presentar el comprobante de compra</span>
+              </li>
+            </ul>
+          </div>
         </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Tiempo de Procesamiento</h2>
-          <p>
-            Los reembolsos suelen procesarse en un plazo de 5-7 días hábiles 
-            después de recibir y verificar el producto devuelto.
-          </p>
+      </div>
+
+      <div className="card">
+        <div className="flex items-start space-x-4">
+          <div className="icon-container">
+            <FaCheckCircle className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold mb-2 text-gray-800">Proceso de Reembolso</h2>
+            <p className="info-text">
+              Una vez aprobada tu solicitud, el reembolso se realizará por el mismo método 
+              que utilizaste para realizar la compra.
+            </p>
+            <div className="mt-2 p-3 bg-orange-50 rounded-md border border-orange-200">
+              <p className="text-sm text-orange-700">
+                El tiempo de procesamiento puede variar según el método de pago utilizado.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 };
+
 export default Refunds;

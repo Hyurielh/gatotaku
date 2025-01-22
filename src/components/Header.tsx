@@ -20,25 +20,41 @@ export const Header = () => {
           <Link to="/" className="flex items-center">
             <img src="./logo.png" 
                  alt="Logo" 
-                 className="w-10 h-10 rounded-full" />
-            <span className="ml-2 text-xl font-black tracking-wider" style={{ fontFamily: "'Bebas Neue', cursive" }}>
+                 className="w-12 h-12 rounded-full" />
+            <span className="ml-3 text-2xl md:text-3xl font-black tracking-wide text-white" 
+                  style={{ 
+                    fontFamily: "'Bebas Neue', cursive",
+                    textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)'
+                  }}>
               GATOTAKU
             </span>
           </Link>
 
           {/* Desktop Menu */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="hover:text-gray-300">Inicio</Link>
-            <Link to="/about" className="hover:text-gray-300">Sobre Nosotros</Link>
-            <Link to="/information" className="hover:text-gray-300">Información</Link>
+            <Link to="/" className="relative group">
+              <span className="hover:text-gray-300">Catálogo</span>
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-orange-500 transform scale-x-0 transition-transform group-hover:scale-x-100"></span>
+            </Link>
+            <Link to="/about" className="relative group">
+              <span className="hover:text-gray-300">Sobre Nosotros</span>
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-orange-500 transform scale-x-0 transition-transform group-hover:scale-x-100"></span>
+            </Link>
+            <Link to="/information" className="relative group">
+              <span className="hover:text-gray-300">Información</span>
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-orange-500 transform scale-x-0 transition-transform group-hover:scale-x-100"></span>
+            </Link>
             <a href={whatsappUrl} 
                target="_blank" 
                rel="noopener noreferrer" 
-               className="flex items-center hover:text-gray-300">
-              <FaWhatsapp className="mr-2" />
-              WhatsApp
+               className="relative group flex items-center">
+              <span className="hover:text-gray-300 flex items-center">
+                <FaWhatsapp className="mr-2" />
+                WhatsApp
+              </span>
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-orange-500 transform scale-x-0 transition-transform group-hover:scale-x-100"></span>
             </a>
-            <Link to="/cart" className="hover:text-gray-300">
+            <Link to="/cart" className="hover:text-orange-500 transition-colors">
               <FaShoppingCart className="text-2xl" />
             </Link>
           </nav>
@@ -56,28 +72,30 @@ export const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden py-4">
             <div className="flex flex-col space-y-4">
-              <Link to="/" className="text-white hover:text-gray-300" onClick={() => setIsMenuOpen(false)}>Inicio</Link>
-              <Link to="/about" className="text-white hover:text-gray-300" onClick={() => setIsMenuOpen(false)}>Sobre Nosotros</Link>
-              <Link to="/information" className="text-white hover:text-gray-300" onClick={() => setIsMenuOpen(false)}>Información</Link>
+              <Link to="/" className="text-white hover:text-orange-500 transition-colors" onClick={() => setIsMenuOpen(false)}>
+                Inicio
+              </Link>
+              <Link to="/about" className="text-white hover:text-orange-500 transition-colors" onClick={() => setIsMenuOpen(false)}>
+                Sobre Nosotros
+              </Link>
+              <Link to="/information" className="text-white hover:text-orange-500 transition-colors" onClick={() => setIsMenuOpen(false)}>
+                Información
+              </Link>
               <a href={whatsappUrl} 
                  target="_blank" 
                  rel="noopener noreferrer" 
-                 className="text-white hover:text-gray-300 flex items-center"
+                 className="text-white hover:text-orange-500 transition-colors flex items-center"
                  onClick={() => setIsMenuOpen(false)}>
                 <FaWhatsapp className="mr-2" />
                 WhatsApp
               </a>
-              <Link to="/cart" className="text-white hover:text-gray-300" onClick={() => setIsMenuOpen(false)}>
-                <FaShoppingCart className="mr-2 inline" />
-                Carrito
-              </Link>
             </div>
           </div>
         )}
       </div>
 
       {/* Floating Cart Icon (Mobile) */}
-      <div className="fixed bottom-4 right-4 md:hidden bg-black rounded-full p-3 shadow-lg">
+      <div className="fixed bottom-4 right-4 md:hidden z-50 bg-orange-500 rounded-full p-3 shadow-lg hover:bg-orange-600 transition-colors">
         <Link to="/cart">
           <FaShoppingCart className="text-white text-2xl" />
         </Link>
