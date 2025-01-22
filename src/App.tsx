@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { ProductCard } from './components/ProductCard';
 import { RequireAuth } from './components/RequireAuth';
@@ -7,6 +7,8 @@ import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { SearchAndFilters } from './components/SearchAndFilters';
 import { Cart } from './components/Cart';
+import { Header } from './components/Header';
+import { Footer } from './components/Footer';
 import type { Product, Category, Anime, Filters } from './types/database';
 import { supabase } from './lib/supabase';
 import { SEO } from './components/SEO';
@@ -14,6 +16,11 @@ import { SEO } from './components/SEO';
 // Lazy load pages
 const AdminPanel = React.lazy(() => import('./pages/AdminPanel'));
 const LoginPage = React.lazy(() => import('./pages/LoginPage'));
+const About = React.lazy(() => import('./pages/About'));
+const Information = React.lazy(() => import('./pages/Information'));
+const Refunds = React.lazy(() => import('./pages/Refunds'));
+const PaymentMethods = React.lazy(() => import('./pages/PaymentMethods'));
+const Layaway = React.lazy(() => import('./pages/Layaway'));
 
 function StoreFront() {
   const [products, setProducts] = React.useState<Product[]>([]);
@@ -123,111 +130,48 @@ export default function App() {
     <HelmetProvider>
       <AuthProvider>
         <CartProvider>
-          <Router>
-            <div className="min-h-screen bg-gray-50">
-              <header className="bg-black text-white shadow-md">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                  <div className="flex items-center justify-between">
-                    <Link to="/" className="flex items-center gap-4">
-                      <img src="https://scontent.fmga10-1.fna.fbcdn.net/v/t39.30808-6/291873004_109262688512144_5940417088440245166_n.png?_nc_cat=105&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=F7mYKfLo77oQ7kNvgEE3FOG&_nc_oc=Adj1eM9ES38N1LrkeaJ0Lx4vgOKAOmjjWLX22WIuF_i-wsmBs92bequytdNojOlNBeE&_nc_zt=23&_nc_ht=scontent.fmga10-1.fna&_nc_gid=Au0Khp9jyJ1_KC2RXyWxOFd&oh=00_AYCbxz9yjo4IItufbVTRPE4xaiftj68X08KTg9DUvIHhJQ&oe=6795C8DD" className="w-10 h-10 rounded-full" alt="" />
-                      <h1 className="text-4xl align-center font-black tracking-wider" style={{ fontFamily: "'Bebas Neue', cursive" }}>
-                        GATOTAKU
-                      </h1>
-                    </Link>
-                    <div className="flex items-center gap-6">
-                      <a 
-                        href="https://www.facebook.com/gatotaku.rivas" 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="text-white hover:text-orange-500 transition-colors"
-                        aria-label="Visitar Facebook"
-                      >
-                        <i className="fab fa-facebook text-2xl" aria-hidden="true"></i>
-                      </a>
-                      <a 
-                        href="https://www.tiktok.com/@gatotaku2022" 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-white hover:text-orange-500 transition-colors"
-                        aria-label="Visitar TikTok"
-                      >
-                        <i className="fab fa-tiktok text-2xl" aria-hidden="true"></i>
-                      </a>
-                    </div>
+          <Router
+            future={{
+              v7_startTransition: true,
+              v7_relativeSplatPath: true
+            }}
+          >
+            <div className="min-h-screen bg-gray-50 flex flex-col">
+              <Header />
+              <main className="flex-grow">
+                <Suspense fallback={
+                  <div className="min-h-screen flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
                   </div>
-                </div>
-              </header>
-
-              <Suspense fallback={
-                <div className="min-h-screen flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
-                </div>
-              }>
-                <Routes>
-                  <Route path="/" element={<StoreFront />} />
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route
-                    path="/admin"
-                    element={
+                }>
+                  <Routes>
+                    <Route path="/" element={<StoreFront />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/information/*" element={
+                      <Suspense fallback={<div>Cargando...</div>}>
+                        <Information />
+                      </Suspense>
+                    } />
+                    <Route path="/refunds" element={
+                      <Suspense fallback={<div>Cargando...</div>}>
+                        <Refunds />
+                      </Suspense>
+                    } />
+                    <Route path="/admin" element={
                       <RequireAuth>
                         <AdminPanel />
                       </RequireAuth>
-                    }
-                  />
-                </Routes>
-              </Suspense>
-
-              <footer className="bg-black text-white mt-12">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-white p-1 flex items-center justify-center">
-                        <svg
-                          className="w-6 h-6 text-orange-500"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                          aria-hidden="true"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                          />
-                        </svg>
-                      </div>
-                      <span className="text-3xl font-black tracking-wider" style={{ fontFamily: "'Bebas Neue', cursive" }}>
-                        GATOTAKU
-                      </span>
-                    </div>
-                    <div className="flex gap-6">
-                      <a 
-                        href="https://www.facebook.com/gatotaku.rivas" 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="text-white hover:text-orange-500 transition-colors"
-                        aria-label="Visitar Facebook"
-                      >
-                        <i className="fab fa-facebook text-2xl" aria-hidden="true"></i>
-                      </a>
-                      <a 
-                        href="https://www.tiktok.com/@gatotaku2022" 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-white hover:text-orange-500 transition-colors"
-                        aria-label="Visitar TikTok"
-                      >
-                        <i className="fab fa-tiktok text-2xl" aria-hidden="true"></i>
-                      </a>
-                    </div>
-                    <p className="text-gray-400">
-                      2024 GATOTAKU. Todos los derechos reservados.
-                    </p>
-                  </div>
-                </div>
-              </footer>
+                    } />
+                    <Route path="/payment-methods" element={
+                      <Suspense fallback={<div>Cargando...</div>}>
+                        <PaymentMethods />
+                      </Suspense>
+                    } />
+                  </Routes>
+                </Suspense>
+              </main>
+              <Footer />
             </div>
           </Router>
         </CartProvider>
