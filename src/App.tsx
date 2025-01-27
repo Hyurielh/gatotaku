@@ -58,45 +58,44 @@ function App() {
   }
 
   return (
-    <ErrorBoundary 
-      FallbackComponent={ErrorFallback}
-      onReset={() => {
-        // Reset the state of your app here
-        queryClient.clear();
-      }}
-    >
-      <QueryClientProvider client={queryClient}>
-        <HelmetProvider>
-          <AuthProvider>
-            <CartProvider>
-              <Router>
-                <SEO 
-                  title="GATOTAKU - Tu Tienda de Anime"
-                  description="Tienda online de productos de anime y manga. Encuentra los mejores artículos de tus series favoritas."
-                />
-                <div className="App">
-                  <Header />
-                  <Suspense fallback={<div>Loading...</div>}>
-                    <Routes>
-                      <Route path="/" element={<StoreFront />} />
-                      <Route path="/admin" element={<RequireAuth><AdminPanel /></RequireAuth>} />
-                      <Route path="/login" element={<LoginPage />} />
-                      <Route path="/about" element={<About />} />
-                      <Route path="/information/*" element={<Information />} />
-                      <Route path="/refunds" element={<Refunds />} />
-                      <Route path="/payment-methods" element={<PaymentMethods />} />
-                      <Route path="/layaway" element={<Layaway />} />
-                      <Route path="/product-detail/:id" element={<ProductDetail />} />
-                    </Routes>
-                  </Suspense>
-                  <Footer />
-                </div>
-              </Router>
-            </CartProvider>
-          </AuthProvider>
-        </HelmetProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <HelmetProvider>
+        <AuthProvider>
+          <CartProvider>
+            <Router>
+              <SEO 
+                title="GATOTAKU - Tu Tienda de Anime"
+                description="Tienda online de productos de anime y manga. Encuentra los mejores artículos de tus series favoritas."
+              />
+              <div className="flex flex-col min-h-screen">
+                <Header />
+                <main className="flex-grow">
+                  <ErrorBoundary 
+                    FallbackComponent={ErrorFallback}
+                    onReset={() => window.location.reload()}
+                  >
+                    <Suspense fallback={<div>Cargando...</div>}>
+                      <Routes>
+                        <Route path="/" element={<StoreFront />} />
+                        <Route path="/producto/:id" element={<ProductDetail />} />
+                        <Route path="/admin" element={<RequireAuth><AdminPanel /></RequireAuth>} />
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/about" element={<About />} />
+                        <Route path="/information/*" element={<Information />} />
+                        <Route path="/reembolsos" element={<Refunds />} />
+                        <Route path="/metodos-pago" element={<PaymentMethods />} />
+                        <Route path="/apartados" element={<Layaway />} />
+                      </Routes>
+                    </Suspense>
+                  </ErrorBoundary>
+                </main>
+                <Footer />
+              </div>
+            </Router>
+          </CartProvider>
+        </AuthProvider>
+      </HelmetProvider>
+    </QueryClientProvider>
   );
 }
 

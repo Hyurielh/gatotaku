@@ -39,9 +39,9 @@ export const Footer = () => {
             <div>
               <h3 className="text-lg font-semibold mb-2">Información</h3>
               <ul className="space-y-2">
-                <li><Link to="/payment-methods" className="hover:text-gray-300">Métodos de pago</Link></li>
-                <li><Link to="/shipping" className="hover:text-gray-300">Envíos</Link></li>
-                <li><Link to="/refunds" className="hover:text-gray-300">Reembolsos</Link></li>
+                <li><Link to="/information/payment-methods" className="hover:text-gray-300">Métodos de pago</Link></li>
+                <li><Link to="/information/shipping" className="hover:text-gray-300">Envíos</Link></li>
+                <li><Link to="/information/refunds" className="hover:text-gray-300">Reembolsos</Link></li>
               </ul>
             </div>
             

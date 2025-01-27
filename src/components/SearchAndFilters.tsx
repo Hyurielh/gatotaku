@@ -151,7 +151,7 @@ export function SearchAndFilters({
           id="max-price-input"
           type="number" 
           placeholder="Precio máximo" 
-          value={localFilters.maxPrice || ''} 
+          value={localFilters.maxPrice} 
           onChange={handleMaxPriceChange}
           aria-label="Filtrar productos por precio máximo"
           min="0"

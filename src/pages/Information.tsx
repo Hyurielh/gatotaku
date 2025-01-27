@@ -19,7 +19,9 @@ const Information = () => {
 
   // Redirect to general info if no specific route is selected
   useEffect(() => {
-    if (location.pathname === '/information') {
+    const currentPath = location.pathname;
+    const isExactInformationPath = currentPath === '/information' || currentPath.startsWith('/information/');
+    if (!isExactInformationPath) {
       navigate('/information/general', { replace: true });
     }
   }, [location, navigate]);

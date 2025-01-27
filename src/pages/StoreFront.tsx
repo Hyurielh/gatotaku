@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import { SEO } from '../components/SEO';
 import { SearchAndFilters } from '../components/SearchAndFilters';
 import { ProductCard } from '../components/ProductCard';
+import { Cart } from '../components/Cart';
 import type { Product, Category, Anime, Filters } from '../types/database';
 import { ErrorBoundary } from 'react-error-boundary';
 
@@ -49,7 +50,7 @@ function StoreFrontContent() {
     anime: '',
     sortBy: 'name_asc',
     minPrice: 0,
-    maxPrice: 10000
+    maxPrice: undefined
   }));
 
   // Fetch categories and animes with products
@@ -215,6 +216,7 @@ function StoreFrontContent() {
           {isFetchingNextPage ? 'Cargando...' : 'Cargar más'}
         </button>
       )}
+      <Cart />
     </div>
   );
 }
