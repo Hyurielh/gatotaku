@@ -35,9 +35,11 @@ export interface ProductInput {
   stock: number;
 }
 
-export interface Filters {
+export type Filters = {
   search: string;
   category: string;
   anime: string;
-  sortBy: 'price_asc' | 'price_desc' | 'name_asc' | 'name_desc';
-}
+  sortBy: 'name_asc' | 'name_desc' | 'price_asc' | 'price_desc' | 'created_at';
+  minPrice?: number;
+  maxPrice?: number;
+};

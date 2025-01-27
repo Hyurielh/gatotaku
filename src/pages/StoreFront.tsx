@@ -47,13 +47,44 @@ function StoreFrontContent() {
     search: '',
     category: '',
     anime: '',
-    sortBy: 'name_asc'
+    sortBy: 'name_asc',
+    minPrice: 0,
+    maxPrice: 10000
   }));
+
+  // Fetch categories and animes with products
+  const fetchCategoriesWithProducts = useCallback(async () => {
+    const { data: categoriesWithProducts } = await supabase
+      .from('categories')
+      .select(`
+        id, 
+        name, 
+        products:products(id)
+      `);
+
+    return categoriesWithProducts
+      ?.filter(category => category.products.length > 0)
+      .map(category => ({ id: category.id, name: category.name })) || [];
+  }, []);
+
+  const fetchAnimesWithProducts = useCallback(async () => {
+    const { data: animesWithProducts } = await supabase
+      .from('anime')
+      .select(`
+        id, 
+        name, 
+        products:products(id)
+      `);
+
+    return animesWithProducts
+      ?.filter(anime => anime.products.length > 0)
+      .map(anime => ({ id: anime.id, name: anime.name })) || [];
+  }, []);
 
   // Memoize fetchProducts to prevent unnecessary re-renders
   const fetchProducts = useCallback(async ({ pageParam = 1 }) => {
     try {
-      const ITEMS_PER_PAGE = 50;
+      const ITEMS_PER_PAGE = 5;
       let query = supabase
         .from('products')
         .select(`
@@ -63,17 +94,44 @@ function StoreFrontContent() {
         `, { count: 'exact' })
         .range((pageParam - 1) * ITEMS_PER_PAGE, pageParam * ITEMS_PER_PAGE - 1);
 
-      // Apply existing filters
+      // Enhanced search across multiple fields
+      if (filters.search) {
+        query = query.or(`
+          ilike(name, "%${filters.search}%"),
+          ilike(description, "%${filters.search}%"),
+          ilike(category_ref.name, "%${filters.search}%"),
+          ilike(anime.name, "%${filters.search}%")
+        `);
+      }
+
+      // Apply category and anime filters
       if (filters.category) query = query.eq('category_id', filters.category);
       if (filters.anime) query = query.eq('anime_id', filters.anime);
-      if (filters.search) query = query.ilike('name', `%${filters.search}%`);
+
+      // Price range filter
+      if (filters.minPrice !== undefined) {
+        query = query.gte('price', filters.minPrice);
+      }
+      if (filters.maxPrice !== undefined) {
+        query = query.lte('price', filters.maxPrice);
+      }
 
       // Apply sorting
       switch(filters.sortBy) {
-        case 'name_asc': query = query.order('name', { ascending: true }); break;
-        case 'price_asc': query = query.order('price', { ascending: true }); break;
-        case 'price_desc': query = query.order('price', { ascending: false }); break;
-        default: query = query.order('created_at', { ascending: false });
+        case 'name_asc': 
+          query = query.order('name', { ascending: true }); 
+          break;
+        case 'name_desc': 
+          query = query.order('name', { ascending: false }); 
+          break;
+        case 'price_asc': 
+          query = query.order('price', { ascending: true }); 
+          break;
+        case 'price_desc': 
+          query = query.order('price', { ascending: false }); 
+          break;
+        default: 
+          query = query.order('created_at', { ascending: false });
       }
 
       const { data, error, count } = await query;
@@ -91,46 +149,41 @@ function StoreFrontContent() {
     }
   }, [filters]);
 
+  // Fetch categories and animes with products
+  const { data: categoriesWithProducts } = useQuery(
+    'categoriesWithProducts', 
+    fetchCategoriesWithProducts
+  );
+
+  const { data: animesWithProducts } = useQuery(
+    'animesWithProducts', 
+    fetchAnimesWithProducts
+  );
+
+  // Infinite query for products
+  const { 
+    data: productsData, 
+    fetchNextPage, 
+    hasNextPage, 
+    isFetchingNextPage 
+  } = useInfiniteQuery(
+    ['products', filters], 
+    fetchProducts, 
+    { 
+      getNextPageParam: (lastPage) => lastPage.nextPage,
+      keepPreviousData: true
+    }
+  );
+
   // Memoize filter change handler
   const handleFilterChange = useCallback((newFilters: Partial<Filters>) => {
     setFilters(prevFilters => ({ ...prevFilters, ...newFilters }));
   }, []);
 
-  const { 
-    data, 
-    fetchNextPage, 
-    hasNextPage, 
-    isFetching 
-  } = useInfiniteQuery(
-    ['products', filters], 
-    fetchProducts, 
-    {
-      getNextPageParam: (lastPage) => lastPage.nextPage,
-      keepPreviousData: true,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      cacheTime: 30 * 60 * 1000 // 30 minutes
-    }
-  );
-
-  const { data: categories } = useQuery('categories', async () => {
-    const { data } = await supabase.from('categories').select('*').order('name');
-    return data || [];
-  }, {
-    staleTime: 1 * 60 * 60 * 1000, // 1 hour
-    cacheTime: 24 * 60 * 60 * 1000 // 24 hours
-  });
-
-  const { data: animes } = useQuery('animes', async () => {
-    const { data } = await supabase.from('anime').select('*').order('name');
-    return data || [];
-  }, {
-    staleTime: 1 * 60 * 60 * 1000, // 1 hour
-    cacheTime: 24 * 60 * 60 * 1000 // 24 hours
-  });
-
+  // Flatten products for rendering
   const flattenedProducts = useMemo(() => 
-    data?.pages.flatMap(page => page.products) || [], 
-    [data]
+    productsData?.pages.flatMap(page => page.products) || [], 
+    [productsData]
   );
 
   return (
@@ -141,8 +194,8 @@ function StoreFrontContent() {
       />
       
       <SearchAndFilters
-        categories={categories || []}
-        animes={animes || []}
+        categories={categoriesWithProducts || []}
+        animes={animesWithProducts || []}
         currentFilters={filters}
         onFilterChange={handleFilterChange}
       />
@@ -155,11 +208,11 @@ function StoreFrontContent() {
       
       {hasNextPage && (
         <button 
-          disabled={isFetching}
+          disabled={isFetchingNextPage}
           onClick={() => fetchNextPage()}
           className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
         >
-          {isFetching ? 'Cargando...' : 'Cargar más'}
+          {isFetchingNextPage ? 'Cargando...' : 'Cargar más'}
         </button>
       )}
     </div>
