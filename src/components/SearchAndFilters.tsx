@@ -1,92 +1,194 @@
-import type { Category, Anime, Filters, Product } from '../types/database';
-import { Search } from 'lucide-react';
+import React, { useState } from 'react';
+import { useCategoriesAndAnimes } from '../hooks/useProducts';
+import { Category, Anime } from '../types/database';
 
-interface SearchAndFiltersProps {
-  categories: Category[];
-  animes: Anime[];
-  filters: Filters;
-  products: Product[];
-  onFilterChange: (filters: Filters) => void;
+export interface Filters {
+  category?: string;
+  anime?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  search?: string;
+  sortBy?: 'name_asc' | 'name_desc' | 'price_asc' | 'price_desc';
 }
 
-// Filtrar categorias y animes con productos
-const filterCategoriesWithProducts = (categories: Category[], products: Product[]) => {
-  return categories.filter((category) => {
-    return products.some((product) => product.category_id === category.id);
-  });
-};
+export interface SearchAndFiltersProps {
+  onFilterChange: (filters: Filters) => void;
+  currentFilters?: Filters;
+  categories: Category[];
+  animes: Anime[];
+}
 
-const filterAnimesWithProducts = (animes: Anime[], products: Product[]) => {
-  return animes.filter((anime) => {
-    return products.some((product) => product.anime_id === anime.id);
-  });
-};
+export function SearchAndFilters({ 
+  onFilterChange, 
+  currentFilters = {},
+  categories,
+  animes
+}: SearchAndFiltersProps) {
+  const [localFilters, setLocalFilters] = useState<Filters>(currentFilters);
 
-export function SearchAndFilters({ categories, animes, filters, products, onFilterChange }: SearchAndFiltersProps) {
-  const handleChange = (key: keyof Filters, value: string) => {
-    onFilterChange({ ...filters, [key]: value });
+  const handleFilterChange = (newFilters: Partial<Filters>) => {
+    const updatedFilters = { ...localFilters, ...newFilters };
+    setLocalFilters(updatedFilters);
+    onFilterChange(updatedFilters);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleFilterChange({ search: e.target.value });
+  };
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    handleFilterChange({ 
+      category: e.target.value === '' ? undefined : e.target.value 
+    });
+  };
+
+  const handleAnimeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    handleFilterChange({ 
+      anime: e.target.value === '' ? undefined : e.target.value 
+    });
+  };
+
+  const handleMinPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const price = e.target.value ? parseFloat(e.target.value) : undefined;
+    handleFilterChange({ minPrice: price });
+  };
+
+  const handleMaxPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const price = e.target.value ? parseFloat(e.target.value) : undefined;
+    handleFilterChange({ maxPrice: price });
+  };
+
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    handleFilterChange({ 
+      sortBy: e.target.value as Filters['sortBy'] 
+    });
+  };
+
+  const resetFilters = () => {
+    setLocalFilters({});
+    onFilterChange({});
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md space-y-4">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
-        <input
-          type="search"
-          placeholder="Buscar productos..."
-          value={filters.search}
-          onChange={(e) => handleChange('search', e.target.value)}
-          className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-          aria-label="Buscar productos"
+    <div className="search-and-filters grid grid-cols-1 md:grid-cols-3 gap-4" aria-label="Filtros de búsqueda">
+      <div className="filter-group">
+        <label htmlFor="search-input" className="block text-sm font-medium text-gray-700">
+          Buscar productos
+        </label>
+        <input 
+          id="search-input"
+          type="text" 
+          placeholder="Buscar productos..." 
+          value={localFilters.search || ''} 
+          onChange={handleSearchChange}
+          aria-label="Buscar productos por nombre o descripción"
+          className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        { /* Filtrar categorias y animes con productos */ }
-        {filterCategoriesWithProducts(categories, products).length > 0 && (
-        <select
-          value={filters.category}
-          onChange={(e) => handleChange('category', e.target.value)}
-          className="block w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-          aria-label="Filtrar por categoría"
+      <div className="filter-group">
+        <label htmlFor="category-select" className="block text-sm font-medium text-gray-700">
+          Categoría
+        </label>
+        <select 
+          id="category-select"
+          value={localFilters.category || ''} 
+          onChange={handleCategoryChange}
+          aria-label="Seleccionar categoría de producto"
+          className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
         >
           <option value="">Todas las categorías</option>
-          {filterCategoriesWithProducts(categories, products).map((category) => (
+          {categories.map((category) => (
             <option key={category.id} value={category.id}>
               {category.name}
             </option>
           ))}
-        </select> 
-      )}
-      
-      {filterAnimesWithProducts(animes, products).length > 0 && (
-        <select
-          value={filters.anime}
-          onChange={(e) => handleChange('anime', e.target.value)}
-          className="block w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-          aria-label="Filtrar por anime"
+        </select>
+      </div>
+
+      <div className="filter-group">
+        <label htmlFor="anime-select" className="block text-sm font-medium text-gray-700">
+          Anime
+        </label>
+        <select 
+          id="anime-select"
+          value={localFilters.anime || ''} 
+          onChange={handleAnimeChange}
+          aria-label="Seleccionar anime"
+          className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
         >
-          <option value="">Todos los animes</option>
-          {filterAnimesWithProducts(animes, products).map((anime) => (
+          <option value="">Todos los Animes</option>
+          {animes.map((anime) => (
             <option key={anime.id} value={anime.id}>
               {anime.name}
             </option>
           ))}
         </select>
-      )}
+      </div>
 
-        <select
-          value={filters.sortBy}
-          onChange={(e) => handleChange('sortBy', e.target.value as Filters['sortBy'])}
-          className="block w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-          aria-label="Ordenar por"
+      <div className="filter-group">
+        <label htmlFor="min-price-input" className="block text-sm font-medium text-gray-700">
+          Precio Mínimo
+        </label>
+        <input 
+          id="min-price-input"
+          type="number" 
+          placeholder="Precio mínimo" 
+          value={localFilters.minPrice || ''} 
+          onChange={handleMinPriceChange}
+          aria-label="Filtrar productos por precio mínimo"
+          min="0"
+          step="0.01"
+          className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+        />
+      </div>
+
+      <div className="filter-group">
+        <label htmlFor="max-price-input" className="block text-sm font-medium text-gray-700">
+          Precio Máximo
+        </label>
+        <input 
+          id="max-price-input"
+          type="number" 
+          placeholder="Precio máximo" 
+          value={localFilters.maxPrice || ''} 
+          onChange={handleMaxPriceChange}
+          aria-label="Filtrar productos por precio máximo"
+          min="0"
+          step="0.01"
+          className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+        />
+      </div>
+
+      <div className="filter-group">
+        <label htmlFor="sort-select" className="block text-sm font-medium text-gray-700">
+          Ordenar por
+        </label>
+        <select 
+          id="sort-select"
+          value={localFilters.sortBy || 'name_asc'} 
+          onChange={handleSortChange}
+          aria-label="Ordenar productos"
+          className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
         >
-          <option value="name_asc">Nombre (A-Z)</option>
-          <option value="name_desc">Nombre (Z-A)</option>
-          <option value="price_asc">Precio (Menor a Mayor)</option>
-          <option value="price_desc">Precio (Mayor a Menor)</option>
+          <option value="name_asc">Nombre A-Z</option>
+          <option value="name_desc">Nombre Z-A</option>
+          <option value="price_asc">Precio: Menor a Mayor</option>
+          <option value="price_desc">Precio: Mayor a Menor</option>
         </select>
       </div>
+
+      {Object.keys(localFilters).length > 0 && (
+        <div className="col-span-full">
+          <button 
+            onClick={resetFilters} 
+            aria-label="Restablecer filtros"
+            className="w-full p-2 bg-gray-200 rounded hover:bg-gray-300 transition-colors"
+          >
+            Restablecer Filtros
+          </button>
+        </div>
+      )}
     </div>
   );
 }

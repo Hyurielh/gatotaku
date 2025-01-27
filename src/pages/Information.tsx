@@ -17,6 +17,13 @@ const Information = () => {
     navigate(`/information/${path}`, { replace: true });
   };
 
+  // Redirect to general info if no specific route is selected
+  useEffect(() => {
+    if (location.pathname === '/information') {
+      navigate('/information/general', { replace: true });
+    }
+  }, [location, navigate]);
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="flex flex-col md:flex-row gap-8">
@@ -49,25 +56,25 @@ const Information = () => {
               Envíos
             </button>
             <button 
-              onClick={() => handleNavigation('layaway')}
-              className={`nav-link ${location.pathname.endsWith('layaway') ? 'active' : ''}`}
-            >
-              Sistema de Apartado
-            </button>
-            <button 
               onClick={() => handleNavigation('refunds')}
               className={`nav-link ${location.pathname.endsWith('refunds') ? 'active' : ''}`}
             >
-              Política de Reembolsos
+              Devoluciones
+            </button>
+            <button 
+              onClick={() => handleNavigation('layaway')}
+              className={`nav-link ${location.pathname.endsWith('layaway') ? 'active' : ''}`}
+            >
+              Apartado
             </button>
           </nav>
         </div>
 
-        {/* Main Content Area */}
+        {/* Content Area */}
         <div className="flex-grow">
           <Suspense fallback={<div>Cargando...</div>}>
             <Routes>
-              <Route path="" element={<Navigate to="general" replace />} />
+              <Route path="*" element={<Navigate to="general" replace />} />
               <Route path="general" element={<GeneralInfo />} />
               <Route path="about" element={<About />} />
               <Route path="payment-methods" element={<PaymentMethods />} />

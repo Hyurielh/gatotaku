@@ -1,15 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Product, ProductInput, Category, Anime } from '../types/database';
 import { CategoryManager } from '../components/CategoryManager';
 import { AnimeManager } from '../components/AnimeManager';
 import { SEO } from '../components/SEO';
+import { useAuth } from '../context/AuthContext';
+import { convertImageToWebP, compressImage } from '../utils/imageOptimization';
 
 export default function AdminPanel() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const { session, loading: authLoading } = useAuth();
+
+  // Defensive initialization with useMemo to ensure consistent initialization
+  const [products, setProducts] = useState<Product[]>(() => []);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [animes, setAnimes] = useState<Anime[]>([]);
-  const [formData, setFormData] = useState<ProductInput>({
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [animes, setAnimes] = useState<Anime[]>(() => []);
+  const [formData, setFormData] = useState<ProductInput>(() => ({
     name: '',
     price: '',
     category_id: '',
@@ -17,15 +23,227 @@ export default function AdminPanel() {
     description: '',
     images: [''],
     stock: 0
-  });
+  }));
   const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+
+  // Redirect or show error if not authenticated
+  if (authLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!session) {
+    return <div>Unauthorized Access</div>;
+  }
 
   useEffect(() => {
     fetchProducts();
     fetchCategories();
     fetchAnimes();
   }, []);
+
+  useEffect(() => {
+    if (categories.length > 0 && !formData.category_id) {
+      setFormData(prev => ({
+        ...prev,
+        category_id: categories[0].id
+      }));
+    }
+  }, [categories]);
+
+  // Image file handling
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    try {
+      const processedImages: File[] = [];
+      for (let i = 0; i < files.length; i++) {
+        // Compress image first
+        const compressedImage = await compressImage(files[i]);
+        processedImages.push(compressedImage);
+      }
+
+      setImageFiles(processedImages);
+    } catch (error) {
+      console.error('Image processing error:', error);
+      setError('Error procesando imágenes');
+    }
+  };
+
+  // Upload images to Supabase storage
+  const uploadImages = async (): Promise<string[]> => {
+    const uploadPromises = imageFiles.map(async (file) => {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `product-images/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    });
+
+    return Promise.all(uploadPromises);
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    
+    // Check if categories are still loading
+    if (categoriesLoading) {
+      setError('Cargando categorías, por favor espere');
+      return;
+    }
+
+    // Ensure there are categories
+    if (categories.length === 0) {
+      setError('No hay categorías disponibles. Cree una categoría primero.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      // Validate category_id explicitly
+      const selectedCategoryId = formData.category_id || categories[0].id;
+      const selectedCategory = categories.find(cat => cat.id === selectedCategoryId);
+
+      if (!selectedCategory) {
+        console.error('Invalid category selection');
+        setError('Categoría inválida. Por favor seleccione una categoría válida.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Ensure images are not empty
+      const imageUrls = imageFiles.length > 0 
+        ? await uploadImages() 
+        : formData.images.filter(img => img && img.trim() !== '');
+
+      // Fallback image if no images provided
+      const finalImages = imageUrls.length > 0 
+        ? imageUrls 
+        : ['https://ik.imagekit.io/gatotaku/default-product-image.png'];
+
+      // Prepare product data with explicit type casting and null checks
+      const productData = {
+        name: formData.name || null,
+        description: formData.description || null,
+        price: parseFloat(formData.price) || null,
+        category_id: selectedCategoryId || null,
+        category: selectedCategory.name, 
+        anime_id: formData.anime_id || null,
+        images: finalImages,
+        stock: Number(formData.stock) || 0
+      };
+
+      // Extremely verbose logging
+      console.group('Product Insertion Debug');
+      console.log('Raw Form Data:', formData);
+      console.log('Selected Category:', selectedCategory);
+      console.log('Prepared Product Data:', productData);
+      
+      // Validate each field explicitly
+      Object.entries(productData).forEach(([key, value]) => {
+        console.log(`Field ${key}:`, 
+          value === null ? 'NULL' : 
+          value === undefined ? 'UNDEFINED' : 
+          value);
+      });
+      console.groupEnd();
+
+      // Validate productData before submission
+      const missingFields = Object.entries(productData)
+        .filter(([key, value]) => value === null && key !== 'anime_id' && key !== 'description')
+        .map(([key]) => key);
+
+      if (missingFields.length > 0) {
+        console.error('Missing required fields:', missingFields);
+        setError(`Campos requeridos faltantes: ${missingFields.join(', ')}`);
+        setIsSubmitting(false);
+        return;
+      }
+
+      let result;
+      try {
+        if (editingId) {
+          result = await supabase
+            .from('products')
+            .update(productData)
+            .eq('id', editingId)
+            .select();
+        } else {
+          result = await supabase
+            .from('products')
+            .insert(productData)
+            .select();
+        }
+
+        // More detailed error handling
+        if (result.error) {
+          console.error('Supabase Error Object:', result.error);
+          
+          // Log full error details
+          console.error('Full Error Details:', {
+            code: result.error.code,
+            message: result.error.message,
+            details: result.error.details,
+            hint: result.error.hint
+          });
+
+          // Additional context logging
+          console.error('Product Data Sent:', JSON.stringify(productData, null, 2));
+          console.error('Categories at time of error:', JSON.stringify(categories, null, 2));
+          
+          // More specific error message
+          const errorMessage = result.error.message || 'Error desconocido al guardar producto';
+          setError(`Error guardando producto: ${errorMessage}`);
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Log successful insertion
+        console.log('Product Inserted Successfully:', result.data);
+
+        // Reset form
+        setFormData({
+          name: '',
+          description: '',
+          price: '',
+          category_id: categories[0].id,
+          anime_id: '',
+          images: [''],
+          stock: 0
+        });
+        setImageFiles([]);
+        setEditingId(null);
+        fetchProducts();
+      } catch (supabaseError) {
+        console.error('Supabase Catch Block Error:', supabaseError);
+        setError(`Error de Supabase: ${supabaseError.message}`);
+      }
+    } catch (error) {
+      console.error('Unexpected Error submitting product:', error);
+      setError('Error inesperado al guardar el producto');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   async function fetchProducts() {
     const { data, error } = await supabase
@@ -47,11 +265,13 @@ export default function AdminPanel() {
   }
 
   async function fetchCategories() {
+    setCategoriesLoading(true);
     const { data } = await supabase
       .from('categories')
       .select('*')
       .order('name');
     setCategories(data || []);
+    setCategoriesLoading(false);
   }
 
   async function fetchAnimes() {
@@ -60,59 +280,6 @@ export default function AdminPanel() {
       .select('*')
       .order('name');
     setAnimes(data || []);
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    
-    const numericPrice = parseFloat(formData.price);
-    if (isNaN(numericPrice) || numericPrice < 0) {
-      setError('Por favor, ingresa un precio válido');
-      return;
-    }
-
-    const productData = {
-      name: formData.name,
-      price: numericPrice,
-      category_id: formData.category_id,
-      anime_id: formData.anime_id,
-      description: formData.description,
-      images: formData.images,
-      stock: formData.stock
-    };
-    
-    try {
-      if (editingId) {
-        const { error: updateError } = await supabase
-          .from('products')
-          .update(productData)
-          .eq('id', editingId);
-
-        if (updateError) throw updateError;
-      } else {
-        const { error: insertError } = await supabase
-          .from('products')
-          .insert(productData);
-
-        if (insertError) throw insertError;
-      }
-
-      setFormData({
-        name: '',
-        price: '',
-        category_id: '',
-        anime_id: '',
-        description: '',
-        images: [''],
-        stock: 0
-      });
-      setEditingId(null);
-      fetchProducts();
-    } catch (err: any) {
-      console.error('Error:', err);
-      setError(err.message || 'Ha ocurrido un error');
-    }
   }
 
   async function handleDelete(id: string) {
@@ -161,7 +328,7 @@ export default function AdminPanel() {
   }
 
   return (
-    <>
+    <div className="admin-panel">
       <SEO 
         title="Panel de Administración"
         description="Panel de administración de GATOTAKU"
@@ -284,7 +451,6 @@ export default function AdminPanel() {
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Imágenes</label>
             {formData.images.map((url, index) => (
               <div key={index} className="flex gap-2 mb-2">
                 <input
@@ -428,6 +594,6 @@ export default function AdminPanel() {
           </table>
         </div>
       </div>
-    </>
+    </div>
   );
 }
