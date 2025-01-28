@@ -1,4 +1,4 @@
-import{I as j,u as y,r as a,j as e}from"./vendor-2e0792b2.js";import{a as N,S as b,s as v}from"./index-fa0cdf0c.js";import{I as k}from"./ImageCarousel-a57e97b1.js";function E(){const{id:r}=j(),x=y(),{addToCart:m}=N(),[t,u]=a.useState(null),[g,p]=a.useState(!0),[o,i]=a.useState(null),[n,h]=a.useState(1);a.useEffect(()=>{async function c(){try{const{data:s,error:d}=await v.from("products").select(`
+import{I as j,u as y,r as a,j as e}from"./vendor-2e0792b2.js";import{a as N,S as b,s as v}from"./index-97c69941.js";import{I as k}from"./ImageCarousel-a57e97b1.js";function E(){const{id:r}=j(),x=y(),{addToCart:m}=N(),[t,u]=a.useState(null),[g,p]=a.useState(!0),[o,i]=a.useState(null),[n,h]=a.useState(1);a.useEffect(()=>{async function c(){try{const{data:s,error:d}=await v.from("products").select(`
             *,
             category_ref:categories(id, name),
             anime:anime(id, name)
