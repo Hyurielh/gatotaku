@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { SEO } from '../components/SEO';
 import { SearchAndFilters } from '../components/SearchAndFilters';
@@ -213,12 +213,13 @@ function StoreFrontContent() {
   // Single query for categories, animes, and products
   const { 
     data: queryData, 
-    refetch,
     isLoading,
-    error 
-  } = useQuery(
-    ['storefront-data', filters], 
-    async () => {
+    error, 
+    isError, 
+    refetch 
+  } = useQuery({
+    queryKey: ['products', filters],
+    queryFn: async () => {
       const { categoriesWithProducts, animesWithProducts } = await fetchCategoriesAndAnimes();
       const productsData = await fetchProducts({ pageParam: filters.page || 1 });
 
@@ -228,15 +229,13 @@ function StoreFrontContent() {
         ...productsData
       };
     },
-    { 
-      keepPreviousData: true,
-      staleTime: 5000,  // 5 segundos
-      cacheTime: 10000, // 10 segundos
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      refetchOnReconnect: false
-    }
-  );
+    placeholderData: (previousData) => previousData,
+    staleTime: 5000,  // 5 segundos
+    gcTime: 10000,    // Reemplaza cacheTime
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false
+  });
 
   // Update handleFilterChange to include page property
   const handleFilterChange = useCallback((newFilters: Partial<Filters>) => {

@@ -4,16 +4,43 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   base: '/gatotaku/',
   plugins: [react()],
+  resolve: {
+    alias: {
+      '@': '/src',  // Alias para importaciones más limpias
+    },
+    dedupe: [
+      'react',
+      'react-dom',
+      '@tanstack/react-query'
+    ]
+  },
+  optimizeDeps: {
+    include: [
+      'react', 
+      'react-dom', 
+      'react-router-dom', 
+      '@supabase/supabase-js',
+      '@tanstack/react-query',
+      'react-helmet-async'
+    ],
+    exclude: ['lucide-react'],
+    force: true,
+    esbuildOptions: {
+      target: 'es2020'  // Mejorar compatibilidad
+    }
+  },
   server: {
-    host: true,
+    host: '127.0.0.1', // Cambiar de true a una dirección IP específica
     port: 5173,
-    strictPort: false,  
+    strictPort: true,  // Cambiar a true para asegurar el puerto
     open: false,        
     cors: true,
     hmr: {
       protocol: 'ws',
-      host: 'localhost',
-      port: 5173
+      host: '127.0.0.1',
+      port: 5173,
+      clientPort: 5173,
+      overlay: true  // Mostrar errores en pantalla
     },
     headers: {
       'Cache-Control': 'public, max-age=300, stale-while-revalidate=60',
@@ -31,10 +58,6 @@ export default defineConfig({
     headers: {
       'Cache-Control': 'public, max-age=300, stale-while-revalidate=60',
     }
-  },
-  optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom'],
-    exclude: ['lucide-react'],
   },
   build: {
     rollupOptions: {

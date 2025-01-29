@@ -10,7 +10,7 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "types": ["sharp", "jest"]
+    "types": ["sharp"]
   },
   "include": ["src", "src/react-jsx-runtime.d.ts"],
   "exclude": ["node_modules"]

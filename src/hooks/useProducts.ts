@@ -1,5 +1,5 @@
 import { useReducer, useCallback } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { Product, Category, Anime } from '../types/database';
 
@@ -118,8 +118,13 @@ export const useProducts = (initialFilters: FiltersState = {}) => {
   }, [state.filters]);
 
   // Use react-query for caching and background updates
-  const query = useQuery(['products', state.filters], fetchProducts, {
-    keepPreviousData: true
+  const query = useQuery({
+    queryKey: ['products', state.filters],
+    queryFn: fetchProducts,
+    placeholderData: (previousData) => previousData,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false
   });
 
   // Method to update filters
@@ -136,22 +141,35 @@ export const useProducts = (initialFilters: FiltersState = {}) => {
 
 // Combine fetching of categories and animes
 export const useCategoriesAndAnimes = () => {
-  return useQuery('categories-and-animes', async () => {
-    const [categoriesResponse, animesResponse] = await Promise.all([
-      supabase.from('categories').select('*'),
-      supabase.from('anime').select('*')
-    ]);
+  return useQuery({
+    queryKey: ['categories-and-animes'],
+    queryFn: async () => {
+      try {
+        const [categoriesResponse, animesResponse] = await Promise.all([
+          supabase.from('categories').select('*'),
+          supabase.from('anime').select('*')
+        ]);
 
-    if (categoriesResponse.error) throw categoriesResponse.error;
-    if (animesResponse.error) throw animesResponse.error;
+        if (categoriesResponse.error) {
+          console.error('Categories fetch error:', categoriesResponse.error);
+          throw categoriesResponse.error;
+        }
+        if (animesResponse.error) {
+          console.error('Animes fetch error:', animesResponse.error);
+          throw animesResponse.error;
+        }
 
-    return {
-      categories: categoriesResponse.data || [],
-      animes: animesResponse.data || []
-    };
-  }, {
+        return {
+          categories: categoriesResponse.data || [],
+          animes: animesResponse.data || []
+        };
+      } catch (error) {
+        console.error('Error fetching categories and animes:', error);
+        throw error;
+      }
+    },
     staleTime: 1000 * 60 * 5, // 5 minutos
-    cacheTime: 1000 * 60 * 10, // 10 minutos
+    gcTime: 1000 * 60 * 10, // 10 minutos
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchOnReconnect: false

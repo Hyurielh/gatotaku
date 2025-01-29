@@ -1,25 +1,24 @@
 import React from 'react';
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { SEO } from './components/SEO';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
-import StoreFront from './pages/StoreFront';
-import About from './pages/About';
-import Information from './pages/Information';
 import { Cart } from './components/Cart';
+import AppRoutes from './routes/AppRoutes';
 
-// Crear una instancia de QueryClient
+// Crear una instancia de QueryClient con configuración más robusta
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Configuraciones globales de React Query
       staleTime: 5 * 60 * 1000, // 5 minutos
-      cacheTime: 30 * 60 * 1000, // 30 minutos
-      retry: 1, // Reintentar una vez en caso de fallo
+      gcTime: 30 * 60 * 1000, // 30 minutos
+      retry: 1,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
     },
   },
 });
@@ -42,14 +41,10 @@ function App() {
                 <div className="flex flex-col min-h-screen">
                   <Header />
                   <main className="flex-grow">
-                    <Routes>
-                      <Route path="/" element={<StoreFront />} />
-                      <Route path="/about" element={<About />} />
-                      <Route path="/information" element={<Information />} />
-                      <Route path="/cart" element={<Cart />} />
-                    </Routes>
+                    <AppRoutes />
                   </main>
                   <Footer />
+                  <Cart />
                 </div>
               </Router>
             </CartProvider>

@@ -1,4 +1,4 @@
-import { QueryClient } from 'react-query';
+import { QueryClient } from '@tanstack/react-query';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -9,17 +9,20 @@ export const queryClient = new QueryClient({
         return failureCount < 2;
       },
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-      staleTime: 5000,
-      cacheTime: 1000 * 60 * 60, // 1 hour
-      onError: (error) => {
-        console.error('React Query Error:', error);
-      },
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 60, // 1 hour
     },
     mutations: {
-      onError: (error) => {
-        console.error('React Query Mutation Error:', error);
-      },
+      // Configuración de mutaciones sin onError
     },
+  },
+});
+
+// Manejo global de errores
+queryClient.setDefaultOptions({
+  queries: {
+    // Puedes agregar un error handler global si es necesario
+    // Por ejemplo, para logging o notificaciones
   },
 });
 
