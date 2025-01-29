@@ -78,9 +78,20 @@ export const useProducts = (initialFilters: FiltersState = {}) => {
       }
 
       if (state.filters.search) {
-        query = query.or(
-          `name.ilike.%${state.filters.search}%,description.ilike.%${state.filters.search}%`
-        );
+        const searchTerm = state.filters.search.toLowerCase().trim();
+        
+        // Split search terms to handle multi-word searches
+        const searchTerms = searchTerm.split(/\s+/);
+        
+        // Create a complex search query that matches all search terms
+        const searchConditions = searchTerms.map(term => 
+          `(name.ilike.%${term}% or ` +
+          `description.ilike.%${term}% or ` +
+          `category_ref.name.ilike.%${term}% or ` +
+          `anime.name.ilike.%${term}%)`
+        ).join(' and ');
+        
+        query = query.or(searchConditions);
       }
 
       if (state.filters.sortBy === 'name_asc') {
@@ -138,5 +149,11 @@ export const useCategoriesAndAnimes = () => {
       categories: categoriesResponse.data || [],
       animes: animesResponse.data || []
     };
+  }, {
+    staleTime: 1000 * 60 * 5, // 5 minutos
+    cacheTime: 1000 * 60 * 10, // 10 minutos
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false
   });
 };

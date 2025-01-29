@@ -3,12 +3,13 @@ import { useCategoriesAndAnimes } from '../hooks/useProducts';
 import { Category, Anime } from '../types/database';
 
 export interface Filters {
+  search?: string;
   category?: string;
   anime?: string;
   minPrice?: number;
   maxPrice?: number;
-  search?: string;
-  sortBy?: 'name_asc' | 'name_desc' | 'price_asc' | 'price_desc';
+  sortBy?: 'name_asc' | 'name_desc' | 'price_asc' | 'price_desc' | 'created_at';
+  page?: number;
 }
 
 export interface SearchAndFiltersProps {
@@ -16,24 +17,22 @@ export interface SearchAndFiltersProps {
   currentFilters?: Filters;
   categories: Category[];
   animes: Anime[];
+  onResetFilters?: () => void;
 }
 
 export function SearchAndFilters({ 
   onFilterChange, 
   currentFilters = {},
   categories,
-  animes
+  animes,
+  onResetFilters
 }: SearchAndFiltersProps) {
   const [localFilters, setLocalFilters] = useState<Filters>(currentFilters);
 
   const handleFilterChange = (newFilters: Partial<Filters>) => {
-    const updatedFilters = { ...localFilters, ...newFilters };
+    const updatedFilters = { ...currentFilters, ...newFilters };
     setLocalFilters(updatedFilters);
     onFilterChange(updatedFilters);
-  };
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleFilterChange({ search: e.target.value });
   };
 
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -64,15 +63,43 @@ export function SearchAndFilters({
     });
   };
 
+ const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+   const searchValue = e.target.value;
+   
+   // Update local state
+   setLocalFilters(prev => ({
+     ...prev,
+     search: searchValue === '' ? undefined : searchValue
+   }));
+   
+   // Notify parent component
+   onFilterChange({ 
+     search: searchValue === '' ? undefined : searchValue 
+   });
+ };
+
   const resetFilters = () => {
-    setLocalFilters({});
-    onFilterChange({});
+    const initialFilters: Filters = {
+      search: undefined,
+      category: undefined,
+      anime: undefined,
+      minPrice: undefined,
+      maxPrice: undefined,
+      sortBy: 'name_asc'
+    };
+    setLocalFilters(initialFilters);
+    onFilterChange(initialFilters);
+    
+    // Llamar a la función de restablecimiento si está definida
+    if (onResetFilters) {
+      onResetFilters();
+    }
   };
 
   return (
     <div className="search-and-filters grid grid-cols-1 md:grid-cols-3 gap-4" aria-label="Filtros de búsqueda">
       <div className="filter-group">
-        <label htmlFor="search-input" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="search-input" className="block text-sm font-medium text-gray-700 mb-1">
           Buscar productos
         </label>
         <input 
@@ -82,12 +109,12 @@ export function SearchAndFilters({
           value={localFilters.search || ''} 
           onChange={handleSearchChange}
           aria-label="Buscar productos por nombre o descripción"
-          className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+          className="block w-full p-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
         />
       </div>
 
       <div className="filter-group">
-        <label htmlFor="category-select" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="category-select" className="block text-sm font-medium text-gray-700 mb-1">
           Categoría
         </label>
         <select 
@@ -95,7 +122,7 @@ export function SearchAndFilters({
           value={localFilters.category || ''} 
           onChange={handleCategoryChange}
           aria-label="Seleccionar categoría de producto"
-          className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+          className="block w-full p-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
         >
           <option value="">Todas las categorías</option>
           {categories.map((category) => (
@@ -107,7 +134,7 @@ export function SearchAndFilters({
       </div>
 
       <div className="filter-group">
-        <label htmlFor="anime-select" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="anime-select" className="block text-sm font-medium text-gray-700 mb-1">
           Anime
         </label>
         <select 
@@ -115,7 +142,7 @@ export function SearchAndFilters({
           value={localFilters.anime || ''} 
           onChange={handleAnimeChange}
           aria-label="Seleccionar anime"
-          className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+          className="block w-full p-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
         >
           <option value="">Todos los Animes</option>
           {animes.map((anime) => (
@@ -127,41 +154,41 @@ export function SearchAndFilters({
       </div>
 
       <div className="filter-group">
-        <label htmlFor="min-price-input" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="min-price-input" className="block text-sm font-medium text-gray-700 mb-1">
           Precio Mínimo
         </label>
         <input 
           id="min-price-input"
           type="number" 
           placeholder="Precio mínimo" 
-          value={localFilters.minPrice || ''} 
+          value={localFilters.minPrice !== undefined ? localFilters.minPrice : ''} 
           onChange={handleMinPriceChange}
           aria-label="Filtrar productos por precio mínimo"
           min="0"
           step="0.01"
-          className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+          className="block w-full p-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
         />
       </div>
 
       <div className="filter-group">
-        <label htmlFor="max-price-input" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="max-price-input" className="block text-sm font-medium text-gray-700 mb-1">
           Precio Máximo
         </label>
         <input 
           id="max-price-input"
           type="number" 
           placeholder="Precio máximo" 
-          value={localFilters.maxPrice} 
+          value={localFilters.maxPrice !== undefined ? localFilters.maxPrice : ''} 
           onChange={handleMaxPriceChange}
           aria-label="Filtrar productos por precio máximo"
           min="0"
           step="0.01"
-          className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+          className="block w-full p-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
         />
       </div>
 
       <div className="filter-group">
-        <label htmlFor="sort-select" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="sort-select" className="block text-sm font-medium text-gray-700 mb-1">
           Ordenar por
         </label>
         <select 
@@ -169,7 +196,7 @@ export function SearchAndFilters({
           value={localFilters.sortBy || 'name_asc'} 
           onChange={handleSortChange}
           aria-label="Ordenar productos"
-          className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+          className="block w-full p-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
         >
           <option value="name_asc">Nombre A-Z</option>
           <option value="name_desc">Nombre Z-A</option>
@@ -178,17 +205,14 @@ export function SearchAndFilters({
         </select>
       </div>
 
-      {Object.keys(localFilters).length > 0 && (
-        <div className="col-span-full">
-          <button 
-            onClick={resetFilters} 
-            aria-label="Restablecer filtros"
-            className="w-full p-2 bg-gray-200 rounded hover:bg-gray-300 transition-colors"
-          >
-            Restablecer Filtros
-          </button>
-        </div>
-      )}
+      <div className="filter-group col-span-full flex justify-center mt-4">
+        <button 
+          onClick={resetFilters}
+          className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition-colors"
+        >
+          Restablecer Filtros
+        </button>
+      </div>
     </div>
   );
 }

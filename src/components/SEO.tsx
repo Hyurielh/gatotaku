@@ -10,7 +10,7 @@ interface SEOProps {
 export function SEO({ title, description, image, url }: SEOProps) {
   const siteTitle = 'GATOTAKU - Tu Tienda de Anime';
   const fullTitle = title === siteTitle ? title : `${title} | ${siteTitle}`;
-  const defaultImage = '/vite.svg'; // Imagen por defecto
+  const defaultImage = 'logo.png'; // Imagen por defecto
   const siteUrl = 'https://gatotaku.com'; // URL base del sitio
 
   return (

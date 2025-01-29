@@ -7,9 +7,10 @@ import { ShoppingCart } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
+  className?: string;
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, className }: ProductCardProps) {
   const { addItem } = useCart();
 
   const validImages = React.useMemo(() => {
@@ -25,35 +26,37 @@ export function ProductCard({ product }: ProductCardProps) {
   }, [validImages]);
 
   return (
-    <div className="product-card border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
-      <div className="w-full h-64 md:h-80">
-        <ImageCarousel 
-          images={validImages} 
-          alt={product.name} 
-          srcSet={webPSrcset.join(', ')} 
-          loading="lazy"
-        />
+    <div className={[className, "product-card border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col h-full"].filter(Boolean).join(' ')} >
+      <div className="w-full aspect-square">
+        <div className="w-full h-full object-cover">
+          <ImageCarousel 
+            images={validImages} 
+            alt={product.name} 
+            srcSet={webPSrcset.join(', ')} 
+            loading="lazy"
+          />
+        </div>
       </div>
-      <div className="p-6">
+      <div className="p-3 flex-grow flex flex-col justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">{product.name}</h2>
-          <div className="flex gap-2 text-sm text-orange-500 mb-2">
+          <h2 className="text-lg font-bold text-gray-900 mb-1">{product.name}</h2>
+          <div className="flex gap-1 text-xs text-orange-500 mb-1">
             {product.category_ref && <span>{product.category_ref.name}</span>}
             {product.anime && <span>• {product.anime.name}</span>}
           </div>
-          <span className="text-xl font-bold text-orange-500 block mb-2">
+          <span className="text-lg font-bold text-orange-500 block mb-1">
             C${product.price.toFixed(2)}
           </span>
-          <p className="text-gray-600 mb-4">{product.description}</p>
-          <button 
-            onClick={() => addItem(product)}
-            className="w-full bg-black text-white py-2 px-4 rounded-md hover:bg-gray-900 transition-colors flex items-center justify-center gap-2"
-            aria-label={`Agregar ${product.name} al carrito`}
-          >
-            <ShoppingCart size={20} />
-            Agregar al carrito
-          </button>
+          <p className="text-xs text-gray-600 mb-2 line-clamp-2">{product.description}</p>
         </div>
+        <button 
+          onClick={() => addItem(product)}
+          className="w-full bg-black text-white py-1 px-2 rounded-md hover:bg-gray-900 transition-colors flex items-center justify-center gap-1 text-xs"
+          aria-label={`Agregar ${product.name} al carrito`}
+        >
+          <ShoppingCart size={16} />
+          Agregar
+        </button>
       </div>
     </div>
   );

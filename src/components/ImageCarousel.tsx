@@ -5,13 +5,15 @@ interface ImageCarouselProps {
   alt: string;
   srcSet?: string;
   loading?: 'lazy' | 'eager';
+  className?: string;
 }
 
 export function ImageCarousel({ 
   images, 
   alt, 
   srcSet, 
-  loading = 'lazy' 
+  loading = 'lazy', 
+  className 
 }: ImageCarouselProps) {
   // Ensure images is always an array with a fallback
   const safeImages = useMemo(() => 
@@ -72,7 +74,7 @@ export function ImageCarousel({
   // Render method with careful styling
   return (
     <div 
-      className="relative w-full h-full overflow-hidden"
+      className={`${className} relative w-full h-full overflow-hidden`}
       onClick={(e) => e.stopPropagation()}
     >
       <div className="absolute inset-0 grid grid-cols-1 grid-rows-1">

@@ -72,7 +72,10 @@ function App() {
                 <main className="flex-grow">
                   <ErrorBoundary 
                     FallbackComponent={ErrorFallback}
-                    onReset={() => window.location.reload()}
+                    onReset={() => {
+                      // Soft reset instead of full page reload
+                      window.history.go(0);
+                    }}
                   >
                     <Suspense fallback={<div>Cargando...</div>}>
                       <Routes>

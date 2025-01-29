@@ -13,7 +13,7 @@ export const Footer = () => {
             <img src="./logo.png" 
                  alt="Logo" 
                  className="w-10 h-10 rounded-full" />
-            <span className="text-3xl font-black tracking-wider" style={{ fontFamily: "'Bebas Neue', cursive" }}>
+            <span className="text-3xl font-black tracking-wider" style={{ fontFamily: "'Poppins', sans-serif" }}>
               GATOTAKU
             </span>
           </div>
@@ -55,7 +55,7 @@ export const Footer = () => {
           </div>
           
           <div className="mt-8 text-sm text-gray-400">
-            © {new Date().getFullYear()} Gatotaku. Todos los derechos reservados.
+            {new Date().getFullYear()} Gatotaku. Todos los derechos reservados.
           </div>
         </div>
       </div>

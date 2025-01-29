@@ -14,14 +14,14 @@ const Information = () => {
 
   const handleNavigation = (path: string) => {
     // Always navigate to the full information path
-    navigate(`/information/${path}`, { replace: true });
+    navigate(`/information/${path}`);
   };
 
   // Redirect to general info if no specific route is selected
   useEffect(() => {
     const currentPath = location.pathname;
-    const isExactInformationPath = currentPath === '/information' || currentPath.startsWith('/information/');
-    if (!isExactInformationPath) {
+    const validPaths = ['/information', '/information/general', '/information/about', '/information/payment-methods', '/information/shipping', '/information/refunds', '/information/layaway'];
+    if (!validPaths.includes(currentPath)) {
       navigate('/information/general', { replace: true });
     }
   }, [location, navigate]);

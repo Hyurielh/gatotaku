@@ -1,13 +1,13 @@
 export interface Category {
   id: string;
   name: string;
-  created_at: string;
+  created_at?: string;
 }
 
 export interface Anime {
   id: string;
   name: string;
-  created_at: string;
+  created_at?: string;
 }
 
 export interface Product {
@@ -42,4 +42,5 @@ export type Filters = {
   sortBy: 'name_asc' | 'name_desc' | 'price_asc' | 'price_desc' | 'created_at';
   minPrice?: number;
   maxPrice?: number;
+  page?: number;
 };

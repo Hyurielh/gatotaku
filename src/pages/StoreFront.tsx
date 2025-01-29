@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { useInfiniteQuery, useQuery } from 'react-query';
+import { useQuery } from 'react-query';
 import { supabase } from '../lib/supabase';
 import { SEO } from '../components/SEO';
 import { SearchAndFilters } from '../components/SearchAndFilters';
@@ -34,8 +34,8 @@ export default function StoreFront() {
     <ErrorBoundary 
       FallbackComponent={StoreFrontErrorFallback}
       onReset={() => {
-        // Reset any necessary state
-        window.location.reload();
+        // Soft reset instead of full page reload
+        window.history.go(0);
       }}
     >
       <StoreFrontContent />
@@ -49,173 +49,298 @@ function StoreFrontContent() {
     category: '',
     anime: '',
     sortBy: 'name_asc',
-    minPrice: 0,
-    maxPrice: undefined
+    minPrice: undefined,
+    maxPrice: undefined,
+    page: 1
   }));
 
-  // Fetch categories and animes with products
-  const fetchCategoriesWithProducts = useCallback(async () => {
-    const { data: categoriesWithProducts } = await supabase
-      .from('categories')
-      .select(`
-        id, 
-        name, 
-        products:products(id)
-      `);
+  // Fetch categories and animes with products in a single query
+  const fetchCategoriesAndAnimes = useCallback(async () => {
+    const [categoriesResponse, animesResponse] = await Promise.all([
+      supabase
+        .from('categories')
+        .select(`
+          id, 
+          name, 
+          products:products(id)
+        `),
+      supabase
+        .from('anime')
+        .select(`
+          id, 
+          name, 
+          products:products(id)
+        `)
+    ]);
 
-    return categoriesWithProducts
+    const categoriesWithProducts = categoriesResponse.data
       ?.filter(category => category.products.length > 0)
       .map(category => ({ id: category.id, name: category.name })) || [];
-  }, []);
 
-  const fetchAnimesWithProducts = useCallback(async () => {
-    const { data: animesWithProducts } = await supabase
-      .from('anime')
-      .select(`
-        id, 
-        name, 
-        products:products(id)
-      `);
-
-    return animesWithProducts
+    const animesWithProducts = animesResponse.data
       ?.filter(anime => anime.products.length > 0)
       .map(anime => ({ id: anime.id, name: anime.name })) || [];
+
+    return { categoriesWithProducts, animesWithProducts };
   }, []);
 
-  // Memoize fetchProducts to prevent unnecessary re-renders
-  const fetchProducts = useCallback(async ({ pageParam = 1 }) => {
+  // Función auxiliar para búsqueda flexible
+  const createFlexibleSearch = async (searchTerm: string): Promise<string> => {
     try {
-      const ITEMS_PER_PAGE = 5;
+      // Limpiar y preparar el término de búsqueda
+      const cleanSearchTerm = searchTerm.trim().toLowerCase();
+      
+      // Condiciones de búsqueda
+      const searchConditions: string[] = [];
+
+      // Agregar condiciones de búsqueda
+      searchConditions.push(`name.ilike.%${cleanSearchTerm}%`);
+      searchConditions.push(`description.ilike.%${cleanSearchTerm}%`);
+      searchConditions.push(`category.ilike.%${cleanSearchTerm}%`);
+
+      // Buscar ID de anime de manera más segura
+      const { data: animeData } = await supabase
+        .from('anime')
+        .select('id')
+        .ilike('name', `%${cleanSearchTerm}%`)
+        .limit(1);  
+
+      // Si hay un anime encontrado, agregar su ID a las condiciones
+      if (animeData && animeData.length > 0) {
+        searchConditions.push(`anime_id.eq.${animeData[0].id}`);
+      }
+
+      // Devolver las condiciones como un string, o un string vacío si no hay condiciones
+      return searchConditions.length > 0 ? searchConditions.join(',') : '';
+    } catch (error) {
+      console.error('Error en búsqueda flexible:', error);
+      return '';
+    }
+  };
+
+  // Función de fetchProducts actualizada
+  const fetchProducts = useCallback(async ({ pageParam = 1 }): Promise<{ 
+    products: Product[], 
+    totalPages: number 
+  }> => {
+    try {
+      console.log('🔍 Fetching Products with Filters:', filters);
+      console.log('Price Range:', {
+        minPrice: filters.minPrice,
+        maxPrice: filters.maxPrice
+      });
+      // Calcular offset y límite
+      const from = (pageParam - 1) * 12;
+      const to = from + 12 - 1;
+
+      // Consulta base
       let query = supabase
         .from('products')
-        .select(`
-          *,
-          category_ref:categories(id, name),
-          anime:anime(id, name)
-        `, { count: 'exact' })
-        .range((pageParam - 1) * ITEMS_PER_PAGE, pageParam * ITEMS_PER_PAGE - 1);
+        .select('*, categories(id, name), anime(id, name)', { count: 'exact' });
 
-      // Enhanced search across multiple fields
-      if (filters.search) {
-        query = query.or(`
-          ilike(name, "%${filters.search}%"),
-          ilike(description, "%${filters.search}%"),
-          ilike(category_ref.name, "%${filters.search}%"),
-          ilike(anime.name, "%${filters.search}%")
-        `);
+      // Aplicar búsqueda si hay término de búsqueda
+      if (filters.search && filters.search.trim() !== '') {
+        const searchTerm = filters.search.toLowerCase().trim();
+        
+        try {
+          const searchConditions = await createFlexibleSearch(searchTerm);
+          if (searchConditions) {
+            query = query.or(searchConditions);
+          }
+        } catch (error) {
+          console.error('Error en búsqueda de productos:', error);
+        }
       }
 
-      // Apply category and anime filters
-      if (filters.category) query = query.eq('category_id', filters.category);
-      if (filters.anime) query = query.eq('anime_id', filters.anime);
+      // Aplicar filtros adicionales
+      if (filters.category && filters.category.trim() !== '') {
+        query = query.eq('category_id', filters.category);
+      }
 
-      // Price range filter
+      if (filters.anime && filters.anime.trim() !== '') {
+        query = query.eq('anime_id', filters.anime);
+      }
+
+      // Filtros de precio
       if (filters.minPrice !== undefined) {
+        console.log(`🏷️ Filtering products with price >= ${filters.minPrice}`);
         query = query.gte('price', filters.minPrice);
       }
+
       if (filters.maxPrice !== undefined) {
+        console.log(`🏷️ Filtering products with price <= ${filters.maxPrice}`);
         query = query.lte('price', filters.maxPrice);
       }
 
-      // Apply sorting
-      switch(filters.sortBy) {
-        case 'name_asc': 
-          query = query.order('name', { ascending: true }); 
-          break;
-        case 'name_desc': 
-          query = query.order('name', { ascending: false }); 
-          break;
-        case 'price_asc': 
-          query = query.order('price', { ascending: true }); 
-          break;
-        case 'price_desc': 
-          query = query.order('price', { ascending: false }); 
-          break;
-        default: 
-          query = query.order('created_at', { ascending: false });
-      }
+      // Ordenamiento
+      query = query.order(
+        filters.sortBy.split('_')[0], 
+        { ascending: filters.sortBy.endsWith('_asc') }
+      );
 
-      const { data, error, count } = await query;
+      // Ejecutar consulta con paginación
+      const { data, error, count } = await query.range(from, to);
 
       if (error) throw error;
 
+      // Calcular total de páginas
+      const totalPages = count ? Math.ceil(count / 12) : 0;
+
       return { 
         products: data || [], 
-        nextPage: data && data.length === ITEMS_PER_PAGE ? pageParam + 1 : undefined,
-        totalCount: count
+        totalPages 
       };
     } catch (error) {
-      console.error('Failed to fetch products:', error);
-      throw error;
+      console.error('🚨 Error en búsqueda de productos:', error);
+      return { products: [], totalPages: 0 };
     }
   }, [filters]);
 
-  // Fetch categories and animes with products
-  const { data: categoriesWithProducts } = useQuery(
-    'categoriesWithProducts', 
-    fetchCategoriesWithProducts
-  );
-
-  const { data: animesWithProducts } = useQuery(
-    'animesWithProducts', 
-    fetchAnimesWithProducts
-  );
-
-  // Infinite query for products
+  // Single query for categories, animes, and products
   const { 
-    data: productsData, 
-    fetchNextPage, 
-    hasNextPage, 
-    isFetchingNextPage 
-  } = useInfiniteQuery(
-    ['products', filters], 
-    fetchProducts, 
+    data: queryData, 
+    refetch,
+    isLoading,
+    error 
+  } = useQuery(
+    ['storefront-data', filters], 
+    async () => {
+      const { categoriesWithProducts, animesWithProducts } = await fetchCategoriesAndAnimes();
+      const productsData = await fetchProducts({ pageParam: filters.page || 1 });
+
+      return {
+        categoriesWithProducts,
+        animesWithProducts,
+        ...productsData
+      };
+    },
     { 
-      getNextPageParam: (lastPage) => lastPage.nextPage,
-      keepPreviousData: true
+      keepPreviousData: true,
+      staleTime: 5000,  // 5 segundos
+      cacheTime: 10000, // 10 segundos
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      refetchOnReconnect: false
     }
   );
 
-  // Memoize filter change handler
+  // Update handleFilterChange to include page property
   const handleFilterChange = useCallback((newFilters: Partial<Filters>) => {
-    setFilters(prevFilters => ({ ...prevFilters, ...newFilters }));
+    setFilters(prevFilters => {
+      const updatedFilters = { ...prevFilters, ...newFilters };
+      return updatedFilters;
+    });
   }, []);
 
-  // Flatten products for rendering
-  const flattenedProducts = useMemo(() => 
-    productsData?.pages.flatMap(page => page.products) || [], 
-    [productsData]
-  );
+  // Actualizar renderizado y manejo de páginas
+  const handlePageChange = (newPage: number) => {
+    setFilters(prev => ({ ...prev, page: newPage }));
+  };
 
-  return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <SEO 
-        title="GATOTAKU - Tu Tienda de Anime"
-        description="Descubre nuestra colección de productos de anime. Figuras, mangas, accesorios y más."
-      />
-      
-      <SearchAndFilters
-        categories={categoriesWithProducts || []}
-        animes={animesWithProducts || []}
-        currentFilters={filters}
-        onFilterChange={handleFilterChange}
-      />
-      
-      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {flattenedProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
+  const handleResetFilters = () => {
+    // Volver al estado inicial de filtros, incluyendo la primera página
+    setFilters({
+      search: '',
+      category: '',
+      anime: '',
+      sortBy: 'name_asc',
+      minPrice: undefined,
+      maxPrice: undefined,
+      page: 1  // Forzar a la primera página
+    });
+  };
+
+  // Renderizado de productos con grid responsivo de Tailwind
+  const renderProducts = () => {
+    if (isLoading) return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-orange-500"></div>
+      </div>
+    );
+
+    if (error) return (
+      <div className="text-center text-red-500 py-8">
+        Error al cargar productos
+      </div>
+    );
+
+    if (!queryData?.products.length) return (
+      <div className="text-center text-gray-500 py-8">
+        No hay productos disponibles
+      </div>
+    );
+
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4
+                    gap-2 sm:gap-3 md:gap-4 
+                    w-full px-1 sm:px-2 md:px-4">
+        {queryData.products.map(product => (
+          <ProductCard 
+            key={product.id} 
+            product={product} 
+            className="w-full h-full" 
+          />
         ))}
       </div>
+    );
+  };
+
+  // Render pagination controls
+  const renderPagination = () => {
+    const totalPages = queryData?.totalPages || 0;
+    const currentPage = filters.page || 1;
+
+    if (totalPages <= 1) return null;
+
+    return (
+      <div className="flex justify-center mt-8 space-x-2">
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map(number => (
+          <button
+            key={number}
+            onClick={() => handlePageChange(number)}
+            className={`px-4 py-2 rounded-md ${
+              currentPage === number ? 'bg-blue-500 text-white' : 'bg-gray-200'
+            }`}
+          >
+            {number}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
+  return (
+    <div className="bg-white min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <SEO 
+          title="GATOTAKU - Tu Tienda de Anime"
+          description="Descubre nuestra colección de productos de anime. Figuras, mangas, accesorios y más."
+        />
+        
+        {/* Redesigned Filter Section */}
+        <div className="mb-8 bg-gray-50 rounded-lg shadow-md p-6">
+          {isLoading ? (
+            <h1 className="text-3xl font-bold text-gray-800 border-b-2 border-orange-200 pb-2">
+              GATOTAKU
+            </h1>
+          ) : (
+            <SearchAndFilters 
+              onFilterChange={handleFilterChange}
+              currentFilters={filters}
+              categories={queryData?.categoriesWithProducts || []}
+              animes={queryData?.animesWithProducts || []}
+              onResetFilters={handleResetFilters}
+            />
+          )}
+        </div>
+        
+        {/* Product Grid */}
+        {renderProducts()}
+        
+        {/* Pagination Controls */}
+        {renderPagination()}
+      </div>
       
-      {hasNextPage && (
-        <button 
-          disabled={isFetchingNextPage}
-          onClick={() => fetchNextPage()}
-          className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
-        >
-          {isFetchingNextPage ? 'Cargando...' : 'Cargar más'}
-        </button>
-      )}
       <Cart />
     </div>
   );

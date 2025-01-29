@@ -23,7 +23,7 @@ export const Header = () => {
                  className="w-12 h-12 rounded-full" />
             <span className="ml-3 text-2xl md:text-3xl font-black tracking-wide text-white" 
                   style={{ 
-                    fontFamily: "'Bebas Neue', cursive",
+                    fontFamily: "Poppins",
                     textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)'
                   }}>
               GATOTAKU
@@ -73,7 +73,7 @@ export const Header = () => {
           <div className="md:hidden py-4">
             <div className="flex flex-col space-y-4">
               <Link to="/" className="text-white hover:text-orange-500 transition-colors" onClick={() => setIsMenuOpen(false)}>
-                Inicio
+                Catálogo
               </Link>
               <Link to="/about" className="text-white hover:text-orange-500 transition-colors" onClick={() => setIsMenuOpen(false)}>
                 Sobre Nosotros
