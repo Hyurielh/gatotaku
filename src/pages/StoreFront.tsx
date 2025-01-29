@@ -54,6 +54,26 @@ function StoreFrontContent() {
     page: 1
   }));
 
+  useEffect(() => {
+    const resetFiltersHandler = () => {
+      setFilters({
+        search: '',
+        category: '',
+        anime: '',
+        sortBy: 'name_asc',
+        minPrice: undefined,
+        maxPrice: undefined,
+        page: 1
+      });
+    };
+
+    window.addEventListener('reset-store-filters', resetFiltersHandler);
+
+    return () => {
+      window.removeEventListener('reset-store-filters', resetFiltersHandler);
+    };
+  }, []);
+
   // Fetch categories and animes with products in a single query
   const fetchCategoriesAndAnimes = useCallback(async () => {
     const [categoriesResponse, animesResponse] = await Promise.all([
@@ -124,11 +144,7 @@ function StoreFrontContent() {
     totalPages: number 
   }> => {
     try {
-      console.log('🔍 Fetching Products with Filters:', filters);
-      console.log('Price Range:', {
-        minPrice: filters.minPrice,
-        maxPrice: filters.maxPrice
-      });
+  
       // Calcular offset y límite
       const from = (pageParam - 1) * 12;
       const to = from + 12 - 1;
@@ -163,12 +179,10 @@ function StoreFrontContent() {
 
       // Filtros de precio
       if (filters.minPrice !== undefined) {
-        console.log(`🏷️ Filtering products with price >= ${filters.minPrice}`);
         query = query.gte('price', filters.minPrice);
       }
 
       if (filters.maxPrice !== undefined) {
-        console.log(`🏷️ Filtering products with price <= ${filters.maxPrice}`);
         query = query.lte('price', filters.maxPrice);
       }
 

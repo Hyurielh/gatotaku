@@ -7,8 +7,8 @@ export default defineConfig({
   server: {
     host: true,
     port: 5173,
-    strictPort: true,
-    open: true,
+    strictPort: false,  
+    open: false,        
     cors: true,
     hmr: {
       protocol: 'ws',
@@ -18,21 +18,19 @@ export default defineConfig({
     headers: {
       'Cache-Control': 'public, max-age=300, stale-while-revalidate=60',
     },
+    watch: {
+      ignored: ['**/node_modules/**', '**/.git/**'],  
+    }
   },
   preview: {
     host: true,
     port: 5173,
-    strictPort: true,
-    open: true,
+    strictPort: false,
+    open: false,
     cors: true,
-    hmr: {
-      protocol: 'ws',
-      host: 'localhost',
-      port: 5173
-    },
     headers: {
       'Cache-Control': 'public, max-age=300, stale-while-revalidate=60',
-    },
+    }
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom'],

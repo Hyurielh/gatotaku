@@ -13,11 +13,18 @@ export const Header = () => {
   const whatsappUrl = `https://wa.me/${whatsappNumber}`;
 
   return (
-    <header className="bg-black text-white">
+    <header className="bg-black text-white sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center">
+          <Link 
+            to="/" 
+            className="flex items-center"
+            onClick={() => {
+              // Dispatch a custom event to reset filters in StoreFront
+              window.dispatchEvent(new CustomEvent('reset-store-filters'));
+            }}
+          >
             <img src="./logo.png" 
                  alt="Logo" 
                  className="w-12 h-12 rounded-full" />
