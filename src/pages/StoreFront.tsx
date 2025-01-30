@@ -38,7 +38,9 @@ export default function StoreFront() {
         window.history.go(0);
       }}
     >
-      <StoreFrontContent />
+      <main className="store-front">
+        <StoreFrontContent />
+      </main>
     </ErrorBoundary>
   );
 }

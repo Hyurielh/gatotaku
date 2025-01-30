@@ -5,10 +5,36 @@
 @tailwind utilities;
 
 @layer base {
+  body {
+    position: relative;
+    @apply bg-gray-50 text-gray-900;
+    font-family: 'Quicksand', sans-serif;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+      linear-gradient(to right, rgba(0,0,0,0.1) 0%, transparent 10%, transparent 90%, rgba(0,0,0,0.1) 100%), 
+      url('https://rare-gallery.com/thumbnail/454083-manga-anime-monochrome-anime-girls-anime-boys-collage.jpg');
+    background-size: cover, cover;
+    background-position: center, center;
+    background-repeat: no-repeat, no-repeat;
+    background-attachment: fixed;
+    opacity: 0.3;
+    z-index: -1;
+    pointer-events: none;
+  }
+
   #root {
     position: relative;
     min-height: 100vh;
     width: 100%;
+    z-index: 1;
   }
 
   main {
@@ -30,13 +56,12 @@
     background-position: center, center;
     background-repeat: no-repeat, no-repeat;
     opacity: 0.7;
-    z-index: 1;
+    z-index: -1;
     pointer-events: none;
   }
 
-  body {
-    @apply bg-gray-50 text-gray-900;
-    font-family: 'Quicksand', sans-serif;
+  main.store-front::before {
+    z-index: 1;
   }
 
   h1, h2, h3, h4, h5, h6 {
