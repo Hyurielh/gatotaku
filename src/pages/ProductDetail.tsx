@@ -9,7 +9,7 @@ import { useCart } from '../context/CartContext';
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  const { addItem } = useCart();
   
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -53,10 +53,8 @@ export default function ProductDetail() {
   const handleAddToCart = () => {
     if (!product) return;
 
-    addToCart({
-      ...product,
-      quantity
-    });
+    // Agregar el producto con la cantidad especificada
+    addItem(product, quantity);
   };
 
   const handleQuantityChange = (change: number) => {
@@ -66,104 +64,101 @@ export default function ProductDetail() {
     setQuantity(newQuantity);
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-16 w-16 border-4 border-orange-500"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex justify-center items-center h-screen text-red-500">
-        <p>{error}</p>
-        <button 
-          onClick={() => navigate('/')} 
-          className="ml-4 px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600"
-        >
-          Volver al inicio
-        </button>
-      </div>
-    );
-  }
-
-  if (!product) {
-    return null;
-  }
-
   return (
-    <div className="container mx-auto px-4 py-8">
-      <SEO 
-        title={`${product.name} - GATOTAKU`} 
-        description={product.description || `Detalles del producto ${product.name}`} 
-      />
-      
-      <div className="grid md:grid-cols-2 gap-8">
-        {/* Image Section */}
-        <div>
-          <ImageCarousel 
-            images={product.images} 
-            alt={product.name} 
-          />
-        </div>
+    <div className="relative min-h-screen bg-white overflow-x-hidden">
+      <div className="w-full max-w-full px-0 py-8 relative z-10">
+        <SEO 
+          title={`GATOTAKU - ${product?.name || 'Detalle del Producto'}`}
+          description={`Detalles de ${product?.name}`}
+        />
 
-        {/* Product Info Section */}
-        <div className="space-y-4">
-          <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
-          
-          {product.anime && (
-            <p className="text-gray-600">
-              Anime: {product.anime.name}
-            </p>
-          )}
-
-          {product.category_ref && (
-            <p className="text-gray-600">
-              Categoría: {product.category_ref.name}
-            </p>
-          )}
-
-          <p className="text-2xl font-bold text-orange-500">
-            ${product.price.toFixed(2)}
-          </p>
-
-          <p className="text-gray-700">{product.description}</p>
-
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <button 
-                onClick={() => handleQuantityChange(-1)}
-                className="bg-gray-200 px-3 py-1 rounded"
-              >
-                -
-              </button>
-              <span className="text-xl">{quantity}</span>
-              <button 
-                onClick={() => handleQuantityChange(1)}
-                className="bg-gray-200 px-3 py-1 rounded"
-              >
-                +
-              </button>
-            </div>
-
+        {loading ? (
+          <div className="flex justify-center items-center min-h-[calc(100vh-200px)]">
+            <p>Cargando producto...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center text-red-500">
+            <p>{error}</p>
             <button 
-              onClick={handleAddToCart}
-              disabled={product.stock === 0}
-              className={`px-6 py-2 rounded text-white ${
-                product.stock === 0 
-                  ? 'bg-gray-400 cursor-not-allowed' 
-                  : 'bg-orange-500 hover:bg-orange-600'
-              }`}
+              onClick={() => navigate('/')} 
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
             >
-              {product.stock === 0 ? 'Sin stock' : 'Agregar al carrito'}
+              Volver a la tienda
             </button>
           </div>
+        ) : product ? (
+          <div className="grid md:grid-cols-2 gap-8 px-4 sm:px-6 lg:px-8">
+            {/* Imagen del producto */}
+            <div>
+              <ImageCarousel 
+                images={product.images} 
+                alt={`Imágenes de ${product.name}`} 
+              />
+            </div>
 
-          <p className="text-gray-500">
-            Stock disponible: {product.stock}
-          </p>
-        </div>
+            {/* Detalles del producto */}
+            <div className="p-6 rounded-lg shadow-md py-3 px-4 flex-grow flex flex-col justify-between border-t border-gray-200 bg-white/80">
+              <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
+              
+              {product.anime && (
+                <p className="text-gray-600">
+                  Anime: {product.anime.name}
+                </p>
+              )}
+
+              {product.category_ref && (
+                <p className="text-gray-600">
+                  Categoría: {product.category_ref.name}
+                </p>
+              )}
+
+              <p className="text-2xl font-bold text-orange-500">
+                ${product.price.toFixed(2)}
+              </p>
+
+              <p className="text-gray-700">{product.description}</p>
+
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <button 
+                    onClick={() => handleQuantityChange(-1)}
+                    className="bg-gray-200 px-3 py-1 rounded"
+                  >
+                    -
+                  </button>
+                  <span className="text-xl">{quantity}</span>
+                  <button 
+                    onClick={() => handleQuantityChange(1)}
+                    className="bg-gray-200 px-3 py-1 rounded"
+                  >
+                    +
+                  </button>
+                </div>
+
+                <button 
+                  onClick={handleAddToCart}
+                  disabled={product.stock === 0}
+                  className={`px-6 py-2 rounded text-white ${
+                    product.stock === 0 
+                      ? 'bg-gray-400 cursor-not-allowed' 
+                      : 'bg-orange-500 hover:bg-orange-600'
+                  }`}
+                >
+                  {product.stock === 0 ? 'Sin stock' : 'Agregar al carrito'}
+                </button>
+              </div>
+
+              <p className="text-gray-500">
+                Stock disponible: {product.stock}
+              </p>
+            </div>
+          </div>
+        ) : null}
+      </div>
+      <div className="absolute bottom-0 left-0 right-0 p-4 bg-white shadow-md">
+        <p className="text-gray-500">
+          Stock disponible: {product?.stock}
+        </p>
       </div>
     </div>
   );

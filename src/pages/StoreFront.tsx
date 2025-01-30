@@ -266,35 +266,21 @@ function StoreFrontContent() {
 
   // Renderizado de productos con grid responsivo de Tailwind
   const renderProducts = () => {
-    if (isLoading) return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-orange-500"></div>
-      </div>
-    );
-
-    if (error) return (
-      <div className="text-center text-red-500 py-8">
-        Error al cargar productos
-      </div>
-    );
-
-    if (!queryData?.products.length) return (
-      <div className="text-center text-gray-500 py-8">
-        No hay productos disponibles
-      </div>
-    );
+    if (isLoading) return <p>Cargando productos...</p>;
+    if (!queryData?.products || queryData.products.length === 0) {
+      return <p className="text-center text-gray-500">No se encontraron productos</p>;
+    }
 
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-4 lg:grid-cols-4
-                    gap-2 sm:gap-3 md:gap-4 
-                    w-full">
-        {queryData.products.map(product => (
-          <ProductCard 
-            key={product.id} 
-            product={product} 
-            className="w-full h-full" 
-          />
-        ))}
+      <div className="relative products-grid-wrapper">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {queryData.products.map((product) => (
+            <ProductCard 
+              key={product.id} 
+              product={product} 
+            />
+          ))}
+        </div>
       </div>
     );
   };
@@ -324,8 +310,8 @@ function StoreFrontContent() {
   };
 
   return (
-    <div className="bg-white min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="relative min-h-screen bg-white overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         <SEO 
           title="GATOTAKU - Tu Tienda de Anime"
           description="Descubre nuestra colección de productos de anime. Figuras, mangas, accesorios y más."
@@ -349,12 +335,18 @@ function StoreFrontContent() {
         </div>
         
         {/* Product Grid */}
-        {renderProducts()}
+        <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4">
+          {queryData?.products?.map((product) => (
+            <ProductCard 
+              key={product.id} 
+              product={product} 
+            />
+          ))}
+        </div>
         
         {/* Pagination Controls */}
         {renderPagination()}
       </div>
-      
       <Cart />
     </div>
   );

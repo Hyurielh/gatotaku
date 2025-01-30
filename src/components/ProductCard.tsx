@@ -37,7 +37,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
           />
         </div>
       </div>
-      <div className="py-3 px-4 flex-grow flex flex-col justify-between border-t border-gray-200">
+      <div className="bg-white/90 py-3 px-4 flex-grow flex flex-col justify-between border-t border-gray-200">
         <div>
           <h2 className="text-lg font-bold text-gray-900 mb-1">{product.name}</h2>
           <div className="flex gap-1 text-xs text-orange-500 mb-1">
