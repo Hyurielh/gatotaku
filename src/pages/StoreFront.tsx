@@ -287,7 +287,7 @@ function StoreFrontContent() {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-4 lg:grid-cols-4
                     gap-2 sm:gap-3 md:gap-4 
-                    w-full px-1 sm:px-2 md:px-4">
+                    w-full">
         {queryData.products.map(product => (
           <ProductCard 
             key={product.id} 

@@ -49,13 +49,9 @@ export const Footer = () => {
               <h3 className="text-lg font-semibold mb-2">Contacto</h3>
               <ul className="space-y-2">
                 <li>WhatsApp: {whatsappNumber}</li>
-                <li>Email: contacto@gatotaku.com</li>
+                <li>Email: gatotaku2022@gmail.com</li>
               </ul>
             </div>
-          </div>
-          
-          <div className="mt-8 text-sm text-gray-400">
-            {new Date().getFullYear()} Gatotaku. Todos los derechos reservados.
           </div>
         </div>
       </div>
