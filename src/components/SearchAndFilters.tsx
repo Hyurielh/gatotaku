@@ -106,11 +106,11 @@ export function SearchAndFilters({
     <div className="search-and-filters-container">
       {/* Búsqueda (siempre visible) */}
       <div className="filter-group mb-4">
-        <label htmlFor="search-input" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="search-input-desktop" className="block text-sm font-medium text-gray-700 mb-1">
           Buscar productos
         </label>
         <input 
-          id="search-input"
+          id="search-input-desktop"
           type="text" 
           placeholder="Buscar productos..." 
           value={localFilters.search || ''} 
@@ -137,11 +137,11 @@ export function SearchAndFilters({
         md:grid md:grid-cols-2 md:gap-4
       `}>
         <div className="col-span-full mb-4">
-          <label htmlFor="search-input" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="search-input-mobile" className="block text-sm font-medium text-gray-700 mb-1">
             Buscar productos
           </label>
           <input 
-            id="search-input"
+            id="search-input-mobile"
             type="text" 
             placeholder="Buscar productos..." 
             value={localFilters.search || ''} 

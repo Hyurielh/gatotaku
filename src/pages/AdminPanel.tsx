@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
+import { PostgrestError } from '@supabase/supabase-js';
 import type { Product, ProductInput, Category, Anime } from '../types/database';
 import { CategoryManager } from '../components/CategoryManager';
 import { AnimeManager } from '../components/AnimeManager';
@@ -10,7 +11,19 @@ import { convertImageToWebP, compressImage } from '../utils/imageOptimization';
 export default function AdminPanel() {
   const { session, loading: authLoading } = useAuth();
 
-  // Defensive initialization with useMemo to ensure consistent initialization
+  // Estados para búsqueda y paginación
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [page, setPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(20);
+  const [totalProducts, setTotalProducts] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<{
+    message: string;
+    details?: string;
+    code?: string;
+  } | null>(null);
+
+  // Estados existentes
   const [products, setProducts] = useState<Product[]>(() => []);
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
@@ -25,9 +38,113 @@ export default function AdminPanel() {
     stock: 0
   }));
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
+
+  const handleError = (error: any, defaultMessage: string = 'Error desconocido') => {
+    if (error instanceof PostgrestError) {
+      setError({
+        message: error.message || defaultMessage,
+        details: error.details,
+        code: error.code
+      });
+    } else if (error instanceof Error) {
+      setError({
+        message: error.message || defaultMessage,
+        details: error.stack
+      });
+    } else {
+      setError({
+        message: defaultMessage
+      });
+    }
+    console.error('Error detallado:', error);
+  };
+
+  // Función auxiliar para búsqueda flexible
+  const createFlexibleSearch = async (searchTerm: string): Promise<string> => {
+    try {
+      // Limpiar y preparar el término de búsqueda
+      const cleanSearchTerm = searchTerm.trim().toLowerCase();
+      
+      // Condiciones de búsqueda
+      const searchConditions: string[] = [];
+
+      // Agregar condiciones de búsqueda
+      searchConditions.push(`name.ilike.%${cleanSearchTerm}%`);
+      searchConditions.push(`description.ilike.%${cleanSearchTerm}%`);
+      searchConditions.push(`category.ilike.%${cleanSearchTerm}%`);
+
+      // Buscar ID de anime de manera más segura
+      const { data: animeData } = await supabase
+        .from('anime')
+        .select('id')
+        .ilike('name', `%${cleanSearchTerm}%`)
+        .limit(1);  
+
+      // Si hay un anime encontrado, agregar su ID a las condiciones
+      if (animeData && animeData.length > 0) {
+        searchConditions.push(`anime_id.eq.${animeData[0].id}`);
+      }
+
+      // Devolver las condiciones como un string, o un string vacío si no hay condiciones
+      return searchConditions.length > 0 ? searchConditions.join(',') : '';
+    } catch (error) {
+      console.error('Error en búsqueda flexible:', error);
+      return '';
+    }
+  };
+
+  // Función de búsqueda y paginación de productos
+  const fetchProducts = async () => {
+    setIsLoading(true);
+    try {
+      let query = supabase
+        .from('products')
+        .select(`
+          *,
+          category_ref:categories(id, name),
+          anime:anime(id, name)
+        `, { count: 'exact' });
+
+      // Añadir búsqueda si hay término
+      if (searchTerm.trim()) {
+        const searchTerm_lower = searchTerm.toLowerCase().trim();
+        
+        try {
+          const searchConditions = await createFlexibleSearch(searchTerm_lower);
+          if (searchConditions) {
+            query = query.or(searchConditions);
+          }
+        } catch (error) {
+          console.error('Error en búsqueda de productos:', error);
+        }
+      }
+
+      const { data, count, error } = await query
+        .range((page - 1) * pageSize, page * pageSize - 1)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        handleError(error, 'Error al cargar productos');
+        return;
+      }
+
+      setProducts(data || []);
+      setTotalProducts(count || 0);
+    } catch (error) {
+      handleError(error, 'Error inesperado al cargar productos');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Efecto para cargar productos con búsqueda y paginación
+  useEffect(() => {
+    fetchProducts();
+  }, [searchTerm, page]);
+
+  // Resto de tu código existente...
 
   // Redirect or show error if not authenticated
   if (authLoading) {
@@ -39,7 +156,6 @@ export default function AdminPanel() {
   }
 
   useEffect(() => {
-    fetchProducts();
     fetchCategories();
     fetchAnimes();
   }, []);
@@ -68,8 +184,7 @@ export default function AdminPanel() {
 
       setImageFiles(processedImages);
     } catch (error) {
-      console.error('Image processing error:', error);
-      setError('Error procesando imágenes');
+      handleError(error, 'Error procesando imágenes');
     }
   };
 
@@ -85,7 +200,7 @@ export default function AdminPanel() {
         .upload(filePath, file);
 
       if (uploadError) {
-        console.error('Upload error:', uploadError);
+        handleError(uploadError, 'Error al subir imágenes');
         throw uploadError;
       }
 
@@ -105,13 +220,13 @@ export default function AdminPanel() {
     
     // Check if categories are still loading
     if (categoriesLoading) {
-      setError('Cargando categorías, por favor espere');
+      handleError(new Error('Cargando categorías, por favor espere'));
       return;
     }
 
     // Ensure there are categories
     if (categories.length === 0) {
-      setError('No hay categorías disponibles. Cree una categoría primero.');
+      handleError(new Error('No hay categorías disponibles. Cree una categoría primero.'));
       return;
     }
 
@@ -124,8 +239,7 @@ export default function AdminPanel() {
       const selectedCategory = categories.find(cat => cat.id === selectedCategoryId);
 
       if (!selectedCategory) {
-        console.error('Invalid category selection');
-        setError('Categoría inválida. Por favor seleccione una categoría válida.');
+        handleError(new Error('Categoría inválida. Por favor seleccione una categoría válida.'));
         setIsSubmitting(false);
         return;
       }
@@ -152,29 +266,13 @@ export default function AdminPanel() {
         stock: Number(formData.stock) || 0
       };
 
-      // Extremely verbose logging
-      console.group('Product Insertion Debug');
-      console.log('Raw Form Data:', formData);
-      console.log('Selected Category:', selectedCategory);
-      console.log('Prepared Product Data:', productData);
-      
-      // Validate each field explicitly
-      Object.entries(productData).forEach(([key, value]) => {
-        console.log(`Field ${key}:`, 
-          value === null ? 'NULL' : 
-          value === undefined ? 'UNDEFINED' : 
-          value);
-      });
-      console.groupEnd();
-
       // Validate productData before submission
       const missingFields = Object.entries(productData)
         .filter(([key, value]) => value === null && key !== 'anime_id' && key !== 'description')
         .map(([key]) => key);
 
       if (missingFields.length > 0) {
-        console.error('Missing required fields:', missingFields);
-        setError(`Campos requeridos faltantes: ${missingFields.join(', ')}`);
+        handleError(new Error(`Campos requeridos faltantes: ${missingFields.join(', ')}`));
         setIsSubmitting(false);
         return;
       }
@@ -194,92 +292,70 @@ export default function AdminPanel() {
             .select();
         }
 
-        // More detailed error handling
         if (result.error) {
-          console.error('Supabase Error Object:', result.error);
-          
-          // Log full error details
-          console.error('Full Error Details:', {
-            code: result.error.code,
-            message: result.error.message,
-            details: result.error.details,
-            hint: result.error.hint
-          });
-
-          // Additional context logging
-          console.error('Product Data Sent:', JSON.stringify(productData, null, 2));
-          console.error('Categories at time of error:', JSON.stringify(categories, null, 2));
-          
-          // More specific error message
-          const errorMessage = result.error.message || 'Error desconocido al guardar producto';
-          setError(`Error guardando producto: ${errorMessage}`);
+          handleError(result.error, 'Error al guardar el producto');
           setIsSubmitting(false);
           return;
         }
 
-        // Log successful insertion
-        console.log('Product Inserted Successfully:', result.data);
-
-        // Reset form
-        setFormData({
-          name: '',
-          description: '',
-          price: '',
-          category_id: categories[0].id,
-          anime_id: '',
-          images: [''],
-          stock: 0
-        });
-        setImageFiles([]);
-        setEditingId(null);
+        // Limpiar formulario y recargar productos
+        resetForm();
         fetchProducts();
-      } catch (supabaseError) {
-        console.error('Supabase Catch Block Error:', supabaseError);
-        setError(`Error de Supabase: ${supabaseError.message}`);
+        
+        // Notificación de éxito
+        setError(null);
+        
+      } catch (unexpectedError) {
+        handleError(unexpectedError, 'Error inesperado al guardar el producto');
       }
-    } catch (error) {
-      console.error('Unexpected Error submitting product:', error);
-      setError('Error inesperado al guardar el producto');
+    } catch (validationError) {
+      handleError(validationError, 'Error de validación');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  async function fetchProducts() {
-    const { data, error } = await supabase
-      .from('products')
-      .select(`
-        *,
-        category_ref:categories(id, name),
-        anime:anime(id, name)
-      `)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error al cargar productos:', error);
-      setError('Error al cargar los productos');
-      return;
-    }
-
-    setProducts(data || []);
-  }
+  // Función para resetear el formulario
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      price: '',
+      category_id: categories[0]?.id || '',
+      anime_id: '',
+      description: '',
+      images: [''],
+      stock: 0
+    });
+    setEditingId(null);
+    setImageFiles([]);
+  };
 
   async function fetchCategories() {
     setCategoriesLoading(true);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('categories')
       .select('*')
       .order('name');
-    setCategories(data || []);
+
+    if (error) {
+      handleError(error, 'Error al cargar categorías');
+    } else {
+      setCategories(data || []);
+    }
     setCategoriesLoading(false);
   }
 
   async function fetchAnimes() {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('anime')
       .select('*')
       .order('name');
-    setAnimes(data || []);
+
+    if (error) {
+      handleError(error, 'Error al cargar animes');
+    } else {
+      setAnimes(data || []);
+    }
   }
 
   async function handleDelete(id: string) {
@@ -291,11 +367,13 @@ export default function AdminPanel() {
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
-      fetchProducts();
+      if (error) {
+        handleError(error, 'Error al eliminar el producto');
+      } else {
+        fetchProducts();
+      }
     } catch (err: any) {
-      console.error('Error al eliminar:', err);
-      setError(err.message || 'Error al eliminar el producto');
+      handleError(err, 'Error al eliminar el producto');
     }
   }
 
@@ -327,6 +405,22 @@ export default function AdminPanel() {
     setFormData({ ...formData, images: newImages });
   }
 
+  const renderErrorDetails = () => {
+    if (!error) return null;
+    return (
+      <div className="error-details">
+        <p className="error-message">{error.message}</p>
+        {error.details && (
+          <details>
+            <summary>Detalles del error</summary>
+            <pre>{error.details}</pre>
+          </details>
+        )}
+        {error.code && <p>Código de error: {error.code}</p>}
+      </div>
+    );
+  };
+
   return (
     <div className="admin-panel">
       <SEO 
@@ -344,7 +438,7 @@ export default function AdminPanel() {
         
         {error && (
           <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-            {error}
+            {renderErrorDetails()}
           </div>
         )}
         
@@ -511,6 +605,19 @@ export default function AdminPanel() {
           </div>
         </form>
 
+        <div className="search-bar mb-4 flex items-center space-x-4">
+          <input 
+            type="text" 
+            placeholder="Buscar productos..." 
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setPage(1); // Reiniciar página al buscar
+            }}
+            className="flex-grow p-2 border rounded-md"
+          />
+        </div>
+
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -592,6 +699,26 @@ export default function AdminPanel() {
               ))}
             </tbody>
           </table>
+        </div>
+
+        <div className="pagination flex justify-center items-center space-x-4 mt-4">
+          <button 
+            onClick={() => setPage(page - 1)} 
+            disabled={page === 1}
+            className="px-4 py-2 bg-orange-500 text-white rounded-md disabled:opacity-50"
+          >
+            Anterior
+          </button>
+          <span className="text-gray-700">
+            Página {page} de {Math.ceil(totalProducts / pageSize)}
+          </span>
+          <button 
+            onClick={() => setPage(page + 1)} 
+            disabled={page * pageSize >= totalProducts}
+            className="px-4 py-2 bg-orange-500 text-white rounded-md disabled:opacity-50"
+          >
+            Siguiente
+          </button>
         </div>
       </div>
     </div>

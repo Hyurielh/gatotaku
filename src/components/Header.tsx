@@ -1,12 +1,25 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { FaShoppingCart, FaWhatsapp, FaBars, FaTimes } from 'react-icons/fa';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { FaShoppingCart, FaWhatsapp, FaBars, FaTimes, FaSignOutAlt, FaUserShield } from 'react-icons/fa';
+import { useAuth } from '../context/AuthContext';
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { session, logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
   };
 
   const whatsappNumber = "+50578364365";
@@ -64,6 +77,20 @@ export const Header = () => {
             <Link to="/cart" className="hover:text-orange-500 transition-colors">
               <FaShoppingCart className="text-2xl" />
             </Link>
+            {session && (
+              <Link to="/admin" className="hover:text-orange-500 transition-colors">
+                <FaUserShield className="text-2xl" />
+              </Link>
+            )}
+            {location.pathname === '/admin' && session && (
+              <button 
+                onClick={handleLogout} 
+                className="hover:text-orange-500 transition-colors flex items-center"
+                title="Cerrar sesión"
+              >
+                <FaSignOutAlt className="text-2xl" />
+              </button>
+            )}
           </nav>
 
           {/* Mobile menu button */}
@@ -96,6 +123,25 @@ export const Header = () => {
                 <FaWhatsapp className="mr-2" />
                 WhatsApp
               </a>
+              {session && (
+                <Link 
+                  to="/admin" 
+                  className="text-white hover:text-orange-500 transition-colors flex items-center"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <FaUserShield className="mr-2" />
+                  Panel de Admin
+                </Link>
+              )}
+              {location.pathname === '/admin' && session && (
+                <button 
+                  onClick={handleLogout} 
+                  className="text-white hover:text-orange-500 transition-colors flex items-center"
+                >
+                  <FaSignOutAlt className="mr-2" />
+                  Cerrar Sesión
+                </button>
+              )}
             </div>
           </div>
         )}

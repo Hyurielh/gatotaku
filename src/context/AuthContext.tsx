@@ -5,16 +5,32 @@ import { supabase } from '../lib/supabase';
 interface AuthContextType {
   session: Session | null;
   loading: boolean;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
+  logout: async () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const logout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Error al cerrar sesión:', error);
+        throw error;
+      }
+      setSession(null);
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+      throw error;
+    }
+  };
 
   useEffect(() => {
     // Obtener sesión inicial
@@ -43,7 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ session, loading }}>
+    <AuthContext.Provider value={{ session, loading, logout }}>
       {children}
     </AuthContext.Provider>
   );
