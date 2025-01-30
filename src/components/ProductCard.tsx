@@ -51,7 +51,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
         </div>
         <button 
           onClick={() => addItem(product)}
-          className="w-full bg-black text-white py-1 px-2 rounded-md hover:bg-gray-900 transition-colors flex items-center justify-center gap-1 text-xs"
+          className="w-full bg-black text-white py-2 px-2 rounded-md hover:bg-gray-900 transition-colors flex items-center justify-center gap-1"
           aria-label={`Agregar ${product.name} al carrito`}
         >
           <ShoppingCart size={16} />

@@ -144,10 +144,11 @@ function StoreFrontContent() {
     totalPages: number 
   }> => {
     try {
-  
-      // Calcular offset y límite
-      const from = (pageParam - 1) * 12;
-      const to = from + 12 - 1;
+      // Determinar el límite de productos según el tamaño de pantalla
+      const isMobile = window.innerWidth < 768; // Breakpoint típico para móvil
+      const productsPerPage = isMobile ? 6 : 12;
+      const from = (pageParam - 1) * productsPerPage;
+      const to = from + productsPerPage - 1;
 
       // Consulta base
       let query = supabase
@@ -198,7 +199,7 @@ function StoreFrontContent() {
       if (error) throw error;
 
       // Calcular total de páginas
-      const totalPages = count ? Math.ceil(count / 12) : 0;
+      const totalPages = count ? Math.ceil(count / productsPerPage) : 0;
 
       return { 
         products: data || [], 
@@ -284,7 +285,7 @@ function StoreFrontContent() {
     );
 
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4
+      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-4 lg:grid-cols-4
                     gap-2 sm:gap-3 md:gap-4 
                     w-full px-1 sm:px-2 md:px-4">
         {queryData.products.map(product => (
