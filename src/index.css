@@ -43,21 +43,22 @@
   }
 
   main::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: 
-      linear-gradient(to right, rgba(0,0,0,0.1) 0%, transparent 10%, transparent 90%, rgba(0,0,0,0.1) 100%), 
-      url('https://rare-gallery.com/thumbnail/454083-manga-anime-monochrome-anime-girls-anime-boys-collage.jpg');
-    background-size: cover, cover;
-    background-position: center, center;
-    background-repeat: no-repeat, no-repeat;
-    opacity: 0.7;
-    z-index: -1;
-    pointer-events: none;
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: 
+        linear-gradient(to right, rgba(0,0,0,0.1) 0%, transparent 10%, transparent 90%, rgba(0,0,0,0.1) 100%), 
+        url('./background.jpg');
+      background-size: cover, cover;
+      background-position: center, center;
+      background-repeat: no-repeat, no-repeat;
+      opacity: 0.7;
+      z-index: -1;
+      pointer-events: none;
+      will-change: opacity; /* Mejora el rendimiento */
   }
 
   main.store-front::before {

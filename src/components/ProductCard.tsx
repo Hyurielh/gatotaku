@@ -27,7 +27,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
 
   return (
     <div className={[className, "product-card border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col h-full"].filter(Boolean).join(' ')} >
-      <div className="w-full aspect-square">
+      <div className="w-full aspect-square bg-[#c8cdcc]">
         <div className="w-full h-full object-cover">
           <ImageCarousel 
             images={validImages} 

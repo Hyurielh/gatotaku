@@ -32,7 +32,11 @@ export function SearchAndFilters({
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   const handleFilterChange = (newFilters: Partial<Filters>) => {
-    const updatedFilters = { ...currentFilters, ...newFilters };
+    const updatedFilters = { 
+      ...currentFilters, 
+      ...newFilters,
+      page: 1  // Siempre resetear a la primera página cuando se cambia un filtro
+    };
     setLocalFilters(updatedFilters);
     onFilterChange(updatedFilters);
   };
@@ -136,21 +140,6 @@ export function SearchAndFilters({
         ${isMobileFilterOpen ? 'grid' : 'hidden'} 
         md:grid md:grid-cols-2 md:gap-4
       `}>
-        <div className="col-span-full mb-4">
-          <label htmlFor="search-input-mobile" className="block text-sm font-medium text-gray-700 mb-1">
-            Buscar productos
-          </label>
-          <input 
-            id="search-input-mobile"
-            type="text" 
-            placeholder="Buscar productos..." 
-            value={localFilters.search || ''} 
-            onChange={handleSearchChange}
-            aria-label="Buscar productos por nombre o descripción"
-            className="block w-full p-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
-          />
-        </div>
-
         <div className="md:flex md:space-x-4 md:col-span-2">
           <div className="filter-group flex-1">
             <label htmlFor="category-select" className="block text-sm font-medium text-gray-700 mb-1">
@@ -171,7 +160,6 @@ export function SearchAndFilters({
               ))}
             </select>
           </div>
-
           <div className="filter-group flex-1 ">
             <label htmlFor="anime-select" className="block text-sm font-medium text-gray-700 mb-1">
               Anime

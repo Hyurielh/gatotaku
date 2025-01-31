@@ -330,6 +330,29 @@ export default function AdminPanel() {
     setImageFiles([]);
   };
 
+  // Añadir nueva función de copiar producto
+  const handleCopyProduct = (product: Product) => {
+    // Resetear el estado de edición
+    setEditingId(null);
+
+    // Copiar los datos del producto al formulario
+    setFormData({
+      name: `${product.name} (Copia)`,
+      price: product.price.toString(),
+      category_id: product.category_id || '',
+      anime_id: product.anime_id || '',
+      description: product.description || '',
+      images: product.images || [''],
+      stock: product.stock || 0
+    });
+
+    // Opcional: Desplazar la vista hacia el formulario
+    const formElement = document.getElementById('product-form');
+    if (formElement) {
+      formElement.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   async function fetchCategories() {
     setCategoriesLoading(true);
     const { data, error } = await supabase
@@ -442,7 +465,7 @@ export default function AdminPanel() {
           </div>
         )}
         
-        <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md mb-8">
+        <form onSubmit={handleSubmit} id="product-form" className="bg-white p-6 rounded-lg shadow-md mb-8">
           <h2 className="text-xl font-semibold mb-4">
             {editingId ? 'Editar Producto' : 'Nuevo Producto'}
           </h2>
@@ -686,6 +709,13 @@ export default function AdminPanel() {
                       aria-label="Editar producto"
                     >
                       <i className="fas fa-edit"></i>
+                    </button>
+                    <button
+                      onClick={() => handleCopyProduct(product)}
+                      className="text-green-600 hover:text-green-900 mr-4"
+                      aria-label="Copiar producto"
+                    >
+                      <i className="fas fa-copy"></i>
                     </button>
                     <button
                       onClick={() => handleDelete(product.id)}
