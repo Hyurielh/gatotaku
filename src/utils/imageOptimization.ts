@@ -1,5 +1,70 @@
 // Browser-compatible image optimization utilities
 
+// Función para generar srcset para diferentes tamaños de imagen
+export function generateWebPSrcset(images: string[]): string[] {
+  const sizes = [400, 800, 1200];
+  
+  return images.map(src => {
+    return sizes.map(size => {
+      // Devolver el mismo src para todos los tamaños
+      return `${src} ${size}w`;
+    }).join(', ');
+  });
+}
+
+// Función para manejar conversión de WebP
+export function convertToWebP(src: string): string {
+  // Si ya es WebP, devolverlo
+  if (src.toLowerCase().endsWith('.webp')) {
+    return src;
+  }
+
+  // Si no es WebP, devolver la imagen original
+  return src;
+}
+
+// Función para optimizar imágenes
+export function optimizeImage(
+  src: string, 
+  options: { 
+    maxWidth?: number, 
+    quality?: number, 
+    format?: 'webp' | 'jpeg' | 'png' 
+  } = {}
+): string {
+  const { 
+    maxWidth = 1200, 
+    quality = 80, 
+    format = 'webp' 
+  } = options;
+
+  // Construcción de URL de Imgix con parámetros de optimización
+  const url = new URL(src);
+  
+  // Parámetros de Imgix para optimización
+  const imgixParams = new URLSearchParams({
+    w: maxWidth.toString(),      // Ancho máximo
+    q: quality.toString(),        // Calidad
+    fm: format,                   // Formato
+    fit: 'max',                   // Ajuste de imagen
+    auto: 'compress,format'       // Compresión y conversión automática
+  });
+
+  // Agregar parámetros de Imgix a la URL
+  url.search = imgixParams.toString();
+
+  return url.toString();
+}
+
+// Función para generar placeholder de baja resolución
+export function generateLowResPlaceholder(src: string): string {
+  // En un escenario real, generarías un placeholder de baja resolución
+  // Podrías usar técnicas como:
+  // - Base64 encoding de una versión muy pequeña de la imagen
+  // - Generar un color promedio
+  return `data:image/svg+xml;charset=utf-8,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox%3D'0 0 1 1'%3E%3Cfilter id%3D'blur' filterUnits%3D'userSpaceOnUse' color-interpolation-filters%3D'sRGB'%3E%3CfeGaussianBlur stdDeviation%3D'10'%2F%3E%3C%2Ffilter%3E%3Cimage x%3D'0' y%3D'0' width%3D'100%25' height%3D'100%25' preserveAspectRatio%3D'none' href%3D'${src}' filter%3D'url(%23blur)'%2F%3E%3C%2Fsvg%3E`;
+}
+
 export async function convertImageToWebP(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -39,7 +104,7 @@ export async function convertImageToWebP(file: File): Promise<string> {
   });
 }
 
-export function generateWebPSrcset(imageUrls: string | string[]): string[] {
+export function generateWebPSrcsetOld(imageUrls: string | string[]): string[] {
   // Normalize input to an array
   const urls = Array.isArray(imageUrls) ? imageUrls : [imageUrls];
 

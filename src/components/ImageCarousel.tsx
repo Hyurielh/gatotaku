@@ -1,11 +1,17 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface ImageCarouselProps {
-  images: (string | { src: string; srcSet?: string })[];
+  images: (string | { 
+    src: string; 
+    srcSet?: string; 
+    webp?: string 
+  })[];
   alt: string;
   srcSet?: string;
   loading?: 'lazy' | 'eager';
   className?: string;
+  imageRefs?: (refs: (HTMLImageElement | null)[]) => void;
+  onFullyLoaded?: () => void;
 }
 
 export function ImageCarousel({ 
@@ -13,63 +19,77 @@ export function ImageCarousel({
   alt, 
   srcSet, 
   loading = 'lazy', 
-  className 
+  className = '', 
+  imageRefs,
+  onFullyLoaded
 }: ImageCarouselProps) {
   // Ensure images is always an array with a fallback
-  const safeImages = useMemo(() => 
-    Array.isArray(images) && images.length > 0 
-      ? images.map((image, index) => {
-          // Normalize image to always be an object
-          if (typeof image === 'string') {
-            return { 
-              src: image, 
-              srcSet: `${image} 320w, ${image} 640w, ${image} 1024w, ${image} 1920w`
-            };
-          }
-          
-          // If already an object but no srcSet, generate a default
-          if (!image.srcSet) {
-            return { 
-              ...image, 
-              srcSet: `${image.src} 320w, ${image.src} 640w, ${image.src} 1024w, ${image.src} 1920w`
-            };
-          }
-          
-          return image;
-        })
-      : [{ 
-          src: 'https://via.placeholder.com/400x400?text=No+Image', 
-          srcSet: 'https://via.placeholder.com/400x400?text=No+Image 320w' 
-        }]
-  , [images]);
+  const safeImages = React.useMemo(() => {
+    if (!images || images.length === 0) {
+      return ['https://via.placeholder.com/400x400?text=No+Image'];
+    }
+    return images;
+  }, [images]);
 
-  // State for current image index and load errors
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageLoadErrors, setImageLoadErrors] = useState<number[]>([]);
+  const imageElementRefs = useRef<(HTMLImageElement | null)[]>([]);
 
   // Reset index when images change
   useEffect(() => {
     setCurrentImageIndex(0);
-    setImageLoadErrors([]);
   }, [safeImages]);
 
-  // Memoized navigation handlers
-  const handleNext = useCallback(() => {
-    setCurrentImageIndex(prev => {
-      return prev === safeImages.length - 1 ? 0 : prev + 1;
+  // Precarga de imágenes para reducir tirones
+  useEffect(() => {
+    safeImages.forEach(src => {
+      const img = new Image();
+      img.src = typeof src === 'string' ? src : src.src;
     });
   }, [safeImages]);
 
-  const handlePrev = useCallback(() => {
-    setCurrentImageIndex(prev => {
-      return prev === 0 ? safeImages.length - 1 : prev - 1;
+  // Manejar errores de carga de imagen
+  const handleImageError = (index: number) => {
+    setImageLoadErrors(prev => {
+      if (!prev.includes(index)) {
+        return [...prev, index];
+      }
+      return prev;
     });
-  }, [safeImages]);
+  };
 
-  // Handle image load errors
-  const handleImageError = useCallback((index: number) => {
-    setImageLoadErrors(prev => [...prev, index]);
-  }, [safeImages]);
+  // Manejar carga completa de imagen
+  const handleImageLoad = (index: number) => {
+    // Llamar al callback de carga completa si está definido
+    if (onFullyLoaded) {
+      onFullyLoaded();
+    }
+  };
+
+  // Manejar cambio manual de imagen
+  const handleImageChange = (index: number) => {
+    setCurrentImageIndex(index);
+  };
+
+  // Manejar navegación con flechas
+  const handlePrevImage = () => {
+    setCurrentImageIndex((prevIndex) => 
+      prevIndex === 0 ? safeImages.length - 1 : prevIndex - 1
+    );
+  };
+
+  const handleNextImage = () => {
+    setCurrentImageIndex((prevIndex) => 
+      (prevIndex + 1) % safeImages.length
+    );
+  };
+
+  // Pasar referencias de imágenes al padre si se proporciona
+  useEffect(() => {
+    if (imageRefs) {
+      imageRefs(imageElementRefs.current);
+    }
+  }, [safeImages, imageRefs]);
 
   // Render method with careful styling
   return (
@@ -77,72 +97,83 @@ export function ImageCarousel({
       className={`${className} relative w-full h-full overflow-hidden`}
       onClick={(e) => e.stopPropagation()}
     >
+      {/* Botón de imagen anterior */}
+      {safeImages.length > 1 && (
+        <button 
+          onClick={handlePrevImage}
+          className="absolute left-0 top-1/2 transform -translate-y-1/2 z-20 w-16 h-16 flex items-center justify-center"
+        >
+          <div className="bg-orange-500/70 hover:bg-orange-600/80 rounded-full w-12 h-12 flex items-center justify-center shadow-lg transition-all duration-300">
+            <span className="text-white text-3xl font-bold transform -translate-x-0.5">
+              ‹
+            </span>
+          </div>
+        </button>
+      )}
+
+      {/* Botón de siguiente imagen */}
+      {safeImages.length > 1 && (
+        <button 
+          onClick={handleNextImage}
+          className="absolute right-0 top-1/2 transform -translate-y-1/2 z-20 w-16 h-16 flex items-center justify-center"
+        >
+          <div className="bg-orange-500/70 hover:bg-orange-600/80 rounded-full w-12 h-12 flex items-center justify-center shadow-lg transition-all duration-300">
+            <span className="text-white text-3xl font-bold transform translate-x-0.5">
+              ›
+            </span>
+          </div>
+        </button>
+      )}
+
       <div className="absolute inset-0 grid grid-cols-1 grid-rows-1">
         {safeImages.map((image, index) => {
+          const src = typeof image === 'string' ? image : image.src;
           const isCurrentImage = index === currentImageIndex;
-          const hasLoadError = imageLoadErrors.includes(index);
+          const isErrored = imageLoadErrors.includes(index);
 
           return (
             <div
-              key={`${image.src}-${index}`}
+              key={`${src}-${index}`}
               className={`
-                absolute inset-0 transition-all duration-500 ease-in-out
+                absolute inset-0 transition-opacity duration-300
                 ${isCurrentImage 
-                  ? 'opacity-100 z-10 visible' 
-                  : 'opacity-0 z-0 invisible'}
-                ${hasLoadError ? 'hidden' : ''}
+                  ? 'opacity-100 pointer-events-auto' 
+                  : 'opacity-0 pointer-events-none'}
               `}
             >
-              <img
-                key={`img-${index}`}
-                src={image.src}
-                alt={`${alt} - Image ${index + 1}`}
-                srcSet={image.srcSet}
-                loading={loading}
-                onError={() => handleImageError(index)}
-                className="w-full h-full object-cover"
-              />
+              <picture>
+                {typeof image === 'object' && image.webp && (
+                  <source srcSet={image.webp} type="image/webp" />
+                )}
+                <img
+                  ref={(el) => imageElementRefs.current[index] = el}
+                  src={isErrored 
+                    ? 'https://via.placeholder.com/400x400?text=Image+Error' 
+                    : src}
+                  alt={`${alt} - imagen ${index + 1}`}
+                  srcSet={typeof image === 'object' ? image.srcSet : undefined}
+                  loading={loading}
+                  onError={() => handleImageError(index)}
+                  onLoad={() => handleImageLoad(index)}
+                  className="w-full h-full object-cover absolute inset-0 transform scale-100"
+                />
+              </picture>
             </div>
           );
         })}
       </div>
 
-      {/* Navigation Buttons */}
+      {/* Indicadores de imagen */}
       {safeImages.length > 1 && (
-        <>
-          <button
-            onClick={handlePrev}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-orange-500 transition-colors z-20"
-            aria-label="Previous Image"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <button
-            onClick={handleNext}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-orange-500 transition-colors z-20"
-            aria-label="Next Image"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </>
-      )}
-
-      {/* Indicator Dots */}
-      {safeImages.length > 1 && (
-        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
+        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2">
           {safeImages.map((_, index) => (
             <button
-              key={`dot-${index}`}
-              onClick={() => setCurrentImageIndex(index)}
+              key={index}
+              onClick={() => handleImageChange(index)}
               className={`
                 w-2 h-2 rounded-full transition-colors duration-300
                 ${index === currentImageIndex ? 'bg-orange-500' : 'bg-gray-300'}
               `}
-              aria-label={`Go to image ${index + 1}`}
             />
           ))}
         </div>
@@ -150,3 +181,5 @@ export function ImageCarousel({
     </div>
   );
 }
+
+export default ImageCarousel;

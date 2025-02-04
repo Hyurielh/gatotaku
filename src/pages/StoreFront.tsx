@@ -5,7 +5,6 @@ import { supabase } from '../lib/supabase';
 import { SEO } from '../components/SEO';
 import { SearchAndFilters } from '../components/SearchAndFilters';
 import { ProductCard } from '../components/ProductCard';
-import { Cart } from '../components/Cart';
 import type { Product, Category, Anime, Filters } from '../types/database';
 import { ErrorBoundary } from 'react-error-boundary';
 
@@ -287,26 +286,75 @@ function StoreFrontContent() {
     );
   };
 
-  // Render pagination controls
   const renderPagination = () => {
     const totalPages = queryData?.totalPages || 0;
     const currentPage = filters.page || 1;
 
     if (totalPages <= 1) return null;
 
+    // Lógica para calcular las 5 páginas a mostrar
+    const getPageNumbers = () => {
+      const maxVisiblePages = 5;
+      
+      // Casos especiales para las primeras 3 y últimas 3 páginas
+      if (currentPage <= 3) {
+        return Array.from({ length: Math.min(maxVisiblePages, totalPages) }, (_, i) => i + 1);
+      }
+      
+      if (currentPage >= totalPages - 2) {
+        return Array.from({ length: maxVisiblePages }, (_, i) => totalPages - maxVisiblePages + i + 1);
+      }
+      
+      // Caso general: centrar la página actual
+      return [
+        currentPage - 2,
+        currentPage - 1,
+        currentPage,
+        currentPage + 1,
+        currentPage + 2
+      ];
+    };
+
+    const pageNumbers = getPageNumbers();
+
     return (
-      <div className="flex justify-center mt-8 space-x-2">
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map(number => (
-          <button
-            key={number}
-            onClick={() => handlePageChange(number)}
-            className={`px-4 py-2 rounded-md ${
-              currentPage === number ? 'bg-blue-500 text-white' : 'bg-gray-200'
-            }`}
+      <div className="fixed bottom-0 left-0 right-0 flex justify-center items-center p-4 z-50">
+        <div className="flex items-center space-x-2">
+          {/* Botón de página anterior */}
+          <button 
+            onClick={() => handlePageChange(currentPage - 1)} 
+            disabled={currentPage === 1}
+            className="px-3 py-2 rounded-md disabled:opacity-50 transition-colors"
           >
-            {number}
+            ←
           </button>
-        ))}
+
+          {/* Números de página */}
+          {pageNumbers.map(number => (
+            <button
+              key={number}
+              onClick={() => handlePageChange(number)}
+              className={`px-4 py-2 rounded-md transition-all duration-150 ease-in-out ${
+                currentPage === number 
+                  ? 'bg-blue-500 text-white transform scale-110' 
+                  : 'bg-gray-200 hover:bg-blue-100'
+              } ${
+                number < 1 || number > totalPages ? 'hidden' : ''
+              }`}
+            >
+              {number}
+            </button>
+          ))}
+
+          {/* Botón de página siguiente */}
+          <button 
+            onClick={() => handlePageChange(currentPage + 1)} 
+            disabled={currentPage === totalPages}
+            className="px-3 py-2 rounded-md disabled:opacity-50 transition-colors"
+          >
+            →
+          </button>
+        </div>
       </div>
     );
   };
@@ -337,19 +385,26 @@ function StoreFrontContent() {
         </div>
         
         {/* Product Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4">
-          {queryData?.products?.map((product) => (
-            <ProductCard 
+        <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4 transition-all duration-300 ease-in-out transform">
+          {queryData?.products?.map((product, index) => (
+            <div 
               key={product.id} 
-              product={product} 
-            />
+              className="transition-all duration-300"
+              style={{ 
+                transitionDelay: `${index * 50}ms`,
+                willChange: 'transform, opacity'
+              }}
+            >
+              <ProductCard 
+                product={product} 
+              />
+            </div>
           ))}
         </div>
         
         {/* Pagination Controls */}
         {renderPagination()}
       </div>
-      <Cart />
     </div>
   );
 }

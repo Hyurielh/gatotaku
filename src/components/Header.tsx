@@ -26,7 +26,7 @@ export const Header = () => {
   const whatsappUrl = `https://wa.me/${whatsappNumber}`;
 
   return (
-    <header className="bg-black text-white sticky top-0 z-50">
+    <header className="bg-black text-white fixed top-0 left-0 right-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -52,40 +52,37 @@ export const Header = () => {
 
           {/* Desktop Menu */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="relative group">
-              <span className="hover:text-gray-300">Catálogo</span>
+            <Link to="/" className="menu-desktop-link group">
+              <span>Catálogo</span>
               <span className="absolute bottom-0 left-0 w-full h-0.5 bg-orange-500 transform scale-x-0 transition-transform group-hover:scale-x-100"></span>
             </Link>
-            <Link to="/about" className="relative group">
-              <span className="hover:text-gray-300">Sobre Nosotros</span>
+            <Link to="/about" className="menu-desktop-link group">
+              <span>Sobre Nosotros</span>
               <span className="absolute bottom-0 left-0 w-full h-0.5 bg-orange-500 transform scale-x-0 transition-transform group-hover:scale-x-100"></span>
             </Link>
-            <Link to="/information" className="relative group">
-              <span className="hover:text-gray-300">Información</span>
+            <Link to="/information" className="menu-desktop-link group">
+              <span>Información</span>
               <span className="absolute bottom-0 left-0 w-full h-0.5 bg-orange-500 transform scale-x-0 transition-transform group-hover:scale-x-100"></span>
             </Link>
             <a href={whatsappUrl} 
                target="_blank" 
                rel="noopener noreferrer" 
-               className="relative group flex items-center">
+               className="relative group flex items-center font-baloo">
               <span className="hover:text-gray-300 flex items-center">
                 <FaWhatsapp className="mr-2" />
                 WhatsApp
               </span>
               <span className="absolute bottom-0 left-0 w-full h-0.5 bg-orange-500 transform scale-x-0 transition-transform group-hover:scale-x-100"></span>
             </a>
-            <Link to="/cart" className="hover:text-orange-500 transition-colors">
-              <FaShoppingCart className="text-2xl" />
-            </Link>
             {session && (
-              <Link to="/admin" className="hover:text-orange-500 transition-colors">
+              <Link to="/admin" className="hover:text-orange-500 transition-colors font-baloo">
                 <FaUserShield className="text-2xl" />
               </Link>
             )}
             {location.pathname === '/admin' && session && (
               <button 
                 onClick={handleLogout} 
-                className="hover:text-orange-500 transition-colors flex items-center"
+                className="hover:text-orange-500 transition-colors flex items-center font-baloo"
                 title="Cerrar sesión"
               >
                 <FaSignOutAlt className="text-2xl" />
@@ -106,19 +103,19 @@ export const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden py-4">
             <div className="flex flex-col space-y-4">
-              <Link to="/" className="text-white hover:text-orange-500 transition-colors" onClick={() => setIsMenuOpen(false)}>
-                Catálogo
+              <Link to="/" className="menu-mobile-link" onClick={() => setIsMenuOpen(false)}>
+                Catálogo
               </Link>
-              <Link to="/about" className="text-white hover:text-orange-500 transition-colors" onClick={() => setIsMenuOpen(false)}>
+              <Link to="/about" className="menu-mobile-link" onClick={() => setIsMenuOpen(false)}>
                 Sobre Nosotros
               </Link>
-              <Link to="/information" className="text-white hover:text-orange-500 transition-colors" onClick={() => setIsMenuOpen(false)}>
+              <Link to="/information" className="menu-mobile-link" onClick={() => setIsMenuOpen(false)}>
                 Información
               </Link>
               <a href={whatsappUrl} 
                  target="_blank" 
                  rel="noopener noreferrer" 
-                 className="text-white hover:text-orange-500 transition-colors flex items-center"
+                 className="menu-mobile-icon"
                  onClick={() => setIsMenuOpen(false)}>
                 <FaWhatsapp className="mr-2" />
                 WhatsApp
@@ -126,17 +123,17 @@ export const Header = () => {
               {session && (
                 <Link 
                   to="/admin" 
-                  className="text-white hover:text-orange-500 transition-colors flex items-center"
+                  className="menu-mobile-icon"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <FaUserShield className="mr-2" />
-                  Panel de Admin
+                  Admin
                 </Link>
               )}
               {location.pathname === '/admin' && session && (
                 <button 
                   onClick={handleLogout} 
-                  className="text-white hover:text-orange-500 transition-colors flex items-center"
+                  className="menu-mobile-icon"
                 >
                   <FaSignOutAlt className="mr-2" />
                   Cerrar Sesión

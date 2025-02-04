@@ -1,40 +1,25 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Baloo:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 
 @layer base {
   body {
     position: relative;
     @apply bg-gray-50 text-gray-900;
     font-family: 'Quicksand', sans-serif;
+    overflow-x: hidden;
+    overscroll-behavior-y: none;
+    scroll-behavior: smooth; 
   }
-
-  main::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: 
-      linear-gradient(to right, rgba(0,0,0,0.1) 0%, transparent 10%, transparent 90%, rgba(0,0,0,0.1) 100%), 
-      url(/background.jpg);
-    background-size: cover, cover;
-    background-position: center, center;
-    background-repeat: no-repeat, no-repeat;
-    background-attachment: fixed;
-    opacity: 0.3;
-    z-index: -1;
-    pointer-events: none;
-  }
-
   #root {
     position: relative;
     min-height: 100vh;
     width: 100%;
     z-index: 1;
+    overflow: hidden; /* Prevenir desbordamientos */
   }
 
   main {
@@ -50,19 +35,9 @@
     font-family: 'Poppins', sans-serif;
     @apply font-semibold tracking-tight text-gray-800;
   }
-}
 
-@layer components {
-  .nav-link {
-    @apply p-3 rounded-lg flex items-center space-x-2 transition-all duration-300 hover:bg-orange-50 hover:text-orange-600 hover:shadow-sm;
-  }
-
-  .nav-link.active {
-    @apply bg-orange-100 text-orange-600 font-medium shadow-sm;
-  }
-
-  .card {
-    @apply bg-white p-6 rounded-lg shadow-md border-l-4 border-orange-500 hover:shadow-lg transition-all duration-300;
+  .font-baloo {
+    font-family: 'Baloo', cursive;
   }
 
   .section-title {
@@ -76,17 +51,46 @@
   .list-item {
     @apply flex items-center space-x-3 text-gray-700 py-2;
   }
+}
+
+@layer components {
+  .nav-link {
+    @apply p-3 rounded-lg flex items-center space-x-2 transition-all duration-300 hover:bg-orange-50 hover:text-orange-600 hover:shadow-sm;
+  }
+
+  .nav-link.active {
+    @apply bg-orange-100 text-orange-600 font-medium shadow-sm;
+  }
+
 
   .icon-container {
     @apply w-8 h-8 flex items-center justify-center rounded-full bg-orange-100 text-orange-600;
   }
 
-  .card-hover {
-    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
-  }
   
   .orange-gradient {
     @apply bg-gradient-to-r from-orange-500 to-orange-600;
+  }
+
+  .menu-desktop-link {
+    @apply font-baloo text-gray-100 text-[18px];
+    position: relative;
+  }
+
+  .menu-desktop-link.group {
+    position: relative;
+  }
+
+  .menu-desktop-link span {
+    @apply hover:text-gray-100;
+  }
+
+  .menu-mobile-link {
+    @apply text-white hover:text-orange-400 transition-colors font-baloo text-[18px];
+  }
+
+  .menu-mobile-icon {
+    @apply text-white hover:text-orange-400 transition-colors flex items-center font-baloo text-[16px];
   }
 }
 
