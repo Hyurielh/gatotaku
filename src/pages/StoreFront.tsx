@@ -61,7 +61,6 @@ function StoreFrontContent() {
         search: '',
         category: '',
         anime: '',
-        sortBy: 'name_asc',
         minPrice: undefined,
         maxPrice: undefined,
         page: 1
@@ -188,12 +187,6 @@ function StoreFrontContent() {
         query = query.lte('price', filters.maxPrice);
       }
 
-      // Ordenamiento
-      query = query.order(
-        filters.sortBy.split('_')[0], 
-        { ascending: filters.sortBy.endsWith('_asc') }
-      );
-
       // Ejecutar consulta con paginación
       const { data, error, count } = await query.range(from, to);
 
@@ -258,7 +251,6 @@ function StoreFrontContent() {
       search: '',
       category: '',
       anime: '',
-      sortBy: 'name_asc',
       minPrice: undefined,
       maxPrice: undefined,
       page: 1  // Forzar a la primera página
@@ -285,6 +277,31 @@ function StoreFrontContent() {
       </div>
     );
   };
+
+  const [isPaginationFixed, setIsPaginationFixed] = useState(true);
+
+  useEffect(() => {
+    const checkFooterVisibility = () => {
+      const footer = document.querySelector('footer');
+      const viewportHeight = window.innerHeight;
+      
+      if (footer) {
+        const footerRect = footer.getBoundingClientRect();
+        const isFooterVisible = footerRect.top < viewportHeight;
+        setIsPaginationFixed(!isFooterVisible);
+      }
+    };
+
+    // Verificar al inicio y en cada scroll
+    checkFooterVisibility();
+    window.addEventListener('scroll', checkFooterVisibility);
+    window.addEventListener('resize', checkFooterVisibility);
+
+    return () => {
+      window.removeEventListener('scroll', checkFooterVisibility);
+      window.removeEventListener('resize', checkFooterVisibility);
+    };
+  }, []);
 
   const renderPagination = () => {
     const totalPages = queryData?.totalPages || 0;
@@ -318,7 +335,7 @@ function StoreFrontContent() {
     const pageNumbers = getPageNumbers();
 
     return (
-      <div className="fixed bottom-0 left-0 right-0 flex justify-center items-center p-4 z-50">
+      <div className={`${isPaginationFixed ? 'fixed' : 'relative'} bottom-0 left-0 right-0 flex justify-center items-center p-4 z-50`}>
         <div className="flex items-center space-x-2">
           {/* Botón de página anterior */}
           <button 

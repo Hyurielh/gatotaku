@@ -6,7 +6,7 @@ export const Footer = () => {
   const whatsappUrl = `https://wa.me/${whatsappNumber}`;
 
   return (
-    <footer className="bg-black text-white mt-12 relative z-50">
+    <footer className="bg-black text-white mt-12 relative mt-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col items-center gap-4">
           <div className="flex items-center gap-4">

@@ -9,7 +9,7 @@ export interface Filters {
   anime?: string;
   minPrice?: number;
   maxPrice?: number;
-  sortBy?: 'name_asc' | 'name_desc' | 'price_asc' | 'price_desc' | 'created_at';
+  sortBy?: 'name_asc' | 'name_desc' | 'price_asc' | 'price_desc';
   page?: number;
 }
 
@@ -107,7 +107,7 @@ export function SearchAndFilters({
   };
 
   return (
-    <div className="search-and-filters-container">
+    <div className="search-and-filters-container pt-4">
       {/* Búsqueda (siempre visible) */}
       <div className="filter-group mb-4">
         <label htmlFor="search-input-desktop" className="block text-sm font-medium text-gray-700 mb-1">
@@ -153,7 +153,7 @@ export function SearchAndFilters({
               className="block w-full p-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
             >
               <option value="">Todas las categorías</option>
-              {categories.map((category) => (
+              {categories.sort((a, b) => a.name.localeCompare(b.name)).map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
                 </option>
@@ -172,7 +172,7 @@ export function SearchAndFilters({
               className="block w-full p-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
             >
               <option value="">Todos los Animes</option>
-              {animes.map((anime) => (
+              {animes.sort((a, b) => a.name.localeCompare(b.name)).map((anime) => (
                 <option key={anime.id} value={anime.id}>
                   {anime.name}
                 </option>
@@ -217,29 +217,10 @@ export function SearchAndFilters({
           </div>
         </div>
 
-        <div className="col-span-full">
-          <label htmlFor="sort-select" className="block text-sm font-medium text-gray-700 mb-1">
-            Ordenar por
-          </label>
-          <select 
-            id="sort-select"
-            value={localFilters.sortBy || 'name_asc'} 
-            onChange={handleSortChange}
-            aria-label="Ordenar productos"
-            className="block w-full p-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
-          >
-            <option value="name_asc">Nombre A-Z</option>
-            <option value="name_desc">Nombre Z-A</option>
-            <option value="price_asc">Precio: Menor a Mayor</option>
-            <option value="price_desc">Precio: Mayor a Menor</option>
-            <option value="created_at">Más Recientes</option>
-          </select>
-        </div>
-
         <div className="filter-group col-span-full">
           <button 
             onClick={resetFilters}
-            className="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+            className="w-full px-4 py-2 mt-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
           >
             Restablecer Filtros
           </button>

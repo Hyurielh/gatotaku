@@ -30,7 +30,7 @@ export function Cart() {
       {/* Botón flotante del carrito */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 z-50 bg-black text-white p-3 rounded-full shadow-lg hover:bg-gray-900 transition-colors"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 md:bottom-8 md:right-8 lg:bottom-10 lg:right-10 z-50 bg-black text-white p-3 rounded-full shadow-lg hover:bg-gray-900 transition-colors"
         aria-label="Abrir carrito"
       >
         <div className="relative">

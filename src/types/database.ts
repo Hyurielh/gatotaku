@@ -39,7 +39,6 @@ export type Filters = {
   search: string;
   category: string;
   anime: string;
-  sortBy: 'name_asc' | 'name_desc' | 'price_asc' | 'price_desc' | 'created_at';
   minPrice?: number;
   maxPrice?: number;
   page?: number;
