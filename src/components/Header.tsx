@@ -1,24 +1,19 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { FaShoppingCart, FaWhatsapp, FaFacebook, FaTiktok, FaBars, FaTimes, FaSignOutAlt, FaUserShield, FaHandPaper } from 'react-icons/fa';
-import { AiTwotoneMessage } from "react-icons/ai";
+import { FaWhatsapp, FaFacebook, FaTiktok, FaBars, FaTimes, FaUserShield, FaPlus } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
+import React from 'react';
+import { toast } from 'react-toastify';  
 
-export const Header = () => {
+export const Header: React.FC = React.memo(() => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSocialMenuOpen, setIsSocialMenuOpen] = useState(false);
   const [isDraggingSocial, setIsDraggingSocial] = useState(false);
-  const [isDraggingCart, setIsDraggingCart] = useState(false);
   const [socialPosition, setSocialPosition] = useState<{ x: number; y: number }>({ 
     x: 16, 
     y: window.innerHeight / 2 
   });
-  const [cartPosition, setCartPosition] = useState<{ x: number; y: number }>({ 
-    x: window.innerWidth - 80, 
-    y: window.innerHeight - 80 
-  });
   const socialButtonRef = useRef<HTMLDivElement>(null);
-  const cartButtonRef = useRef<HTMLDivElement>(null);
   const { session, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -26,68 +21,122 @@ export const Header = () => {
   const createDragHandler = (
     setIsDragging: React.Dispatch<React.SetStateAction<boolean>>, 
     setPosition: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>
-  ) => (e: React.MouseEvent<HTMLButtonElement> | React.TouchEvent<HTMLButtonElement>) => {
-    // Prevenir el comportamiento predeterminado para evitar scrolling o selección
-    e.preventDefault();
-    
-    setIsDragging(true);
-    
-    const getCoordinates = (event: React.MouseEvent | React.TouchEvent) => {
-      const clientX = 'touches' in event ? event.touches[0].clientX : (event as React.MouseEvent).clientX;
-      const clientY = 'touches' in event ? event.touches[0].clientY : (event as React.MouseEvent).clientY;
-      return { clientX, clientY };
+  ) => {
+    let startX = 0;
+    let startY = 0;
+    let isDragging = false;
+    let dragElement: HTMLElement | null = null;
+
+    const handleStart = (clientX: number, clientY: number, target: HTMLElement) => {
+      const rect = target.getBoundingClientRect();
+      startX = clientX - rect.left;
+      startY = clientY - rect.top;
+      
+      isDragging = false;
+      dragElement = target;
+      
+      // Añadir listeners globales
+      document.addEventListener('mousemove', handleMouseMove, { passive: false });
+      document.addEventListener('mouseup', handleEnd);
+      document.addEventListener('touchmove', handleTouchMove, { passive: false });
+      document.addEventListener('touchend', handleEnd);
     };
 
-    const startCoords = getCoordinates(e);
-    const target = e.currentTarget.parentElement;
-    if (!target) return;
+    const handleMouseStart = (e: React.MouseEvent<HTMLElement>) => {
+      e.preventDefault();
+      handleStart(e.clientX, e.clientY, e.currentTarget as HTMLElement);
+    };
 
-    const rect = target.getBoundingClientRect();
-    const offsetX = startCoords.clientX - rect.left;
-    const offsetY = startCoords.clientY - rect.top;
+    const handleTouchStart = (e: React.TouchEvent<HTMLElement>) => {
+      // Desactivar passive listener para permitir preventDefault
+      e.preventDefault();
+      const touch = e.touches[0];
+      handleStart(touch.clientX, touch.clientY, e.currentTarget as HTMLElement);
+    };
 
-    const handleMove = (moveEvent: MouseEvent | TouchEvent) => {
-      moveEvent.preventDefault(); // Prevenir scroll durante el arrastre
-      
-      const moveCoords = 'touches' in moveEvent 
-        ? { clientX: moveEvent.touches[0].clientX, clientY: moveEvent.touches[0].clientY }
-        : { clientX: moveEvent.clientX, clientY: moveEvent.clientY };
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!dragElement) return;
+
+      // Comenzar arrastre solo si hay movimiento significativo
+      if (!isDragging) {
+        isDragging = true;
+        setIsDragging(true);
+      }
 
       setPosition({
-        x: moveCoords.clientX - offsetX,
-        y: moveCoords.clientY - offsetY
+        x: e.clientX - startX,
+        y: e.clientY - startY
+      });
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!dragElement) return;
+
+      // Prevenir scroll
+      e.preventDefault();
+
+      // Comenzar arrastre solo si hay movimiento significativo
+      if (!isDragging) {
+        isDragging = true;
+        setIsDragging(true);
+      }
+
+      const touch = e.touches[0];
+      setPosition({
+        x: touch.clientX - startX,
+        y: touch.clientY - startY
       });
     };
 
     const handleEnd = () => {
-      setIsDragging(false);
-      document.removeEventListener('mousemove', handleMove as EventListener);
+      // Limpiar listeners
+      document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleEnd);
-      document.removeEventListener('touchmove', handleMove as EventListener);
+      document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('touchend', handleEnd);
+
+      // Restablecer estados
+      isDragging = false;
+      dragElement = null;
+      setIsDragging(false);
     };
 
-    // Añadir listeners para mouse y touch
-    document.addEventListener('mousemove', handleMove as EventListener);
-    document.addEventListener('mouseup', handleEnd);
-    document.addEventListener('touchmove', handleMove as EventListener, { passive: false });
-    document.addEventListener('touchend', handleEnd);
+    // Método para combinar estilos de manera segura
+    const mergeDragStyles = (existingStyles?: React.CSSProperties): React.CSSProperties => {
+      const dragStyles: React.CSSProperties = {
+        WebkitUserSelect: 'none',
+        userSelect: 'none',
+        touchAction: 'none',
+        cursor: 'move'
+      };
+
+      return existingStyles 
+        ? { ...existingStyles, ...dragStyles } 
+        : dragStyles;
+    };
+
+    return {
+      onMouseDown: handleMouseStart,
+      onTouchStart: handleTouchStart,
+      mergeDragStyles  // Devolver la función para combinar estilos
+    };
   };
 
-  const handleSocialMouseDown = createDragHandler(setIsDraggingSocial, setSocialPosition);
-  const handleCartMouseDown = createDragHandler(setIsDraggingCart, setCartPosition);
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+  const socialDragHandlers = createDragHandler(setIsDraggingSocial, setSocialPosition);
 
   const handleLogout = async () => {
     try {
       await logout();
       navigate('/');
+      toast.success('Sesión cerrada exitosamente');
     } catch (error) {
+      toast.error('Error al cerrar sesión. Por favor, inténtalo de nuevo.');
       console.error('Error al cerrar sesión:', error);
     }
+  };
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
   };
 
   const toggleSocialMenu = () => {
@@ -101,25 +150,33 @@ export const Header = () => {
 
   return (
     <>
-      <header className="bg-black text-white fixed top-0 left-0 right-0 z-50">
+      <header 
+        className="bg-black text-white fixed top-0 left-0 right-0 z-20" 
+        role="banner"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <Link 
               to="/" 
               className="flex items-center"
+              aria-label="Página de inicio de Gatotaku"
               onClick={() => {
                 window.dispatchEvent(new CustomEvent('reset-store-filters'));
               }}
             >
-              <img src="./logo.png" 
-                   alt="Logo" 
-                   className="w-12 h-12 rounded-full" />
-              <span className="ml-3 text-2xl md:text-3xl font-black tracking-wide text-white" 
-                    style={{ 
-                      fontFamily: "Poppins",
-                      textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)'
-                    }}>
+              <img 
+                src="/logo.png" 
+                alt="Logo de Gatotaku" 
+                className="w-12 h-12 rounded-full" 
+              />
+              <span 
+                className="ml-3 text-2xl md:text-3xl font-black tracking-wide text-white" 
+                style={{ 
+                  fontFamily: "Poppins",
+                  textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)'
+                }}
+              >
                 GATOTAKU
               </span>
             </Link>
@@ -141,9 +198,10 @@ export const Header = () => {
               <a href={whatsappUrl} 
                  target="_blank" 
                  rel="noopener noreferrer" 
-                 className="relative group flex items-center font-baloo">
+                 className="relative group flex items-center font-baloo"
+              >
                 <span className="hover:text-gray-300 flex items-center">
-                  <FaWhatsapp className="mr-2" />
+                  <FaWhatsapp size={18} />
                   WhatsApp
                 </span>
                 <span className="absolute bottom-0 left-0 w-full h-0.5 bg-orange-500 transform scale-x-0 transition-transform group-hover:scale-x-100"></span>
@@ -155,12 +213,14 @@ export const Header = () => {
               )}
             </nav>
 
-            {/* Mobile menu button */}
-            <button
+            {/* Botón de menú móvil */}
+            <button 
+              className="md:hidden"
               onClick={toggleMenu}
-              className="md:hidden text-white hover:text-orange-500 transition-colors"
+              aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
+              aria-expanded={isMenuOpen}
             >
-              {isMenuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
+              {isMenuOpen ? <FaTimes /> : <FaBars />}
             </button>
           </div>
         </div>
@@ -169,113 +229,147 @@ export const Header = () => {
       {/* Social Media Toggle */}
       <div 
         ref={socialButtonRef}
-        className="fixed z-50" 
-        style={{ 
+        onMouseDown={socialDragHandlers.onMouseDown}
+        onTouchStart={socialDragHandlers.onTouchStart}
+        style={socialDragHandlers.mergeDragStyles({
+          position: 'fixed',
           left: `${socialPosition.x}px`, 
           top: `${socialPosition.y}px`,
+          zIndex: 30,
           cursor: isDraggingSocial ? 'grabbing' : 'grab'
-        }}
+        })}
       >
-        <button 
-          onMouseDown={handleSocialMouseDown}
-          onTouchStart={handleSocialMouseDown}
-          onClick={toggleSocialMenu}
-          className="bg-white text-black rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors"
-          title="Arrastrar para mover"
+        <div className="flex flex-col space-y-1 bg-white bg-opacity-70 rounded-lg shadow-lg p-2 backdrop-blur-sm"
         >
-          <AiTwotoneMessage size={20} />
-        </button>
+          <button 
+            onClick={() => window.open(whatsappUrl, '_blank')}
+            className="text-green-600 hover:text-green-500 transition-colors duration-300 bg-opacity-30 rounded-full p-2"
+            title="WhatsApp"
+          >
+            <FaWhatsapp size={18} className="drop-shadow-md" />
+          </button>
+          
+          {!isSocialMenuOpen && (
+            <button 
+              onClick={toggleSocialMenu}
+              className="text-black hover:text-gray-800 transition-colors duration-300 bg-opacity-30 rounded-full p-2"
+              title="Más redes sociales"
+            >
+              <FaPlus size={18} />
+            </button>
+          )}
 
-        {isSocialMenuOpen && (
-          <div className="absolute left-full ml-2 top-1/2 transform -translate-y-1/2 flex flex-col space-y-2">
-            <a 
-              href={whatsappUrl} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-green-500 hover:text-green-400 transition-colors duration-300 bg-white rounded-full p-2 shadow-lg"
-            >
-              <FaWhatsapp size={24} />
-            </a>
-            <a 
-              href={facebookUrl} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-blue-600 hover:text-blue-500 transition-colors duration-300 bg-white rounded-full p-2 shadow-lg"
-            >
-              <FaFacebook size={24} />
-            </a>
-            <a 
-              href={tiktokUrl} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-black hover:text-gray-700 transition-colors duration-300 bg-white rounded-full p-2 shadow-lg"
-            >
-              <FaTiktok size={24} />
-            </a>
-          </div>
-        )}
-      </div>
-
-      {/* Floating Cart Icon */}
-      <div 
-        className="fixed bottom-4 right-4 z-50" 
-        style={{ 
-          left: `${cartPosition.x}px`, 
-          top: `${cartPosition.y}px`,
-          cursor: isDraggingCart ? 'grabbing' : 'grab',
-          pointerEvents: 'none' // Evita interferir con el contenido
-        }}
-      >
+          {isSocialMenuOpen && (
+            <>
+              <a 
+                href={facebookUrl} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-blue-600 hover:text-blue-500 transition-colors duration-300 bg-opacity-70 rounded-full p-2"
+              >
+                <FaFacebook size={18} />
+              </a>
+              <a 
+                href={tiktokUrl} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-black hover:text-gray-800 transition-colors duration-300 bg-opacity-70 rounded-full p-2"
+              >
+                <FaTiktok size={18} />
+              </a>
+              <button 
+                onClick={toggleSocialMenu}
+                className="text-black hover:text-gray-800 transition-colors duration-300 bg-opacity-70 rounded-full p-2 self-center"
+                title="Cerrar redes sociales"
+              >
+                <FaPlus className="transform rotate-45" size={18} />
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Mobile Menu Overlay */}
       {isMenuOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={toggleMenu}>
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40" 
+          onClick={toggleMenu}
+        >
           <div 
-            className="fixed top-0 right-0 w-64 h-full bg-black text-white p-6 transform transition-transform duration-300 ease-in-out"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed top-0 right-0 w-64 h-full bg-white shadow-lg transform transition-transform duration-300 ease-in-out"
+            onClick={(e) => e.stopPropagation()} // Prevenir cierre al hacer clic dentro del menú
           >
-            <div className="flex flex-col space-y-4">
-              <Link to="/" className="menu-mobile-link" onClick={() => setIsMenuOpen(false)}>
-                Catálogo
+            <div className="p-4 border-b flex justify-between items-center">
+              <Link 
+                to="/" 
+                className="flex items-center"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('reset-store-filters'));
+                  toggleMenu();
+                }}
+              >
+                <img 
+                  src="/logo.png" 
+                  alt="Logo de Gatotaku" 
+                  className="w-12 h-12 rounded-full" 
+                />
+                <span className="ml-3 text-2xl font-black tracking-wide text-black">
+                  GATOTAKU
+                </span>
               </Link>
-              <Link to="/about" className="menu-mobile-link" onClick={() => setIsMenuOpen(false)}>
+              <button 
+                onClick={toggleMenu}
+                className="text-gray-600 hover:text-gray-900"
+              >
+                <FaTimes size={18} />
+              </button>
+            </div>
+            
+            <nav className="flex flex-col p-4 space-y-4">
+              <Link 
+                to="/" 
+                className="text-lg hover:text-orange-500 transition-colors"
+                onClick={toggleMenu}
+              >
+                Inicio
+              </Link>
+              <Link 
+                to="/about" 
+                className="text-lg hover:text-orange-500 transition-colors"
+                onClick={toggleMenu}
+              >
                 Sobre Nosotros
               </Link>
-              <Link to="/information" className="menu-mobile-link" onClick={() => setIsMenuOpen(false)}>
+              <Link 
+                to="/information" 
+                className="text-lg hover:text-orange-500 transition-colors"
+                onClick={toggleMenu}
+              >
                 Información
               </Link>
-              <a href={whatsappUrl} 
-                 target="_blank" 
-                 rel="noopener noreferrer" 
-                 className="menu-mobile-icon"
-                 onClick={() => setIsMenuOpen(false)}>
-                <FaWhatsapp className="mr-2" />
+              <a 
+                href={whatsappUrl} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-lg hover:text-orange-500 transition-colors flex items-center"
+              >
+                <FaWhatsapp size={18} />
                 WhatsApp
               </a>
               {session && (
                 <Link 
                   to="/admin" 
-                  className="menu-mobile-icon"
-                  onClick={() => setIsMenuOpen(false)}
+                  className="text-lg hover:text-orange-500 transition-colors flex items-center"
+                  onClick={toggleMenu}
                 >
                   <FaUserShield className="mr-2" />
-                  Admin
+                  Panel Admin
                 </Link>
               )}
-              {location.pathname === '/admin' && session && (
-                <button 
-                  onClick={handleLogout} 
-                  className="menu-mobile-icon"
-                >
-                  <FaSignOutAlt className="mr-2" />
-                  Cerrar Sesión
-                </button>
-              )}
-            </div>
+            </nav>
           </div>
         </div>
       )}
     </>
   );
-};
+});

@@ -101,10 +101,10 @@ export function ImageCarousel({
       {safeImages.length > 1 && (
         <button 
           onClick={handlePrevImage}
-          className="absolute left-0 top-1/2 transform -translate-y-1/2 z-20 w-16 h-16 flex items-center justify-center"
+          className="absolute left-2 top-1/2 transform -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center"
         >
-          <div className="bg-orange-500/70 hover:bg-orange-600/80 rounded-full w-12 h-12 flex items-center justify-center shadow-lg transition-all duration-300">
-            <span className="text-white text-3xl font-bold transform -translate-x-0.5">
+          <div className="bg-orange-500/50 hover:bg-orange-600/60 rounded-full w-8 h-8 flex items-center justify-center shadow-lg transition-all duration-300">
+            <span className="text-white text-xl font-bold transform -translate-x-0.5">
               ‹
             </span>
           </div>
@@ -115,14 +115,21 @@ export function ImageCarousel({
       {safeImages.length > 1 && (
         <button 
           onClick={handleNextImage}
-          className="absolute right-0 top-1/2 transform -translate-y-1/2 z-20 w-16 h-16 flex items-center justify-center"
+          className="absolute right-2 top-1/2 transform -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center"
         >
-          <div className="bg-orange-500/70 hover:bg-orange-600/80 rounded-full w-12 h-12 flex items-center justify-center shadow-lg transition-all duration-300">
-            <span className="text-white text-3xl font-bold transform translate-x-0.5">
+          <div className="bg-orange-500/50 hover:bg-orange-600/60 rounded-full w-8 h-8 flex items-center justify-center shadow-lg transition-all duration-300">
+            <span className="text-white text-xl font-bold transform translate-x-0.5">
               ›
             </span>
           </div>
         </button>
+      )}
+
+      {/* Contador de imágenes */}
+      {safeImages.length > 1 && (
+        <div className="absolute bottom-2 right-2 z-20 bg-black/50 text-white px-2 py-1 rounded-full text-xs">
+          {currentImageIndex + 1} / {safeImages.length}
+        </div>
       )}
 
       <div className="absolute inset-0 grid grid-cols-1 grid-rows-1">

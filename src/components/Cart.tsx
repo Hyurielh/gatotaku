@@ -30,11 +30,11 @@ export function Cart() {
       {/* Botón flotante del carrito */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 md:bottom-8 md:right-8 lg:bottom-10 lg:right-10 z-50 bg-black text-white p-3 rounded-full shadow-lg hover:bg-gray-900 transition-colors"
+        className="fixed bottom-[7.5rem] right-4 sm:bottom-6 sm:right-6 md:bottom-8 md:right-8 lg:bottom-10 lg:right-10 z-50 bg-black/50 backdrop-blur-sm text-white p-3 rounded-full shadow-lg hover:bg-black/70 transition-colors"
         aria-label="Abrir carrito"
       >
         <div className="relative">
-          <ShoppingCart className="text-white text-2xl" />
+          <ShoppingCart className="text-white text-2xl opacity-80" />
           {items.length > 0 && (
             <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
               {items.length}

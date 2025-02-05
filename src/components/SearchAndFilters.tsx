@@ -142,7 +142,7 @@ export function SearchAndFilters({
       `}>
         <div className="md:flex md:space-x-4 md:col-span-2">
           <div className="filter-group flex-1">
-            <label htmlFor="category-select" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="category-select" className=" my-2 block text-sm font-medium text-gray-700 mb-1">
               Categoría
             </label>
             <select 
@@ -161,7 +161,7 @@ export function SearchAndFilters({
             </select>
           </div>
           <div className="filter-group flex-1 ">
-            <label htmlFor="anime-select" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="anime-select" className=" my-2 block text-sm font-medium text-gray-700 mb-1">
               Anime
             </label>
             <select 
@@ -181,11 +181,8 @@ export function SearchAndFilters({
           </div>
         </div>
 
-        <div className="md:flex md:space-x-4 md:col-span-2">
+        <div className="md:flex md:space-x-4 md:col-span-2 my-4">
           <div className="filter-group flex-1">
-            <label htmlFor="min-price-input" className="block text-sm font-medium text-gray-700 mb-1">
-              Precio Mínimo
-            </label>
             <input 
               id="min-price-input"
               type="number" 
@@ -200,9 +197,6 @@ export function SearchAndFilters({
           </div>
 
           <div className="filter-group flex-1">
-            <label htmlFor="max-price-input" className="block text-sm font-medium text-gray-700 mb-1">
-              Precio Máximo
-            </label>
             <input 
               id="max-price-input"
               type="number" 

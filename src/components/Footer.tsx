@@ -6,11 +6,11 @@ export const Footer = () => {
   const whatsappUrl = `https://wa.me/${whatsappNumber}`;
 
   return (
-    <footer className="bg-black text-white mt-12 relative mt-0 z-50">
+    <footer className="bg-black text-white !mt-0 relative z-30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col items-center gap-4">
           <div className="flex items-center gap-4">
-            <img src="./logo.png" 
+            <img src="/logo.png" 
                  alt="Logo" 
                  className="w-10 h-10 rounded-full" />
             <span className="text-3xl font-black tracking-wider" style={{ fontFamily: "'Poppins', sans-serif" }}>

@@ -1,5 +1,5 @@
-import React from 'react';
-import { HashRouter as Router } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { HashRouter as Router, useLocation } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
@@ -9,6 +9,8 @@ import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { Cart } from './components/Cart';
 import AppRoutes from './routes/AppRoutes';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Crear una instancia de QueryClient con configuración más robusta
 const queryClient = new QueryClient({
@@ -40,11 +42,19 @@ function App() {
               }}>
                 <div className="flex flex-col min-h-screen">
                   <Header />
-                  <main className="flex-grow">
+                  <main className="flex-grow pt-8">
                     <AppRoutes />
                   </main>
                   <Footer />
                   <Cart />
+                  <ToastContainer 
+                    position="top-right"
+                    autoClose={3000}
+                    hideProgressBar={false}
+                    closeOnClick
+                    pauseOnHover
+                    theme="colored"
+                  />
                 </div>
               </Router>
             </CartProvider>

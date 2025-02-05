@@ -40,10 +40,6 @@ const Refunds = () => {
                 <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
                 <span>No debe mostrar señales de uso o daño</span>
               </li>
-              <li className="list-item">
-                <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
-                <span>Debes presentar el comprobante de compra</span>
-              </li>
             </ul>
           </div>
         </div>
