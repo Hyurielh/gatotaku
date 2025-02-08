@@ -25,20 +25,20 @@ const Refunds = () => {
       </div>
 
       <div className="card">
-        <div className="flex items-start space-x-4">
+        <div className="flex items-start space-x-2">
           <div className="icon-container">
             <FaExclamationTriangle className="w-5 h-5" />
           </div>
           <div>
             <h2 className="text-xl font-semibold mb-2 text-gray-800">Condiciones</h2>
             <ul className="space-y-2">
-              <li className="list-item">
+              <li className="list-item flex items-center space-x-2">
                 <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
-                <span>El producto debe estar en su empaque original</span>
+                <span className="ml-0 pl-0">El producto debe estar en su empaque original</span>
               </li>
-              <li className="list-item">
+              <li className="list-item flex items-center space-x-2">
                 <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
-                <span>No debe mostrar señales de uso o daño</span>
+                <span className="ml-0 pl-0">No debe mostrar señales de uso o daño</span>
               </li>
             </ul>
           </div>

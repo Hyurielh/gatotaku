@@ -334,33 +334,31 @@ function StoreFrontContent() {
     const pageNumbers = getPageNumbers();
 
     return (
-      <div className={`${isPaginationFixed ? 'fixed' : 'relative'} bottom-0 left-0 right-0 flex flex-col justify-center items-center p-4 z-50 bg-white/80 backdrop-blur-sm`}>
+      <div className={`${isPaginationFixed ? 'fixed' : 'relative'} bottom-0 left-0 right-0 flex flex-col justify-center items-center p-2 sm:p-4 z-50 bg-white/80 backdrop-blur-sm`}>
         {/* Texto de contexto de página */}
-        <div className="text-sm text-gray-600 mb-2">
+        <div className="text-xs sm:text-sm text-gray-600 mb-2">
           Página {currentPage} de {totalPages}
         </div>
         
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 w-full max-w-xs">
           {/* Botón de página anterior */}
           <button 
             onClick={() => handlePageChange(currentPage - 1)} 
             disabled={currentPage === 1}
-            className="px-4 py-3 text-lg rounded-lg bg-gray-100 hover:bg-blue-100 disabled:opacity-50 transition-colors w-16 flex justify-center items-center"
+            className="flex-grow px-2 sm:px-4 py-2 sm:py-3 text-base sm:text-lg rounded-lg bg-gray-100 hover:bg-blue-100 disabled:opacity-50 transition-colors flex justify-center items-center"
           >
             ←
           </button>
 
-          {/* Números de página */}
-          {pageNumbers.map(number => (
+          {/* Botones de números de página */}
+          {pageNumbers.map((number) => (
             <button
               key={number}
               onClick={() => handlePageChange(number)}
-              className={`px-6 py-3 text-lg rounded-lg transition-all duration-150 ease-in-out w-16 flex justify-center items-center ${
+              className={`flex-grow px-2 sm:px-4 py-2 sm:py-3 text-base sm:text-lg rounded-lg transition-colors ${
                 currentPage === number 
-                  ? 'bg-blue-500 text-white transform scale-110' 
-                  : 'bg-gray-200 hover:bg-blue-100'
-              } ${
-                number < 1 || number > totalPages ? 'hidden' : ''
+                  ? 'bg-blue-500 text-white' 
+                  : 'bg-gray-100 hover:bg-blue-100'
               }`}
             >
               {number}
@@ -371,7 +369,7 @@ function StoreFrontContent() {
           <button 
             onClick={() => handlePageChange(currentPage + 1)} 
             disabled={currentPage === totalPages}
-            className="px-4 py-3 text-lg rounded-lg bg-gray-100 hover:bg-blue-100 disabled:opacity-50 transition-colors w-16 flex justify-center items-center"
+            className="flex-grow px-2 sm:px-4 py-2 sm:py-3 text-base sm:text-lg rounded-lg bg-gray-100 hover:bg-blue-100 disabled:opacity-50 transition-colors flex justify-center items-center"
           >
             →
           </button>
