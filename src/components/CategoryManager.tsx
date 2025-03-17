@@ -1,78 +1,125 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Category } from '../types/database';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Loader } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 export function CategoryManager() {
-  const [categories, setCategories] = React.useState<Category[]>([]);
-  const [newCategory, setNewCategory] = React.useState('');
-  const [editingId, setEditingId] = React.useState<string | null>(null);
-  const [error, setError] = React.useState<string | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [newCategory, setNewCategory] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 12;
+
+  // Reset page when search term changes
+  React.useEffect(() => {
+    setPage(1);
+  }, [searchTerm]);
+
+  const filteredCategories = React.useMemo(() => {
+    return categories.filter(category => 
+      category.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [categories, searchTerm]);
+
+  // Calculate pagination
+  const paginatedCategories = React.useMemo(() => {
+    const start = (page - 1) * itemsPerPage;
+    return filteredCategories.slice(start, start + itemsPerPage);
+  }, [filteredCategories, page]);
 
   React.useEffect(() => {
     fetchCategories();
   }, []);
 
   async function fetchCategories() {
-    const { data, error } = await supabase
-      .from('categories')
-      .select('*')
-      .order('name');
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('name');
 
-    if (error) {
+      if (error) throw error;
+      setCategories(data || []);
+    } catch (error) {
+      toast.error('Error al cargar categorías');
       setError('Error al cargar categorías');
-      return;
+    } finally {
+      setIsLoading(false);
     }
-
-    setCategories(data || []);
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(null);
-
     if (!newCategory.trim()) return;
 
-    const { error } = await supabase
-      .from('categories')
-      .insert({ name: newCategory.trim() });
+    try {
+      const newItem = { name: newCategory.trim() };
+      setCategories(prev => [...prev, { ...newItem, id: 'temp' }]);
+      
+      const { error } = await supabase
+        .from('categories')
+        .insert(newItem);
 
-    if (error) {
+      if (error) throw error;
+      
+      toast.success('Categoría agregada exitosamente');
+      setNewCategory('');
+      fetchCategories();
+    } catch (error) {
+      toast.error('Error al crear categoría');
       setError('Error al crear categoría');
-      return;
     }
-
-    setNewCategory('');
-    fetchCategories();
   }
 
   async function handleDelete(id: string) {
-    const { error } = await supabase
-      .from('categories')
-      .delete()
-      .eq('id', id);
+    if (!window.confirm('¿Estás seguro de eliminar esta categoría?')) return;
 
-    if (error) {
+    try {
+      setCategories(prev => prev.filter(category => category.id !== id));
+      
+      const { error } = await supabase
+        .from('categories')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      toast.success('Categoría eliminada exitosamente');
+    } catch (error) {
+      toast.error('Error al eliminar categoría');
       setError('Error al eliminar categoría');
-      return;
+      fetchCategories(); // Revert on error
     }
-
-    fetchCategories();
   }
 
   async function handleUpdate(id: string, newName: string) {
-    const { error } = await supabase
-      .from('categories')
-      .update({ name: newName })
-      .eq('id', id);
+    if (!newName.trim()) return;
 
-    if (error) {
+    const originalCategories = [...categories];
+    try {
+      setCategories(prev => prev.map(category => 
+        category.id === id ? { ...category, name: newName } : category
+      ));
+      
+      const { error } = await supabase
+        .from('categories')
+        .update({ name: newName })
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      toast.success('Categoría actualizada exitosamente');
+      setEditingId(null);
+    } catch (error) {
+      setCategories(originalCategories); // Revert on error
+      toast.error('Error al actualizar categoría');
       setError('Error al actualizar categoría');
-      return;
     }
-
-    setEditingId(null);
-    fetchCategories();
   }
 
   return (
@@ -84,6 +131,19 @@ export function CategoryManager() {
           {error}
         </div>
       )}
+
+      <div className="mb-4">
+        <div className="relative">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Buscar categoría..."
+            className="w-full p-2 pl-10 border rounded focus:ring-2 focus:ring-orange-500"
+          />
+          <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+        </div>
+      </div>
 
       <form onSubmit={handleSubmit} className="mb-6 flex gap-2">
         <input
@@ -102,48 +162,76 @@ export function CategoryManager() {
         </button>
       </form>
 
-      <ul className="space-y-2">
-        {categories.map((category) => (
-          <li
-            key={category.id}
-            className="flex items-center justify-between p-2 hover:bg-gray-50 rounded"
-          >
-            {editingId === category.id ? (
-              <input
-                type="text"
-                defaultValue={category.name}
-                onBlur={(e) => handleUpdate(category.id, e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleUpdate(category.id, e.currentTarget.value);
-                  }
-                }}
-                className="flex-1 p-1 border rounded mr-2"
-                autoFocus
-              />
-            ) : (
-              <span>{category.name}</span>
-            )}
-            
-            <div className="flex gap-2">
-              <button
-                onClick={() => setEditingId(category.id)}
-                className="text-blue-600 hover:text-blue-800"
-                aria-label="Editar categoría"
+      {isLoading ? (
+        <div className="flex justify-center py-4">
+          <Loader className="h-8 w-8 animate-spin text-orange-500" />
+        </div>
+      ) : (
+        <>
+          <ul className="space-y-2">
+            {paginatedCategories.map((category) => (
+              <li
+                key={category.id}
+                className="flex items-center justify-between p-2 hover:bg-gray-50 rounded"
               >
-                <Pencil className="h-5 w-5" />
+                {editingId === category.id ? (
+                  <input
+                    type="text"
+                    defaultValue={category.name}
+                    onBlur={(e) => handleUpdate(category.id, e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleUpdate(category.id, e.currentTarget.value);
+                      }
+                    }}
+                    className="flex-1 p-1 border rounded mr-2"
+                    autoFocus
+                  />
+                ) : (
+                  <span>{category.name}</span>
+                )}
+                
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setEditingId(category.id)}
+                    className="text-blue-600 hover:text-blue-800"
+                    aria-label="Editar categoría"
+                  >
+                    <Pencil className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(category.id)}
+                    className="text-red-600 hover:text-red-800"
+                    aria-label="Eliminar categoría"
+                  >
+                    <Trash2 className="h-5 w-5" />
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          {filteredCategories.length > itemsPerPage && (
+            <div className="mt-4 flex justify-between items-center">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="px-4 py-2 bg-gray-100 rounded disabled:opacity-50"
+              >
+                Anterior
               </button>
+              <span>Página {page}</span>
               <button
-                onClick={() => handleDelete(category.id)}
-                className="text-red-600 hover:text-red-800"
-                aria-label="Eliminar categoría"
+                onClick={() => setPage(p => p + 1)}
+                disabled={page * itemsPerPage >= filteredCategories.length}
+                className="px-4 py-2 bg-gray-100 rounded disabled:opacity-50"
               >
-                <Trash2 className="h-5 w-5" />
+                Siguiente
               </button>
             </div>
-          </li>
-        ))}
-      </ul>
+          )}
+        </>
+      )}
     </div>
   );
 }

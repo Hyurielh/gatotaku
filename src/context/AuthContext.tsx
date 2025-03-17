@@ -1,45 +1,81 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Session } from '@supabase/supabase-js';
+import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 
 interface AuthContextType {
   session: Session | null;
+  user: User | null;
   loading: boolean;
+  isAuthenticating: boolean;
+  error: string | null;
   logout: () => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  clearError: () => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
   session: null,
+  user: null,
   loading: true,
+  isAuthenticating: false,
+  error: null,
   logout: async () => {},
+  login: async () => {},
+  clearError: () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const clearError = () => setError(null);
+
+  const login = async (email: string, password: string) => {
+    try {
+      setIsAuthenticating(true);
+      clearError();
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (signInError) throw signInError;
+      
+      setSession(data.session);
+      setUser(data.user);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred during login');
+      throw err;
+    } finally {
+      setIsAuthenticating(false);
+    }
+  };
 
   const logout = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Error al cerrar sesión:', error);
-        throw error;
-      }
+      clearError();
+      const { error: signOutError } = await supabase.auth.signOut();
+      if (signOutError) throw signOutError;
+      
       setSession(null);
-    } catch (error) {
-      console.error('Error al cerrar sesión:', error);
-      throw error;
+      setUser(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred during logout');
+      throw err;
     }
   };
 
   useEffect(() => {
-    // Obtener sesión inicial
     const getInitialSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         setSession(session);
-      } catch (error) {
-        console.error('Error al obtener la sesión:', error);
+        setUser(session?.user ?? null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Error fetching session');
       } finally {
         setLoading(false);
       }
@@ -47,9 +83,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     getInitialSession();
 
-    // Suscribirse a cambios en la autenticación
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      setUser(session?.user ?? null);
       setLoading(false);
     });
 
@@ -59,13 +95,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ session, loading, logout }}>
+    <AuthContext.Provider 
+      value={{ 
+        session, 
+        user,
+        loading, 
+        isAuthenticating,
+        error,
+        logout,
+        login,
+        clearError
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
 
-// Add this hook to safely use AuthContext
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {

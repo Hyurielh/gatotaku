@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
-import { HashRouter as Router, useLocation } from 'react-router-dom';
+import { HashRouter as Router } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './config/queryClient';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { SEO } from './components/SEO';
@@ -11,40 +11,37 @@ import { Cart } from './components/Cart';
 import AppRoutes from './routes/AppRoutes';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Suspense } from 'react';
 
-// Crear una instancia de QueryClient con configuración más robusta
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutos
-      gcTime: 30 * 60 * 1000, // 30 minutos
-      retry: 1,
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: true,
-    },
-  },
-});
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <HelmetProvider>
-        <div className="min-h-screen bg-gray-100">
+        <div className="bg-gray-100">
+          <a href="#main-content" className="sr-only focus:not-sr-only">
+            Skip to main content
+          </a>
           <SEO 
             title="GATOTAKU - Tu Tienda de Anime"
             description="Tienda online de productos de anime y manga. Encuentra los mejores artículos de tus series favoritas."
+            // Add more meta tags
+            openGraph={{
+              title: "GATOTAKU",
+              description: "Tu Tienda de Anime",
+              image: "url-to-your-og-image"
+            }}
           />
           <AuthProvider>
             <CartProvider>
-              <Router future={{ 
-                v7_startTransition: true,
-                v7_relativeSplatPath: true 
-              }}>
+              <Router>
                 <div className="flex flex-col min-h-screen">
                   <Header />
-                  <main className="flex-grow pt-8">
-                    <AppRoutes />
-                  </main>
+                  <Suspense fallback={<div>Loading...</div>}>
+                    <main id="main-content" className="flex-grow pt-8">
+                      <AppRoutes />
+                    </main>
+                  </Suspense>
                   <Footer />
                   <Cart />
                   <ToastContainer 
