@@ -85,8 +85,8 @@ export function ProductCard({ product, className }: ProductCardProps) {
       className, 
       "product-card bg-white border border-gray-200 rounded-xl overflow-hidden shadow-lg hover:shadow-xl flex flex-col h-full relative transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1"
     ].filter(Boolean).join(' ')} >
-      {/* Imagen mucho más prominente en móvil */}
-      <div className="w-full aspect-[3/4] sm:aspect-square overflow-hidden relative bg-gray-100">
+      {/* Imagen con proporción equilibrada */}
+      <div className="w-full aspect-[4/5] sm:aspect-square overflow-hidden relative bg-gray-100">
         {/* Barra de progreso de carga */}
         <div 
           className="absolute top-0 left-0 h-1 bg-orange-500 z-50 transition-all duration-300" 
@@ -115,48 +115,47 @@ export function ProductCard({ product, className }: ProductCardProps) {
         />
       </div>
       
-      {/* Contenido optimizado para móvil */}
-      <div className="bg-white p-2 sm:p-4 flex-grow flex flex-col justify-between">
-        <div className="space-y-1 sm:space-y-2">
-          {/* Título compacto pero legible */}
-          <h2 className="text-xs sm:text-base font-bold text-gray-900 line-clamp-2 leading-tight">
+      {/* Contenido con textos más legibles */}
+      <div className="bg-white p-3 sm:p-4 flex-grow flex flex-col justify-between">
+        <div className="space-y-2">
+          {/* Título más legible */}
+          <h2 className="text-sm sm:text-base font-bold text-gray-900 line-clamp-2 leading-tight">
             {product.name}
           </h2>
           
-          {/* Tags más compactos */}
-          <div className="flex flex-wrap gap-0.5 sm:gap-1">
+          {/* Tags con mejor tamaño */}
+          <div className="flex flex-wrap gap-1">
             {product.category_ref && (
-              <span className="bg-orange-100 text-orange-700 px-1 py-0.5 sm:px-2 sm:py-1 rounded text-[10px] sm:text-xs font-medium">
+              <span className="bg-orange-100 text-orange-700 px-2 py-0.5 sm:px-2 sm:py-1 rounded text-xs font-medium">
                 {product.category_ref.name}
               </span>
             )}
             {product.anime && (
-              <span className="bg-blue-100 text-blue-700 px-1 py-0.5 sm:px-2 sm:py-1 rounded text-[10px] sm:text-xs font-medium">
+              <span className="bg-blue-100 text-blue-700 px-2 py-0.5 sm:px-2 sm:py-1 rounded text-xs font-medium">
                 {product.anime.name}
               </span>
             )}
           </div>
           
-          {/* Precio destacado */}
-          <div className="text-sm sm:text-xl font-bold text-orange-600">
+          {/* Precio bien visible */}
+          <div className="text-lg sm:text-xl font-bold text-orange-600">
             C${product.price.toFixed(2)}
           </div>
           
-          {/* Descripción más compacta en móvil */}
-          <p className="text-[10px] sm:text-xs text-gray-600 line-clamp-2 leading-tight">
+          {/* Descripción legible */}
+          <p className="text-xs sm:text-xs text-gray-600 line-clamp-2 leading-relaxed">
             {product.description}
           </p>
         </div>
         
-        {/* Botón optimizado */}
+        {/* Botón con mejor tamaño */}
         <button 
           onClick={() => addItem(product)}
-          className="w-full bg-orange-500 text-white py-1.5 sm:py-2 px-2 sm:px-3 rounded-md flex items-center justify-center gap-1 hover:bg-orange-600 transition-all duration-200 font-medium text-[10px] sm:text-sm shadow-sm hover:shadow-md mt-2"
+          className="w-full bg-orange-500 text-white py-2 sm:py-2 px-3 sm:px-3 rounded-md flex items-center justify-center gap-2 hover:bg-orange-600 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md mt-3"
           aria-label={`Agregar ${product.name} al carrito`}
         >
-          <ShoppingCart size={10} className="sm:w-4 sm:h-4" />
-          <span className="hidden xs:inline sm:inline">Agregar</span>
-          <span className="xs:hidden sm:hidden">+</span>
+          <ShoppingCart size={14} className="sm:w-4 sm:h-4" />
+          <span>Agregar</span>
         </button>
       </div>
     </div>
