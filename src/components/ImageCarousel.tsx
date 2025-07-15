@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 interface ImageCarouselProps {
-  images: (string | { 
-    src: string; 
-    srcSet?: string; 
-    webp?: string 
+  images: (string | {
+    src: string;
+    srcSet?: string;
+    webp?: string
   })[];
   alt: string;
   srcSet?: string;
@@ -14,12 +14,12 @@ interface ImageCarouselProps {
   onFullyLoaded?: () => void;
 }
 
-export function ImageCarousel({ 
-  images, 
-  alt, 
-  srcSet, 
-  loading = 'lazy', 
-  className = '', 
+export function ImageCarousel({
+  images,
+  alt,
+  srcSet,
+  loading = 'lazy',
+  className = '',
   imageRefs,
   onFullyLoaded
 }: ImageCarouselProps) {
@@ -73,13 +73,13 @@ export function ImageCarousel({
 
   // Manejar navegación con flechas
   const handlePrevImage = () => {
-    setCurrentImageIndex((prevIndex) => 
+    setCurrentImageIndex((prevIndex) =>
       prevIndex === 0 ? safeImages.length - 1 : prevIndex - 1
     );
   };
 
   const handleNextImage = () => {
-    setCurrentImageIndex((prevIndex) => 
+    setCurrentImageIndex((prevIndex) =>
       (prevIndex + 1) % safeImages.length
     );
   };
@@ -93,13 +93,13 @@ export function ImageCarousel({
 
   // Render method with careful styling
   return (
-    <div 
+    <div
       className={`${className} relative w-full h-full overflow-hidden`}
       onClick={(e) => e.stopPropagation()}
     >
       {/* Botón de imagen anterior */}
       {safeImages.length > 1 && (
-        <button 
+        <button
           onClick={handlePrevImage}
           className="absolute left-2 top-1/2 transform -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center"
         >
@@ -113,7 +113,7 @@ export function ImageCarousel({
 
       {/* Botón de siguiente imagen */}
       {safeImages.length > 1 && (
-        <button 
+        <button
           onClick={handleNextImage}
           className="absolute right-2 top-1/2 transform -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center"
         >
@@ -143,8 +143,8 @@ export function ImageCarousel({
               key={`${src}-${index}`}
               className={`
                 absolute inset-0 transition-opacity duration-300
-                ${isCurrentImage 
-                  ? 'opacity-100 pointer-events-auto' 
+                ${isCurrentImage
+                  ? 'opacity-100 pointer-events-auto'
                   : 'opacity-0 pointer-events-none'}
               `}
             >
@@ -154,8 +154,8 @@ export function ImageCarousel({
                 )}
                 <img
                   ref={(el) => imageElementRefs.current[index] = el}
-                  src={isErrored 
-                    ? 'https://via.placeholder.com/400x400?text=Image+Error' 
+                  src={isErrored
+                    ? 'https://via.placeholder.com/400x400?text=Image+Error'
                     : src}
                   alt={`${alt} - imagen ${index + 1}`}
                   srcSet={typeof image === 'object' ? image.srcSet : undefined}

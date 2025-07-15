@@ -83,7 +83,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
   return (
     <div className={[
       className, 
-      "product-card bg-white border border-gray-200 rounded-xl overflow-hidden shadow-lg hover:shadow-xl flex flex-col h-full relative transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1"
+      "product-card bg-white border border-gray-200 rounded-xl overflow-hidden shadow-md hover:shadow-2xl flex flex-col h-full relative transition-all duration-300 hover:scale-[1.02] hover:-translate-y-2 group"
     ].filter(Boolean).join(' ')} >
       {/* Imagen con proporción equilibrada */}
       <div className="w-full aspect-[4/5] sm:aspect-square overflow-hidden relative bg-gray-100">

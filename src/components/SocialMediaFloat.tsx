@@ -40,22 +40,22 @@ export const SocialMediaFloat: React.FC<SocialMediaFloatProps> = ({
         cursor: isDragging ? 'grabbing' : 'grab'
       })}
     >
-      <div className="flex flex-col space-y-1 bg-white bg-opacity-70 rounded-lg shadow-lg p-2 backdrop-blur-sm">
+      <div className="flex flex-col space-y-2 bg-white/90 rounded-xl shadow-xl p-3 backdrop-blur-lg border border-white/20">
         <button 
           onClick={() => window.open(whatsappUrl, '_blank')}
-          className="text-green-600 hover:text-green-500 transition-colors duration-300 bg-opacity-30 rounded-full p-2"
+          className="text-green-600 hover:text-white hover:bg-green-500 transition-all duration-300 rounded-full p-3 hover:scale-110 hover:shadow-lg group"
           title="WhatsApp"
         >
-          <FaWhatsapp size={18} className="drop-shadow-md" />
+          <FaWhatsapp size={20} className="drop-shadow-md group-hover:drop-shadow-xl transition-all duration-300" />
         </button>
         
         {!isSocialMenuOpen && (
           <button 
             onClick={toggleSocialMenu}
-            className="text-black hover:text-gray-800 transition-colors duration-300 bg-opacity-30 rounded-full p-2"
+            className="text-orange-500 hover:text-white hover:bg-orange-500 transition-all duration-300 rounded-full p-3 hover:scale-110 hover:shadow-lg group"
             title="Más redes sociales"
           >
-            <FaPlus size={18} />
+            <FaPlus size={18} className="group-hover:rotate-90 transition-transform duration-300" />
           </button>
         )}
 
@@ -65,24 +65,26 @@ export const SocialMediaFloat: React.FC<SocialMediaFloatProps> = ({
               href={facebookUrl} 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="text-blue-600 hover:text-blue-500 transition-colors duration-300 bg-opacity-70 rounded-full p-2"
+              className="text-blue-600 hover:text-white hover:bg-blue-500 transition-all duration-300 rounded-full p-3 hover:scale-110 hover:shadow-lg group"
+              title="Facebook"
             >
-              <FaFacebook size={18} />
+              <FaFacebook size={20} className="group-hover:drop-shadow-xl transition-all duration-300" />
             </a>
             <a 
               href={tiktokUrl} 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="text-black hover:text-gray-800 transition-colors duration-300 bg-opacity-70 rounded-full p-2"
+              className="text-gray-800 hover:text-white hover:bg-gray-800 transition-all duration-300 rounded-full p-3 hover:scale-110 hover:shadow-lg group"
+              title="TikTok"
             >
-              <FaTiktok size={18} />
+              <FaTiktok size={20} className="group-hover:drop-shadow-xl transition-all duration-300" />
             </a>
             <button 
               onClick={toggleSocialMenu}
-              className="text-black hover:text-gray-800 transition-colors duration-300 bg-opacity-70 rounded-full p-2 self-center"
+              className="text-orange-500 hover:text-white hover:bg-orange-500 transition-all duration-300 rounded-full p-3 hover:scale-110 hover:shadow-lg group self-center"
               title="Cerrar redes sociales"
             >
-              <FaPlus className="transform rotate-45" size={18} />
+              <FaPlus className="transform rotate-45 group-hover:rotate-90 transition-transform duration-300" size={18} />
             </button>
           </>
         )}
