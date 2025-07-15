@@ -5,8 +5,15 @@
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "jsx": "react-jsx",
     "strict": true,
+    "esModuleInterop": true,
     "skipLibCheck": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "types": ["sharp"]
   },
-  "include": ["src"]
+  "include": ["src", "src/react-jsx-runtime.d.ts"],
+  "exclude": ["node_modules"]
 }

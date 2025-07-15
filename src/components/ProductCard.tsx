@@ -83,7 +83,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
   return (
     <div className={[
       className, 
-      "product-card border rounded-lg overflow-hidden shadow-md flex flex-col h-full relative no-transform transition-all duration-300"
+      "product-card bg-white border border-gray-200 rounded-xl overflow-hidden shadow-lg hover:shadow-xl flex flex-col h-full relative transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1"
     ].filter(Boolean).join(' ')} >
       <div className="w-full aspect-square overflow-hidden relative bg-gray-100">
         {/* Barra de progreso de carga */}
@@ -113,24 +113,32 @@ export function ProductCard({ product, className }: ProductCardProps) {
           onFullyLoaded={handleImageFullyLoaded}
         />
       </div>
-      <div className="bg-white/90 py-3 px-4 flex-grow flex flex-col justify-between border-t border-gray-200">
+      <div className="bg-white p-4 flex-grow flex flex-col justify-between">
         <div>
-          <h2 className="text-lg font-bold text-gray-900 mb-1">{product.name}</h2>
-          <div className="flex gap-1 text-xs text-orange-500 mb-1">
-            {product.category_ref && <span>{product.category_ref.name}</span>}
-            {product.anime && <span>• {product.anime.name}</span>}
+          <h2 className="text-base font-bold text-gray-900 mb-2 line-clamp-2">{product.name}</h2>
+          <div className="flex flex-wrap gap-1 text-xs mb-2">
+            {product.category_ref && (
+              <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded-full">
+                {product.category_ref.name}
+              </span>
+            )}
+            {product.anime && (
+              <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                {product.anime.name}
+              </span>
+            )}
           </div>
-          <span className="text-lg font-bold text-orange-500 block mb-1">
+          <span className="text-xl font-bold text-orange-600 block mb-2">
             C${product.price.toFixed(2)}
           </span>
-          <p className="text-xs text-gray-600 mb-2 line-clamp-2">{product.description}</p>
+          <p className="text-xs text-gray-600 mb-3 line-clamp-2">{product.description}</p>
         </div>
         <button 
           onClick={() => addItem(product)}
-          className="w-full bg-black text-white py-2 px-2 rounded-md flex items-center justify-center gap-1 hover:bg-gray-800 transition-colors"
+          className="w-full bg-orange-500 text-white py-2 px-3 rounded-md flex items-center justify-center gap-1 hover:bg-orange-600 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md"
           aria-label={`Agregar ${product.name} al carrito`}
         >
-          <ShoppingCart size={16} />
+          <ShoppingCart size={14} />
           Agregar
         </button>
       </div>

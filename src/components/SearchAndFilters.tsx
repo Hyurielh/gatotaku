@@ -110,9 +110,6 @@ export function SearchAndFilters({
     <div className="search-and-filters-container pt-4">
       {/* Búsqueda (siempre visible) */}
       <div className="filter-group mb-4">
-        <label htmlFor="search-input-desktop" className="block text-sm font-medium text-gray-700 mb-1">
-          Buscar productos
-        </label>
         <input 
           id="search-input-desktop"
           type="text" 

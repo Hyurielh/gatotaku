@@ -151,11 +151,9 @@ export const useCategoriesAndAnimes = () => {
         ]);
 
         if (categoriesResponse.error) {
-          console.error('Categories fetch error:', categoriesResponse.error);
           throw categoriesResponse.error;
         }
         if (animesResponse.error) {
-          console.error('Animes fetch error:', animesResponse.error);
           throw animesResponse.error;
         }
 
@@ -164,7 +162,6 @@ export const useCategoriesAndAnimes = () => {
           animes: animesResponse.data || []
         };
       } catch (error) {
-        console.error('Error fetching categories and animes:', error);
         throw error;
       }
     },

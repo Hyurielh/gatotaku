@@ -23,13 +23,12 @@ function App() {
             Skip to main content
           </a>
           <SEO 
-            title="GATOTAKU - Tu Tienda de Anime"
+            title="Gatotaku"
             description="Tienda online de productos de anime y manga. Encuentra los mejores artículos de tus series favoritas."
-            // Add more meta tags
             openGraph={{
-              title: "GATOTAKU",
+              title: "Gatotaku",
               description: "Tu Tienda de Anime",
-              image: "url-to-your-og-image"
+              image: "https://gatotaku.com/logo.png"
             }}
           />
           <AuthProvider>
@@ -38,7 +37,7 @@ function App() {
                 <div className="flex flex-col min-h-screen">
                   <Header />
                   <Suspense fallback={<div>Loading...</div>}>
-                    <main id="main-content" className="flex-grow pt-8">
+                    <main id="main-content" className="flex-grow pt-[12vh] px-4 sm:px-6 lg:px-8 pb-20">
                       <AppRoutes />
                     </main>
                   </Suspense>

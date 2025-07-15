@@ -128,7 +128,6 @@ export function generateWebPSrcsetOld(imageUrls: string | string[]): string[] {
         return `${url} ${size.descriptor}`;
       }).join(', ');
     } catch (error) {
-      console.error('Error generating WebP srcset:', error);
       return url;
     }
   });

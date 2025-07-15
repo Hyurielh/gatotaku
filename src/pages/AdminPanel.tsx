@@ -58,7 +58,6 @@ export default function AdminPanel() {
         message: defaultMessage
       });
     }
-    console.error('Error detallado:', error);
   };
 
   // Función auxiliar para búsqueda flexible
@@ -90,7 +89,6 @@ export default function AdminPanel() {
       // Devolver las condiciones como un string, o un string vacío si no hay condiciones
       return searchConditions.length > 0 ? searchConditions.join(',') : '';
     } catch (error) {
-      console.error('Error en búsqueda flexible:', error);
       return '';
     }
   };
@@ -117,7 +115,7 @@ export default function AdminPanel() {
             query = query.or(searchConditions);
           }
         } catch (error) {
-          console.error('Error en búsqueda de productos:', error);
+          // Error handled silently
         }
       }
 

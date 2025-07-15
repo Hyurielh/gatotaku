@@ -1,17 +1,16 @@
-import * as React from 'react';
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { SEO } from '../components/SEO';
 import { SearchAndFilters } from '../components/SearchAndFilters';
 import { ProductCard } from '../components/ProductCard';
-import type { Product, Category, Anime, Filters } from '../types/database';
+import type { Product, Filters } from '../types/database';
 import { ErrorBoundary } from 'react-error-boundary';
 
 // Error Fallback Component
 function StoreFrontErrorFallback({ error, resetErrorBoundary }: { error: Error, resetErrorBoundary: () => void }) {
   useEffect(() => {
-    console.error('StoreFront Component Error:', error);
+    // Error is already handled by ErrorBoundary
   }, [error]);
 
   return (
@@ -133,7 +132,6 @@ function StoreFrontContent() {
       // Devolver las condiciones como un string, o un string vacío si no hay condiciones
       return searchConditions.length > 0 ? searchConditions.join(',') : '';
     } catch (error) {
-      console.error('Error en búsqueda flexible:', error);
       return '';
     }
   };
@@ -165,7 +163,7 @@ function StoreFrontContent() {
             query = query.or(searchConditions);
           }
         } catch (error) {
-          console.error('Error en búsqueda de productos:', error);
+          // Error handled silently
         }
       }
 
@@ -200,7 +198,6 @@ function StoreFrontContent() {
         totalPages 
       };
     } catch (error) {
-      console.error('🚨 Error en búsqueda de productos:', error);
       return { products: [], totalPages: 0 };
     }
   }, [filters]);
@@ -278,28 +275,44 @@ function StoreFrontContent() {
     );
   };
 
-  const [isPaginationFixed, setIsPaginationFixed] = useState(true);
+  const [paginationOffset, setPaginationOffset] = useState(0);
 
   useEffect(() => {
-    const checkFooterVisibility = () => {
-      const footer = document.querySelector('footer');
-      const viewportHeight = window.innerHeight;
-      
-      if (footer) {
-        const footerRect = footer.getBoundingClientRect();
-        const isFooterVisible = footerRect.top < viewportHeight;
-        setIsPaginationFixed(!isFooterVisible);
+    let ticking = false;
+    
+    const updatePaginationPosition = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const footer = document.querySelector('footer');
+          const viewportHeight = window.innerHeight;
+          
+          if (footer) {
+            const footerRect = footer.getBoundingClientRect();
+            
+            // Si el footer está visible, pegar la paginación al footer sin separación
+            if (footerRect.top < viewportHeight) {
+              const overlap = viewportHeight - footerRect.top;
+              setPaginationOffset(overlap); // Sin margen adicional para pegarlo
+            } else {
+              setPaginationOffset(0);
+            }
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 
-    // Verificar al inicio y en cada scroll
-    checkFooterVisibility();
-    window.addEventListener('scroll', checkFooterVisibility);
-    window.addEventListener('resize', checkFooterVisibility);
+    // Verificar al inicio
+    updatePaginationPosition();
+    
+    // Throttled scroll listener
+    window.addEventListener('scroll', updatePaginationPosition, { passive: true });
+    window.addEventListener('resize', updatePaginationPosition);
 
     return () => {
-      window.removeEventListener('scroll', checkFooterVisibility);
-      window.removeEventListener('resize', checkFooterVisibility);
+      window.removeEventListener('scroll', updatePaginationPosition);
+      window.removeEventListener('resize', updatePaginationPosition);
     };
   }, []);
 
@@ -334,42 +347,47 @@ function StoreFrontContent() {
     const pageNumbers = getPageNumbers();
 
     return (
-      <div className={`${isPaginationFixed ? 'fixed' : 'relative'} bottom-0 left-0 right-0 flex flex-col justify-center items-center p-2 sm:p-4 z-50 bg-white/80 backdrop-blur-sm`}>
-        {/* Texto de contexto de página */}
-        <div className="text-xs sm:text-sm text-gray-600 mb-2">
-          Página {currentPage} de {totalPages}
-        </div>
-        
-        <div className="flex items-center space-x-2 w-full max-w-xs">
-          {/* Botón de página anterior */}
+      <div 
+        className="fixed bottom-0 left-0 right-0 flex justify-center items-center py-2 z-50 bg-white/95 backdrop-blur-sm transition-transform duration-200 ease-out shadow-lg border-t border-gray-200"
+        style={{
+          transform: `translateY(-${paginationOffset}px)`
+        }}
+      >
+        <div className="flex items-center space-x-1 sm:space-x-2">
+          {/* Texto de página solo en desktop */}
+          <span className="hidden md:block text-xs text-gray-500 mr-2">
+            {currentPage}/{totalPages}
+          </span>
+          
+          {/* Botón anterior */}
           <button 
             onClick={() => handlePageChange(currentPage - 1)} 
             disabled={currentPage === 1}
-            className="flex-grow px-2 sm:px-4 py-2 sm:py-3 text-base sm:text-lg rounded-lg bg-gray-100 hover:bg-blue-100 disabled:opacity-50 transition-colors flex justify-center items-center"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-md bg-gray-100 hover:bg-orange-100 disabled:opacity-50 transition-colors flex items-center justify-center text-sm"
           >
             ←
           </button>
 
-          {/* Botones de números de página */}
+          {/* Botones de números */}
           {pageNumbers.map((number) => (
             <button
               key={number}
               onClick={() => handlePageChange(number)}
-              className={`flex-grow px-2 sm:px-4 py-2 sm:py-3 text-base sm:text-lg rounded-lg transition-colors ${
+              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-md transition-colors flex items-center justify-center text-sm font-medium ${
                 currentPage === number 
-                  ? 'bg-blue-500 text-white' 
-                  : 'bg-gray-100 hover:bg-blue-100'
+                  ? 'bg-orange-500 text-white shadow-sm' 
+                  : 'bg-gray-100 hover:bg-orange-100 text-gray-700'
               }`}
             >
               {number}
             </button>
           ))}
 
-          {/* Botón de página siguiente */}
+          {/* Botón siguiente */}
           <button 
             onClick={() => handlePageChange(currentPage + 1)} 
             disabled={currentPage === totalPages}
-            className="flex-grow px-2 sm:px-4 py-2 sm:py-3 text-base sm:text-lg rounded-lg bg-gray-100 hover:bg-blue-100 disabled:opacity-50 transition-colors flex justify-center items-center"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-md bg-gray-100 hover:bg-orange-100 disabled:opacity-50 transition-colors flex items-center justify-center text-sm"
           >
             →
           </button>
@@ -379,7 +397,7 @@ function StoreFrontContent() {
   };
 
   return (
-    <div className="relative min-h-screen bg-white overflow-hidden">
+    <div className="relative min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         <SEO 
           title="GATOTAKU - Tu Tienda de Anime"
@@ -387,7 +405,7 @@ function StoreFrontContent() {
         />
         
         {/* Redesigned Filter Section */}
-        <div className="mb-8 bg-gray-50 rounded-lg shadow-md p-6">
+        <div className="mb-6 bg-white rounded-xl shadow-lg p-4 border border-gray-200">
           {isLoading ? (
             <h1 className="text-3xl font-bold text-gray-800 border-b-2 border-orange-200 pb-2">
               GATOTAKU
@@ -404,7 +422,7 @@ function StoreFrontContent() {
         </div>
         
         {/* Product Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4 transition-all duration-300 ease-in-out transform">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
           {queryData?.products?.map((product, index) => (
             <div 
               key={product.id} 
