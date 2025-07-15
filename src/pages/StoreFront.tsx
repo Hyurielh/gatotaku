@@ -53,6 +53,8 @@ function StoreFrontContent() {
     maxPrice: undefined,
     page: 1
   }));
+  
+  const [isPageChanging, setIsPageChanging] = useState(false);
 
   useEffect(() => {
     const resetFiltersHandler = () => {
@@ -142,9 +144,8 @@ function StoreFrontContent() {
     totalPages: number 
   }> => {
     try {
-      // Determinar el límite de productos según el tamaño de pantalla
-      const isMobile = window.innerWidth < 768; // Breakpoint típico para móvil
-      const productsPerPage = isMobile ? 6 : 12;
+      // 12 productos por página en todas las pantallas
+      const productsPerPage = 12;
       const from = (pageParam - 1) * productsPerPage;
       const to = from + productsPerPage - 1;
 
@@ -237,9 +238,40 @@ function StoreFrontContent() {
     });
   }, []);
 
-  // Actualizar renderizado y manejo de páginas
+  // Actualizar renderizado y manejo de páginas con mejor transición
   const handlePageChange = (newPage: number) => {
-    setFilters(prev => ({ ...prev, page: newPage }));
+    // Activar estado de transición
+    setIsPageChanging(true);
+    
+    // Pequeño delay para mostrar el efecto de fade
+    setTimeout(() => {
+      setFilters(prev => ({ ...prev, page: newPage }));
+      
+      // Scroll al inicio de los productos con mejor timing
+      setTimeout(() => {
+        const productsSection = document.querySelector('.products-grid-wrapper');
+        if (productsSection) {
+          productsSection.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+          });
+        } else {
+          // Fallback: scroll al main content
+          const mainContent = document.getElementById('main-content');
+          if (mainContent) {
+            mainContent.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'start' 
+            });
+          }
+        }
+        
+        // Desactivar estado de transición después del scroll
+        setTimeout(() => {
+          setIsPageChanging(false);
+        }, 300);
+      }, 100);
+    }, 150);
   };
 
   const handleResetFilters = () => {
@@ -421,22 +453,38 @@ function StoreFrontContent() {
           )}
         </div>
         
-        {/* Product Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
-          {queryData?.products?.map((product, index) => (
-            <div 
-              key={product.id} 
-              className="transition-all duration-300"
-              style={{ 
-                transitionDelay: `${index * 50}ms`,
-                willChange: 'transform, opacity'
-              }}
-            >
-              <ProductCard 
-                product={product} 
-              />
+        {/* Product Grid - Wrapper con ID para scroll */}
+        <div id="products-section" className="relative products-grid-wrapper">
+          {/* Overlay de transición */}
+          {isPageChanging && (
+            <div className="absolute inset-0 bg-white/70 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
+              <div className="flex items-center space-x-2 text-orange-600">
+                <div className="animate-spin rounded-full h-6 w-6 border-2 border-orange-600 border-t-transparent"></div>
+                <span className="text-sm font-medium">Cargando...</span>
+              </div>
             </div>
-          ))}
+          )}
+          
+          <div 
+            className={`grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-6 transition-opacity duration-300 ${
+              isPageChanging ? 'opacity-50' : 'opacity-100'
+            }`}
+          >
+            {queryData?.products?.map((product, index) => (
+              <div 
+                key={product.id} 
+                className="transition-all duration-300"
+                style={{ 
+                  transitionDelay: `${index * 50}ms`,
+                  willChange: 'transform, opacity'
+                }}
+              >
+                <ProductCard 
+                  product={product} 
+                />
+              </div>
+            ))}
+          </div>
         </div>
         
         {/* Pagination Controls */}
