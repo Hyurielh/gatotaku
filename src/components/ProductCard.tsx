@@ -85,8 +85,8 @@ export function ProductCard({ product, className }: ProductCardProps) {
       className, 
       "product-card bg-white border border-gray-200 rounded-xl overflow-hidden shadow-lg hover:shadow-xl flex flex-col h-full relative transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1"
     ].filter(Boolean).join(' ')} >
-      {/* Imagen con mejor proporción para móvil */}
-      <div className="w-full aspect-[4/5] sm:aspect-square overflow-hidden relative bg-gray-100">
+      {/* Imagen mucho más prominente en móvil */}
+      <div className="w-full aspect-[3/4] sm:aspect-square overflow-hidden relative bg-gray-100">
         {/* Barra de progreso de carga */}
         <div 
           className="absolute top-0 left-0 h-1 bg-orange-500 z-50 transition-all duration-300" 
@@ -114,41 +114,49 @@ export function ProductCard({ product, className }: ProductCardProps) {
           onFullyLoaded={handleImageFullyLoaded}
         />
       </div>
-      {/* Contenido con mejor espaciado para móvil */}
-      <div className="bg-white p-3 sm:p-4 flex-grow flex flex-col justify-between">
-        <div>
-          {/* Título más grande en móvil y con mejor line-clamp */}
-          <h2 className="text-sm sm:text-base font-bold text-gray-900 mb-2 line-clamp-3 sm:line-clamp-2 leading-tight">
+      
+      {/* Contenido optimizado para móvil */}
+      <div className="bg-white p-2 sm:p-4 flex-grow flex flex-col justify-between">
+        <div className="space-y-1 sm:space-y-2">
+          {/* Título compacto pero legible */}
+          <h2 className="text-xs sm:text-base font-bold text-gray-900 line-clamp-2 leading-tight">
             {product.name}
           </h2>
-          {/* Tags más pequeños en móvil */}
-          <div className="flex flex-wrap gap-1 text-xs mb-2">
+          
+          {/* Tags más compactos */}
+          <div className="flex flex-wrap gap-0.5 sm:gap-1">
             {product.category_ref && (
-              <span className="bg-orange-100 text-orange-700 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-xs">
+              <span className="bg-orange-100 text-orange-700 px-1 py-0.5 sm:px-2 sm:py-1 rounded text-[10px] sm:text-xs font-medium">
                 {product.category_ref.name}
               </span>
             )}
             {product.anime && (
-              <span className="bg-blue-100 text-blue-700 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-xs">
+              <span className="bg-blue-100 text-blue-700 px-1 py-0.5 sm:px-2 sm:py-1 rounded text-[10px] sm:text-xs font-medium">
                 {product.anime.name}
               </span>
             )}
           </div>
-          {/* Precio más prominente */}
-          <span className="text-lg sm:text-xl font-bold text-orange-600 block mb-2">
+          
+          {/* Precio destacado */}
+          <div className="text-sm sm:text-xl font-bold text-orange-600">
             C${product.price.toFixed(2)}
-          </span>
-          {/* Descripción visible en todas las pantallas */}
-          <p className="text-xs text-gray-600 mb-3 line-clamp-2">{product.description}</p>
+          </div>
+          
+          {/* Descripción más compacta en móvil */}
+          <p className="text-[10px] sm:text-xs text-gray-600 line-clamp-2 leading-tight">
+            {product.description}
+          </p>
         </div>
-        {/* Botón más compacto en móvil */}
+        
+        {/* Botón optimizado */}
         <button 
           onClick={() => addItem(product)}
-          className="w-full bg-orange-500 text-white py-2 px-2 sm:px-3 rounded-md flex items-center justify-center gap-1 hover:bg-orange-600 transition-all duration-200 font-medium text-xs sm:text-sm shadow-sm hover:shadow-md"
+          className="w-full bg-orange-500 text-white py-1.5 sm:py-2 px-2 sm:px-3 rounded-md flex items-center justify-center gap-1 hover:bg-orange-600 transition-all duration-200 font-medium text-[10px] sm:text-sm shadow-sm hover:shadow-md mt-2"
           aria-label={`Agregar ${product.name} al carrito`}
         >
-          <ShoppingCart size={12} className="sm:w-4 sm:h-4" />
-          Agregar
+          <ShoppingCart size={10} className="sm:w-4 sm:h-4" />
+          <span className="hidden xs:inline sm:inline">Agregar</span>
+          <span className="xs:hidden sm:hidden">+</span>
         </button>
       </div>
     </div>
