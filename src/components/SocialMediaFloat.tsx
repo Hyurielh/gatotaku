@@ -53,21 +53,23 @@ export const SocialMediaFloat: React.FC<SocialMediaFloatProps> = ({
           >
             <FaWhatsapp size={20} className="text-green-500 group-hover:text-green-600 transition-colors" />
           </button>
-        </div>
 
-        {/* Botón + para expandir/contraer */}
-        {!isSocialMenuOpen && (
+          {/* Botón pequeño + en la esquina para expandir/contraer */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               toggleSocialMenu();
             }}
-            className="w-12 h-12 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center group"
-            title="Más redes sociales"
+            className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 hover:bg-orange-600 rounded-full shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110 flex items-center justify-center group z-10"
+            title={isSocialMenuOpen ? "Cerrar redes sociales" : "Más redes sociales"}
           >
-            <FaPlus size={16} className="text-white group-hover:rotate-90 transition-transform duration-300" />
+            <FaPlus
+              size={10}
+              className={`text-white transition-transform duration-300 ${isSocialMenuOpen ? 'rotate-45' : 'group-hover:rotate-90'
+                }`}
+            />
           </button>
-        )}
+        </div>
 
         {/* Redes sociales expandidas */}
         {isSocialMenuOpen && (
@@ -92,16 +94,7 @@ export const SocialMediaFloat: React.FC<SocialMediaFloatProps> = ({
             >
               <FaTiktok size={20} className="text-gray-800 group-hover:text-black transition-colors" />
             </a>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleSocialMenu();
-              }}
-              className="w-12 h-12 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center group"
-              title="Cerrar redes sociales"
-            >
-              <FaPlus className="text-white transform rotate-45 group-hover:rotate-90 transition-transform duration-300" size={16} />
-            </button>
+
           </>
         )}
       </div>
