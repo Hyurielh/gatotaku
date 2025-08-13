@@ -14,10 +14,11 @@ export const Header: React.FC = React.memo(() => {
   const { session, logout } = useAuth();
   const navigate = useNavigate();
   
-  const { isDragging, position, dragHandlers } = useDraggable({ // Changed here
-    x: 16, 
-    y: window.innerHeight / 2 
+  const { isDragging, position, dragHandlers } = useDraggable({
+    x: 8, 
+    y: window.innerHeight / 2 - 100
   });
+
 
   const handleLogout = async () => {
     try {

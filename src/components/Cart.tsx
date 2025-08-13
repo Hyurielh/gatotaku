@@ -37,7 +37,7 @@ export function Cart() {
       {/* Cart button with improved design */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-16 right-4 sm:bottom-20 sm:right-6 md:bottom-24 md:right-8 z-50 
+        className="fixed bottom-16 right-6 sm:bottom-20 sm:right-8 md:bottom-24 md:right-12 z-50 
                  bg-orange-500 text-white w-14 h-14 sm:w-16 sm:h-16 rounded-full shadow-xl 
                  hover:bg-orange-600 transition-all duration-300 hover:scale-105 
                  border-3 border-white flex items-center justify-center"

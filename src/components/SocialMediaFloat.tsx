@@ -28,63 +28,79 @@ export const SocialMediaFloat: React.FC<SocialMediaFloatProps> = ({
   const tiktokUrl = "https://www.tiktok.com/@gatotaku2022";
 
   return (
-    <div 
+    <div
       ref={socialButtonRef}
       onMouseDown={dragHandlers.onMouseDown}
       onTouchStart={dragHandlers.onTouchStart}
       style={dragHandlers.mergeDragStyles({
         position: 'fixed',
-        left: `${position.x}px`, 
+        left: `${position.x}px`,
         top: `${position.y}px`,
-        zIndex: 30,
+        zIndex: 9999,
         cursor: isDragging ? 'grabbing' : 'grab'
       })}
     >
-      <div className="flex flex-col space-y-2 bg-white/90 rounded-xl shadow-xl p-3 backdrop-blur-lg border border-white/20">
-        <button 
-          onClick={() => window.open(whatsappUrl, '_blank')}
-          className="text-green-600 hover:text-white hover:bg-green-500 transition-all duration-300 rounded-full p-3 hover:scale-110 hover:shadow-lg group"
-          title="WhatsApp"
-        >
-          <FaWhatsapp size={20} className="drop-shadow-md group-hover:drop-shadow-xl transition-all duration-300" />
-        </button>
-        
+      <div className="flex flex-col space-y-3">
+        {/* WhatsApp - siempre visible */}
+        <div className="relative">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              window.open(whatsappUrl, '_blank');
+            }}
+            className="w-12 h-12 bg-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center group border-2 border-orange-300"
+            title="WhatsApp"
+          >
+            <FaWhatsapp size={20} className="text-green-500 group-hover:text-green-600 transition-colors" />
+          </button>
+        </div>
+
+        {/* Botón + para expandir/contraer */}
         {!isSocialMenuOpen && (
-          <button 
-            onClick={toggleSocialMenu}
-            className="text-orange-500 hover:text-white hover:bg-orange-500 transition-all duration-300 rounded-full p-3 hover:scale-110 hover:shadow-lg group"
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleSocialMenu();
+            }}
+            className="w-12 h-12 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center group"
             title="Más redes sociales"
           >
-            <FaPlus size={18} className="group-hover:rotate-90 transition-transform duration-300" />
+            <FaPlus size={16} className="text-white group-hover:rotate-90 transition-transform duration-300" />
           </button>
         )}
 
+        {/* Redes sociales expandidas */}
         {isSocialMenuOpen && (
           <>
-            <a 
-              href={facebookUrl} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-blue-600 hover:text-white hover:bg-blue-500 transition-all duration-300 rounded-full p-3 hover:scale-110 hover:shadow-lg group"
+            <a
+              href={facebookUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="w-12 h-12 bg-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center group"
               title="Facebook"
             >
-              <FaFacebook size={20} className="group-hover:drop-shadow-xl transition-all duration-300" />
+              <FaFacebook size={20} className="text-blue-600 group-hover:text-blue-700 transition-colors" />
             </a>
-            <a 
-              href={tiktokUrl} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-gray-800 hover:text-white hover:bg-gray-800 transition-all duration-300 rounded-full p-3 hover:scale-110 hover:shadow-lg group"
+            <a
+              href={tiktokUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="w-12 h-12 bg-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center group"
               title="TikTok"
             >
-              <FaTiktok size={20} className="group-hover:drop-shadow-xl transition-all duration-300" />
+              <FaTiktok size={20} className="text-gray-800 group-hover:text-black transition-colors" />
             </a>
-            <button 
-              onClick={toggleSocialMenu}
-              className="text-orange-500 hover:text-white hover:bg-orange-500 transition-all duration-300 rounded-full p-3 hover:scale-110 hover:shadow-lg group self-center"
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleSocialMenu();
+              }}
+              className="w-12 h-12 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center group"
               title="Cerrar redes sociales"
             >
-              <FaPlus className="transform rotate-45 group-hover:rotate-90 transition-transform duration-300" size={18} />
+              <FaPlus className="text-white transform rotate-45 group-hover:rotate-90 transition-transform duration-300" size={16} />
             </button>
           </>
         )}
