@@ -82,39 +82,39 @@ export function ProductCard({ product, className }: ProductCardProps) {
 
   return (
     <div className={[
-      className, 
+      className,
       "product-card bg-white border border-gray-200 rounded-xl overflow-hidden shadow-md hover:shadow-2xl flex flex-col h-full relative transition-all duration-300 hover:scale-[1.02] hover:-translate-y-2 group"
     ].filter(Boolean).join(' ')} >
       {/* Imagen con proporción equilibrada */}
       <div className="w-full aspect-[4/5] sm:aspect-square overflow-hidden relative bg-gray-100">
         {/* Barra de progreso de carga */}
-        <div 
-          className="absolute top-0 left-0 h-1 bg-orange-500 z-50 transition-all duration-300" 
-          style={{ 
+        <div
+          className="absolute top-0 left-0 h-1 bg-orange-500 z-50 transition-all duration-300"
+          style={{
             width: `${imageLoadProgress}%`,
             opacity: isImageFullyLoaded ? 0 : 1
           }}
         />
 
         {/* Placeholder de baja resolución */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center opacity-50 blur-lg transition-opacity duration-300" 
-          style={{ 
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-50 blur-lg transition-opacity duration-300"
+          style={{
             backgroundImage: `url(${imageData[0].lowResSrc})`,
             zIndex: 10,
             opacity: isImageFullyLoaded ? 0 : 0.5
           }}
         />
 
-        <ImageCarousel 
-          images={imageData} 
-          alt={product.name} 
+        <ImageCarousel
+          images={imageData}
+          alt={product.name}
           loading="lazy"
           className="w-full h-full relative z-20 transition-opacity duration-500"
           onFullyLoaded={handleImageFullyLoaded}
         />
       </div>
-      
+
       {/* Contenido con textos más legibles */}
       <div className="bg-white p-3 sm:p-4 flex-grow flex flex-col justify-between">
         <div className="space-y-2">
@@ -122,7 +122,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
           <h2 className="text-sm sm:text-base font-bold text-gray-900 line-clamp-2 leading-tight">
             {product.name}
           </h2>
-          
+
           {/* Tags con mejor tamaño */}
           <div className="flex flex-wrap gap-1">
             {product.category_ref && (
@@ -136,20 +136,20 @@ export function ProductCard({ product, className }: ProductCardProps) {
               </span>
             )}
           </div>
-          
+
           {/* Precio bien visible */}
           <div className="text-lg sm:text-xl font-bold text-orange-600">
             C${product.price.toFixed(2)}
           </div>
-          
+
           {/* Descripción legible */}
           <p className="text-xs sm:text-xs text-gray-600 line-clamp-2 leading-relaxed">
             {product.description}
           </p>
         </div>
-        
+
         {/* Botón con mejor tamaño */}
-        <button 
+        <button
           onClick={() => addItem(product)}
           className="w-full bg-orange-500 text-white py-2 sm:py-2 px-3 sm:px-3 rounded-md flex items-center justify-center gap-2 hover:bg-orange-600 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md mt-3"
           aria-label={`Agregar ${product.name} al carrito`}

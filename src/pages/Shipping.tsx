@@ -19,11 +19,11 @@ const Shipping = () => {
               <ul className="space-y-2">
                 <li className="list-item">
                   <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
-                  <span>Domingo</span>
+                  <span>Miércoles</span>
                 </li>
                 <li className="list-item">
                   <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
-                  <span>Lunes</span>
+                  <span>Jueves</span>
                 </li>
               </ul>
             </div>
