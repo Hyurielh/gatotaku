@@ -6,16 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gatotaku</title>
     <meta name="description" content="Descubre nuestra colección de productos de anime. Figuras, mangas, accesorios y más." />
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Quicksand:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/af1d90440c.js" crossorigin="anonymous"></script>
-    <!-- Precargar recursos críticos -->
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Quicksand:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" as="style">
+    <!-- Precargar y cargar Google Fonts de forma no bloqueante -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Quicksand:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" as="style" onload="this.rel='stylesheet'">
+    <noscript>
+      <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Quicksand:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    </noscript>
+    <!-- Precargar FontAwesome y cargarlo al final del body -->
+    <link rel="preload" href="https://kit.fontawesome.com/af1d90440c.js" as="script">
     <link rel="preconnect" href="https://qpxjmkwebtehwbxbsefs.supabase.co">
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx">
-      window.location.href = '/gatotaku/admin';
-    </script>
+    <script type="module" src="/src/main.tsx"></script>
+    <!-- Cargar FontAwesome de forma no bloqueante -->
+    <script async src="https://kit.fontawesome.com/af1d90440c.js" crossorigin="anonymous"></script>
   </body>
 </html>
