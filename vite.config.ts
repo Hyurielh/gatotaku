@@ -43,7 +43,7 @@ export default defineConfig({
       overlay: true  // Mostrar errores en pantalla
     },
     headers: {
-      'Cache-Control': 'public, max-age=300, stale-while-revalidate=60',
+      'Cache-Control': 'public, max-age=31536000, immutable',
     },
     watch: {
       ignored: ['**/node_modules/**', '**/.git/**'],  
@@ -56,7 +56,7 @@ export default defineConfig({
     open: false,
     cors: true,
     headers: {
-      'Cache-Control': 'public, max-age=300, stale-while-revalidate=60',
+      'Cache-Control': 'public, max-age=31536000, immutable',
     }
   },
   build: {
