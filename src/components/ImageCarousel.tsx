@@ -145,10 +145,10 @@ export function ImageCarousel({
           const isCurrentImage = index === currentImageIndex;
           const isErrored = imageLoadErrors.includes(index);
 
-          // La primera imagen se carga con fetchpriority=high y loading=eager
-          const imgProps = index === 0
+          // Solo la imagen visible (actual) se carga con prioridad alta
+          const imgProps = isCurrentImage && index === 0
             ? { loading: 'eager' as 'eager', fetchPriority: 'high' as 'high' }
-            : { loading: loading as 'lazy' | 'eager' | undefined };
+            : { loading: 'lazy' as 'lazy' };
 
           return (
             <div
