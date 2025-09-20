@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { optimizeImage } from '../utils/imageOptimization';
 
 interface ImageCarouselProps {
   images: (string | {
@@ -28,7 +29,13 @@ export function ImageCarousel({
     if (!images || images.length === 0) {
       return ['https://via.placeholder.com/400x400?text=No+Image'];
     }
-    return images;
+    return images.map(img => {
+      if (typeof img === 'string') return optimizeImage(img);
+      if (typeof img === 'object' && img.src) {
+        return { ...img, src: optimizeImage(img.src) };
+      }
+      return img;
+    });
   }, [images]);
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);

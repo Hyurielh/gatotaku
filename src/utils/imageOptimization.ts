@@ -32,28 +32,28 @@ export function optimizeImage(
     format?: 'webp' | 'jpeg' | 'png' 
   } = {}
 ): string {
-  const { 
-    maxWidth = 1200, 
-    quality = 80, 
-    format = 'webp' 
+  const {
+    maxWidth = 1200,
+    quality = 70,
+    format = 'webp'
   } = options;
 
-  // Construcción de URL de Imgix con parámetros de optimización
-  const url = new URL(src);
-  
-  // Parámetros de Imgix para optimización
-  const imgixParams = new URLSearchParams({
-    w: maxWidth.toString(),      // Ancho máximo
-    q: quality.toString(),        // Calidad
-    fm: format,                   // Formato
-    fit: 'max',                   // Ajuste de imagen
-    auto: 'compress,format'       // Compresión y conversión automática
-  });
-
-  // Agregar parámetros de Imgix a la URL
-  url.search = imgixParams.toString();
-
-  return url.toString();
+  // Construcción de URL de Imagekit con parámetros de optimización
+  // Ejemplo: https://ik.imagekit.io/tu_id/imagen.jpg?tr=w-1200,q-70,fo-auto,cmpr-true,f-webp
+  let url = src;
+  const params = [
+    `w-${maxWidth}`,
+    `q-${quality}`,
+    'fo-auto',
+    'cmpr-true',
+    `f-${format}`
+  ];
+  if (src.includes('?')) {
+    url += `&tr=${params.join(',')}`;
+  } else {
+    url += `?tr=${params.join(',')}`;
+  }
+  return url;
 }
 
 // Función para generar placeholder de baja resolución

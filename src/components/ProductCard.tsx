@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { Product } from '../types/database';
 import { ImageCarousel } from './ImageCarousel';
-import { generateWebPSrcset, convertToWebP, generateLowResPlaceholder } from '../utils/imageOptimization';
+import { generateWebPSrcset, convertToWebP, generateLowResPlaceholder, optimizeImage } from '../utils/imageOptimization';
 import { useCart } from '../context/CartContext';
 import { ShoppingCart } from 'lucide-react';
 
@@ -26,12 +26,15 @@ export function ProductCard({ product, className }: ProductCardProps) {
   }, [product.images]);
 
   const imageData = React.useMemo(() => {
-    return validImages.map((src, index) => ({
-      src: src,
-      srcSet: generateWebPSrcset([src])[0],
-      webp: convertToWebP(src),
-      lowResSrc: generateLowResPlaceholder(src)
-    }));
+    return validImages.map((src, index) => {
+      const optimizedSrc = optimizeImage(src);
+      return {
+        src: optimizedSrc,
+        srcSet: generateWebPSrcset([optimizedSrc])[0],
+        webp: optimizeImage(src, { format: 'webp', quality: 70 }),
+        lowResSrc: generateLowResPlaceholder(optimizedSrc)
+      };
+    });
   }, [validImages]);
 
   // Callback para manejar la carga completa de imágenes
