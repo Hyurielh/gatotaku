@@ -145,6 +145,11 @@ export function ImageCarousel({
           const isCurrentImage = index === currentImageIndex;
           const isErrored = imageLoadErrors.includes(index);
 
+          // La primera imagen se carga con fetchpriority=high y loading=eager
+          const imgProps = index === 0
+            ? { loading: 'eager' as 'eager', fetchPriority: 'high' as 'high' }
+            : { loading: loading as 'lazy' | 'eager' | undefined };
+
           return (
             <div
               key={`${src}-${index}`}
@@ -166,10 +171,10 @@ export function ImageCarousel({
                     : src}
                   alt={`${alt} - imagen ${index + 1}`}
                   srcSet={typeof image === 'object' ? image.srcSet : undefined}
-                  loading={loading}
                   onError={() => handleImageError(index)}
                   onLoad={() => handleImageLoad(index)}
                   className="w-full h-full object-cover absolute inset-0 transform scale-100"
+                  {...imgProps}
                 />
               </picture>
             </div>
