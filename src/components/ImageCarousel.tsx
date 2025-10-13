@@ -145,9 +145,14 @@ export function ImageCarousel({
           const isCurrentImage = index === currentImageIndex;
           const isErrored = imageLoadErrors.includes(index);
 
-          // Solo la imagen visible (actual) se carga con prioridad alta
+          // Solo la imagen visible (actual) se carga con prioridad alta.
+          // Nota: React todavía puede advertir sobre props no estándar como
+          // `fetchPriority`. Para evitar la advertencia, solo pasamos
+          // `loading` como prop y usamos la referencia del elemento para
+          // establecer el atributo DOM `fetchpriority` en minúsculas cuando
+          // corresponda.
           const imgProps = isCurrentImage && index === 0
-            ? { loading: 'eager' as 'eager', fetchPriority: 'high' as 'high' }
+            ? { loading: 'eager' as 'eager' }
             : { loading: 'lazy' as 'lazy' };
 
           return (
@@ -165,7 +170,18 @@ export function ImageCarousel({
                   <source srcSet={image.webp} type="image/webp" />
                 )}
                 <img
-                  ref={(el) => imageElementRefs.current[index] = el}
+                  ref={(el) => {
+                    imageElementRefs.current[index] = el;
+                    // Establecer o eliminar el atributo fetchpriority en minúsculas
+                    // directamente en el DOM para evitar la advertencia de React.
+                    if (el) {
+                      if (isCurrentImage && index === 0) {
+                        el.setAttribute('fetchpriority', 'high');
+                      } else {
+                        el.removeAttribute('fetchpriority');
+                      }
+                    }
+                  }}
                   src={isErrored
                     ? 'https://via.placeholder.com/400x400?text=Image+Error'
                     : src}
