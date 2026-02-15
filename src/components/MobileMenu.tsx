@@ -4,7 +4,7 @@ import { FaTimes, FaWhatsapp, FaUserShield } from 'react-icons/fa';
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
-  session: any;
+  session?: unknown;
 }
 
 export const MobileMenu: React.FC<MobileMenuProps> = ({

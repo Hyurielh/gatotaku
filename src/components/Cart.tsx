@@ -25,7 +25,7 @@ export function Cart() {
       clearCart();
       setIsOpen(false);
       toast.success('¡Pedido enviado exitosamente!');
-    } catch (error) {
+    } catch {
       toast.error('Error al procesar el pedido');
     } finally {
       setIsOrdering(false);

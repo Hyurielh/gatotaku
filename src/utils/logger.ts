@@ -1,21 +1,19 @@
-// Simple logger utility for development vs production
-const isDevelopment = import.meta.env.DEV;
+const isDevelopment = !!(((import.meta as unknown) as { env?: { DEV?: boolean } }).env?.DEV);
 
 export const logger = {
-  error: (message: string, error?: any) => {
+  error: (message: string, error?: unknown) => {
     if (isDevelopment) {
       console.error(message, error);
     }
-    // En producción podrías enviar a un servicio de logging como Sentry
   },
   
-  warn: (message: string, data?: any) => {
+  warn: (message: string, data?: unknown) => {
     if (isDevelopment) {
       console.warn(message, data);
     }
   },
   
-  info: (message: string, data?: any) => {
+  info: (message: string, data?: unknown) => {
     if (isDevelopment) {
       console.log(message, data);
     }

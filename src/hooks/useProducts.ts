@@ -1,9 +1,8 @@
 import { useReducer, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
-import { Product, Category, Anime } from '../types/database';
+import { Product } from '../types/database';
 
-// Define types for filters and state
 type FiltersState = {
   category?: string;
   anime?: string;
@@ -26,7 +25,6 @@ type ProductsAction =
   | { type: 'FETCH_SUCCESS'; payload: Product[] }
   | { type: 'FETCH_ERROR'; payload: string };
 
-// Reducer function for managing products state
 function productsReducer(state: ProductsState, action: ProductsAction): ProductsState {
   switch (action.type) {
     case 'SET_FILTERS':
@@ -42,7 +40,6 @@ function productsReducer(state: ProductsState, action: ProductsAction): Products
   }
 }
 
-// Custom hook for fetching products with advanced filtering
 export const useProducts = (initialFilters: FiltersState = {}) => {
   const [state, dispatch] = useReducer(productsReducer, {
     filters: initialFilters,
@@ -51,7 +48,6 @@ export const useProducts = (initialFilters: FiltersState = {}) => {
     error: null
   });
 
-  // Fetch products with dynamic filtering
   const fetchProducts = useCallback(async () => {
     dispatch({ type: 'FETCH_START' });
     
@@ -60,7 +56,6 @@ export const useProducts = (initialFilters: FiltersState = {}) => {
         .from('products')
         .select('*, category_ref(*), anime(*)');
       
-      // Apply dynamic filters
       if (state.filters.category) {
         query = query.eq('category_id', state.filters.category);
       }
@@ -80,10 +75,8 @@ export const useProducts = (initialFilters: FiltersState = {}) => {
       if (state.filters.search) {
         const searchTerm = state.filters.search.toLowerCase().trim();
         
-        // Split search terms to handle multi-word searches
         const searchTerms = searchTerm.split(/\s+/);
         
-        // Create a complex search query that matches all search terms
         const searchConditions = searchTerms.map(term => 
           `(name.ilike.%${term}% or ` +
           `description.ilike.%${term}% or ` +
@@ -117,7 +110,6 @@ export const useProducts = (initialFilters: FiltersState = {}) => {
     }
   }, [state.filters]);
 
-  // Use react-query for caching and background updates
   const query = useQuery({
     queryKey: ['products', state.filters],
     queryFn: fetchProducts,
@@ -127,7 +119,6 @@ export const useProducts = (initialFilters: FiltersState = {}) => {
     refetchOnReconnect: false
   });
 
-  // Method to update filters
   const setFilters = useCallback((newFilters: Partial<FiltersState>) => {
     dispatch({ type: 'SET_FILTERS', payload: newFilters });
   }, []);
@@ -139,31 +130,26 @@ export const useProducts = (initialFilters: FiltersState = {}) => {
   };
 };
 
-// Combine fetching of categories and animes
 export const useCategoriesAndAnimes = () => {
   return useQuery({
     queryKey: ['categories-and-animes'],
     queryFn: async () => {
-      try {
-        const [categoriesResponse, animesResponse] = await Promise.all([
-          supabase.from('categories').select('*'),
-          supabase.from('anime').select('*')
-        ]);
+      const [categoriesResponse, animesResponse] = await Promise.all([
+        supabase.from('categories').select('*'),
+        supabase.from('anime').select('*')
+      ]);
 
-        if (categoriesResponse.error) {
-          throw categoriesResponse.error;
-        }
-        if (animesResponse.error) {
-          throw animesResponse.error;
-        }
-
-        return {
-          categories: categoriesResponse.data || [],
-          animes: animesResponse.data || []
-        };
-      } catch (error) {
-        throw error;
+      if (categoriesResponse.error) {
+        throw categoriesResponse.error;
       }
+      if (animesResponse.error) {
+        throw animesResponse.error;
+      }
+
+      return {
+        categories: categoriesResponse.data || [],
+        animes: animesResponse.data || []
+      };
     },
     staleTime: 1000 * 60 * 5, // 5 minutos
     gcTime: 1000 * 60 * 10, // 10 minutos

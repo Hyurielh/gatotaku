@@ -35,7 +35,6 @@ export const useDraggable = (initialPosition: Position) => {
     const newX = e.clientX - dragStart.x;
     const newY = e.clientY - dragStart.y;
     
-    // Limitar a los bordes de la pantalla
     const maxX = window.innerWidth - 60; // 60px para el ancho del elemento
     const maxY = window.innerHeight - 60;
     
@@ -52,7 +51,6 @@ export const useDraggable = (initialPosition: Position) => {
     const newX = touch.clientX - dragStart.x;
     const newY = touch.clientY - dragStart.y;
     
-    // Limitar a los bordes de la pantalla
     const maxX = window.innerWidth - 60;
     const maxY = window.innerHeight - 60;
     

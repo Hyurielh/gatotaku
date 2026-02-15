@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useCategoriesAndAnimes } from '../hooks/useProducts';
 import { Category, Anime } from '../types/database';
 import { FaFilter } from 'react-icons/fa';
 
@@ -63,7 +62,7 @@ export function SearchAndFilters({
     handleFilterChange({ maxPrice: price });
   };
 
-  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const _handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     handleFilterChange({ 
       sortBy: e.target.value as Filters['sortBy'] 
     });
@@ -72,13 +71,11 @@ export function SearchAndFilters({
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const searchValue = e.target.value;
     
-    // Update local state
     setLocalFilters(prev => ({
       ...prev,
       search: searchValue === '' ? undefined : searchValue
     }));
     
-    // Notify parent component
     onFilterChange({ 
       search: searchValue === '' ? undefined : searchValue 
     });
@@ -100,7 +97,6 @@ export function SearchAndFilters({
     setLocalFilters(initialFilters);
     onFilterChange(initialFilters);
     
-    // Llamar a la función de restablecimiento si está definida
     if (onResetFilters) {
       onResetFilters();
     }

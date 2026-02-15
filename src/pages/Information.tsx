@@ -13,11 +13,9 @@ const Information = () => {
   const navigate = useNavigate();
 
   const handleNavigation = (path: string) => {
-    // Always navigate to the full information path
     navigate(`/information/${path}`);
   };
 
-  // Redirect to general info if no specific route is selected
   useEffect(() => {
     const currentPath = location.pathname;
     const validPaths = ['/information', '/information/general', '/information/about', '/information/payment-methods', '/information/shipping', '/information/refunds', '/information/layaway'];

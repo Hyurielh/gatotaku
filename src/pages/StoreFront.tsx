@@ -7,10 +7,8 @@ import { ProductCard } from '../components/ProductCard';
 import type { Product, Filters } from '../types/database';
 import { ErrorBoundary } from 'react-error-boundary';
 
-// Error Fallback Component
 function StoreFrontErrorFallback({ error, resetErrorBoundary }: { error: Error, resetErrorBoundary: () => void }) {
   useEffect(() => {
-    // Error is already handled by ErrorBoundary
   }, [error]);
 
   return (
@@ -32,7 +30,6 @@ export default function StoreFront() {
     <ErrorBoundary 
       FallbackComponent={StoreFrontErrorFallback}
       onReset={() => {
-        // Soft reset instead of full page reload
         window.history.go(0);
       }}
     >
@@ -75,7 +72,6 @@ function StoreFrontContent() {
     };
   }, []);
 
-  // Fetch categories and animes with products in a single query
   const fetchCategoriesAndAnimes = useCallback(async () => {
     const [categoriesResponse, animesResponse] = await Promise.all([
       supabase
@@ -105,56 +101,45 @@ function StoreFrontContent() {
     return { categoriesWithProducts, animesWithProducts };
   }, []);
 
-  // Función auxiliar para búsqueda flexible
   const createFlexibleSearch = async (searchTerm: string): Promise<string> => {
     try {
-      // Limpiar y preparar el término de búsqueda
       const cleanSearchTerm = searchTerm.trim().toLowerCase();
       
-      // Condiciones de búsqueda
       const searchConditions: string[] = [];
 
-      // Agregar condiciones de búsqueda
       searchConditions.push(`name.ilike.%${cleanSearchTerm}%`);
       searchConditions.push(`description.ilike.%${cleanSearchTerm}%`);
       searchConditions.push(`category.ilike.%${cleanSearchTerm}%`);
 
-      // Buscar ID de anime de manera más segura
       const { data: animeData } = await supabase
         .from('anime')
         .select('id')
         .ilike('name', `%${cleanSearchTerm}%`)
         .limit(1);  
 
-      // Si hay un anime encontrado, agregar su ID a las condiciones
       if (animeData && animeData.length > 0) {
         searchConditions.push(`anime_id.eq.${animeData[0].id}`);
       }
 
-      // Devolver las condiciones como un string, o un string vacío si no hay condiciones
       return searchConditions.length > 0 ? searchConditions.join(',') : '';
-    } catch (error) {
+    } catch{
       return '';
     }
   };
 
-  // Función de fetchProducts actualizada
   const fetchProducts = useCallback(async ({ pageParam = 1 }): Promise<{ 
     products: Product[], 
     totalPages: number 
   }> => {
     try {
-      // 12 productos por página en todas las pantallas
       const productsPerPage = 12;
       const from = (pageParam - 1) * productsPerPage;
       const to = from + productsPerPage - 1;
 
-      // Consulta base
       let query = supabase
         .from('products')
         .select('*, categories(id, name), anime(id, name)', { count: 'exact' });
 
-      // Aplicar búsqueda si hay término de búsqueda
       if (filters.search && filters.search.trim() !== '') {
         const searchTerm = filters.search.toLowerCase().trim();
         
@@ -163,12 +148,10 @@ function StoreFrontContent() {
           if (searchConditions) {
             query = query.or(searchConditions);
           }
-        } catch (error) {
-          // Error handled silently
+        } catch{
         }
       }
 
-      // Aplicar filtros adicionales
       if (filters.category && filters.category.trim() !== '') {
         query = query.eq('category_id', filters.category);
       }
@@ -177,7 +160,6 @@ function StoreFrontContent() {
         query = query.eq('anime_id', filters.anime);
       }
 
-      // Filtros de precio
       if (filters.minPrice !== undefined) {
         query = query.gte('price', filters.minPrice);
       }
@@ -186,30 +168,27 @@ function StoreFrontContent() {
         query = query.lte('price', filters.maxPrice);
       }
 
-      // Ejecutar consulta con paginación
       const { data, error, count } = await query.range(from, to);
 
       if (error) throw error;
 
-      // Calcular total de páginas
       const totalPages = count ? Math.ceil(count / productsPerPage) : 0;
 
       return { 
         products: data || [], 
         totalPages 
       };
-    } catch (error) {
+    } catch{
       return { products: [], totalPages: 0 };
     }
   }, [filters]);
 
-  // Single query for categories, animes, and products
   const { 
     data: queryData, 
     isLoading,
     error, 
-    isError, 
-    refetch 
+    isError: _isError, 
+    refetch: _refetch 
   } = useQuery({
     queryKey: ['products', filters],
     queryFn: async () => {
@@ -230,7 +209,6 @@ function StoreFrontContent() {
     refetchOnReconnect: false
   });
 
-  // Update handleFilterChange to include page property
   const handleFilterChange = useCallback((newFilters: Partial<Filters>) => {
     setFilters(prevFilters => {
       const updatedFilters = { ...prevFilters, ...newFilters };
@@ -238,16 +216,12 @@ function StoreFrontContent() {
     });
   }, []);
 
-  // Actualizar renderizado y manejo de páginas con mejor transición
   const handlePageChange = (newPage: number) => {
-    // Activar estado de transición
     setIsPageChanging(true);
     
-    // Pequeño delay para mostrar el efecto de fade
     setTimeout(() => {
       setFilters(prev => ({ ...prev, page: newPage }));
       
-      // Scroll al inicio de los productos con mejor timing
       setTimeout(() => {
         const productsSection = document.querySelector('.products-grid-wrapper');
         if (productsSection) {
@@ -256,7 +230,6 @@ function StoreFrontContent() {
             block: 'start' 
           });
         } else {
-          // Fallback: scroll al main content
           const mainContent = document.getElementById('main-content');
           if (mainContent) {
             mainContent.scrollIntoView({ 
@@ -266,7 +239,6 @@ function StoreFrontContent() {
           }
         }
         
-        // Desactivar estado de transición después del scroll
         setTimeout(() => {
           setIsPageChanging(false);
         }, 300);
@@ -275,7 +247,6 @@ function StoreFrontContent() {
   };
 
   const handleResetFilters = () => {
-    // Volver al estado inicial de filtros, incluyendo la primera página
     setFilters({
       search: '',
       category: '',
@@ -286,26 +257,7 @@ function StoreFrontContent() {
     });
   };
 
-  // Renderizado de productos con grid responsivo de Tailwind
-  const renderProducts = () => {
-    if (isLoading) return <p>Cargando productos...</p>;
-    if (!queryData?.products || queryData.products.length === 0) {
-      return <p className="text-center text-gray-500">No se encontraron productos</p>;
-    }
-
-    return (
-      <div className="relative products-grid-wrapper">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {queryData.products.map((product) => (
-            <ProductCard 
-              key={product.id} 
-              product={product} 
-            />
-          ))}
-        </div>
-      </div>
-    );
-  };
+  // `renderProducts` removed (inlined rendering used below)
 
   const [paginationOffset, setPaginationOffset] = useState(0);
 
@@ -321,7 +273,6 @@ function StoreFrontContent() {
           if (footer) {
             const footerRect = footer.getBoundingClientRect();
             
-            // Si el footer está visible, pegar la paginación al footer sin separación
             if (footerRect.top < viewportHeight) {
               const overlap = viewportHeight - footerRect.top;
               setPaginationOffset(overlap); // Sin margen adicional para pegarlo
@@ -335,10 +286,8 @@ function StoreFrontContent() {
       }
     };
 
-    // Verificar al inicio
     updatePaginationPosition();
     
-    // Throttled scroll listener
     window.addEventListener('scroll', updatePaginationPosition, { passive: true });
     window.addEventListener('resize', updatePaginationPosition);
 
@@ -357,7 +306,6 @@ function StoreFrontContent() {
     const getPageNumbers = () => {
       const maxVisiblePages = 5;
       
-      // Casos especiales para las primeras 3 y últimas 3 páginas
       if (currentPage <= 3) {
         return Array.from({ length: Math.min(maxVisiblePages, totalPages) }, (_, i) => i + 1);
       }
@@ -366,7 +314,6 @@ function StoreFrontContent() {
         return Array.from({ length: maxVisiblePages }, (_, i) => totalPages - maxVisiblePages + i + 1);
       }
       
-      // Caso general: centrar la página actual
       return [
         currentPage - 2,
         currentPage - 1,

@@ -14,7 +14,6 @@ export function CategoryManager() {
   const [page, setPage] = useState(1);
   const itemsPerPage = 12;
 
-  // Reset page when search term changes
   React.useEffect(() => {
     setPage(1);
   }, [searchTerm]);
@@ -25,7 +24,6 @@ export function CategoryManager() {
     );
   }, [categories, searchTerm]);
 
-  // Calculate pagination
   const paginatedCategories = React.useMemo(() => {
     const start = (page - 1) * itemsPerPage;
     return filteredCategories.slice(start, start + itemsPerPage);
@@ -45,7 +43,7 @@ export function CategoryManager() {
 
       if (error) throw error;
       setCategories(data || []);
-    } catch (error) {
+    } catch {
       toast.error('Error al cargar categorías');
       setError('Error al cargar categorías');
     } finally {
@@ -70,7 +68,7 @@ export function CategoryManager() {
       toast.success('Categoría agregada exitosamente');
       setNewCategory('');
       fetchCategories();
-    } catch (error) {
+    } catch {
       toast.error('Error al crear categoría');
       setError('Error al crear categoría');
     }
@@ -90,7 +88,7 @@ export function CategoryManager() {
       if (error) throw error;
       
       toast.success('Categoría eliminada exitosamente');
-    } catch (error) {
+    } catch {
       toast.error('Error al eliminar categoría');
       setError('Error al eliminar categoría');
       fetchCategories(); // Revert on error
@@ -115,7 +113,7 @@ export function CategoryManager() {
       
       toast.success('Categoría actualizada exitosamente');
       setEditingId(null);
-    } catch (error) {
+    } catch {
       setCategories(originalCategories); // Revert on error
       toast.error('Error al actualizar categoría');
       setError('Error al actualizar categoría');

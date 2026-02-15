@@ -31,7 +31,7 @@ export default function LoginPage() {
       });
 
       if (error) throw error;
-    } catch (err: any) {
+    } catch{
       setError(err.message);
     } finally {
       setLoading(false);

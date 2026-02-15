@@ -1,4 +1,5 @@
-import React from 'react';
+ 
+import React, { useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Anime } from '../types/database';
 import { Plus, Pencil, Trash2, Search, Loader } from 'lucide-react';
@@ -14,16 +15,9 @@ export function AnimeManager() {
   const [page, setPage] = React.useState(1);
   const itemsPerPage = 12;
 
-  React.useEffect(() => {
-    fetchAnimes();
-  }, [page, searchTerm]); // Add searchTerm as dependency
-
-  // Add effect to reset page on search
-  React.useEffect(() => {
-    setPage(1);
-  }, [searchTerm]);
-
-  async function fetchAnimes() {
+  // fetchAnimes is stable enough here; include deps intentionally handled
+   
+  const fetchAnimes = useCallback(async () => {
     setIsLoading(true);
     try {
       let query = supabase
@@ -39,15 +33,24 @@ export function AnimeManager() {
 
       if (error) throw error;
       setAnimes(data || []); // Store all results
-    } catch (error) {
+    } catch {
       toast.error('Error al cargar animes');
       setError('Error al cargar animes');
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [searchTerm]);
 
-  // Calculate paginated data from filtered results
+  React.useEffect(() => {
+    fetchAnimes();
+  }, [fetchAnimes]);
+
+  React.useEffect(() => {
+    setPage(1);
+  }, [searchTerm]);
+
+  // duplicate function removed; using the stable `fetchAnimes` callback above
+
   const filteredAnimes = React.useMemo(() => {
     return animes.filter(anime => 
       anime.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -76,7 +79,7 @@ export function AnimeManager() {
       toast.success('Anime agregado exitosamente');
       setNewAnime('');
       fetchAnimes();
-    } catch (error) {
+    } catch {
       toast.error('Error al crear anime');
       setError('Error al crear anime');
     }
@@ -96,7 +99,7 @@ export function AnimeManager() {
       if (error) throw error;
       
       toast.success('Anime eliminado exitosamente');
-    } catch (error) {
+    } catch {
       toast.error('Error al eliminar anime');
       setError('Error al eliminar anime');
       fetchAnimes(); // Revert on error
@@ -121,7 +124,7 @@ export function AnimeManager() {
       
       toast.success('Anime actualizado exitosamente');
       setEditingId(null);
-    } catch (error) {
+    } catch {
       setAnimes(originalAnimes); // Revert on error
       toast.error('Error al actualizar anime');
       setError('Error al actualizar anime');

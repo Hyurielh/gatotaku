@@ -37,7 +37,7 @@ export default function ProductDetail() {
         }
 
         setProduct(data);
-      } catch (err: any) {
+      } catch{
         setError(err.message || 'Error al cargar el producto');
       } finally {
         setLoading(false);
@@ -52,7 +52,6 @@ export default function ProductDetail() {
   const handleAddToCart = () => {
     if (!product) return;
 
-    // Agregar el producto con la cantidad especificada
     addItem(product, quantity);
   };
 

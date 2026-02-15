@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState } from 'react';
 import type { Product } from '../types/database';
 
+// Removed eslint-disable for react-refresh
 interface CartItem {
   product: Product;
   quantity: number;
@@ -28,7 +29,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setItems(currentItems => {
       const existingItem = currentItems.find(item => item.product.id === product.id);
       if (existingItem) {
-        // Verificar si hay suficiente stock
         const totalQuantity = existingItem.quantity + quantity;
         if (totalQuantity > product.stock) {
           return currentItems; // No agregar más si no hay stock
@@ -56,7 +56,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const item = currentItems.find(item => item.product.id === productId);
       if (!item) return currentItems;
       
-      // Verificar si hay suficiente stock
       if (quantity > item.product.stock) {
         return currentItems; // No actualizar si excede el stock
       }
@@ -96,6 +95,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useCart() {
   const context = useContext(CartContext);
   if (context === undefined) {

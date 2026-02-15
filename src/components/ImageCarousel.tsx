@@ -8,23 +8,20 @@ interface ImageCarouselProps {
     webp?: string
   })[];
   alt: string;
-  srcSet?: string;
-  loading?: 'lazy' | 'eager';
   className?: string;
   imageRefs?: (refs: (HTMLImageElement | null)[]) => void;
   onFullyLoaded?: () => void;
+  loading?: HTMLImageElement['loading'];
 }
 
 export function ImageCarousel({
   images,
   alt,
-  srcSet,
-  loading = 'lazy',
   className = '',
   imageRefs,
-  onFullyLoaded
+  onFullyLoaded,
+  loading
 }: ImageCarouselProps) {
-  // Ensure images is always an array with a fallback
   const safeImages = React.useMemo(() => {
     if (!images || images.length === 0) {
       return ['https://via.placeholder.com/400x400?text=No+Image'];
@@ -42,12 +39,10 @@ export function ImageCarousel({
   const [imageLoadErrors, setImageLoadErrors] = useState<number[]>([]);
   const imageElementRefs = useRef<(HTMLImageElement | null)[]>([]);
 
-  // Reset index when images change
   useEffect(() => {
     setCurrentImageIndex(0);
   }, [safeImages]);
 
-  // Precarga de imágenes para reducir tirones
   useEffect(() => {
     safeImages.forEach(src => {
       const img = new Image();
@@ -55,7 +50,6 @@ export function ImageCarousel({
     });
   }, [safeImages]);
 
-  // Manejar errores de carga de imagen
   const handleImageError = (index: number) => {
     setImageLoadErrors(prev => {
       if (!prev.includes(index)) {
@@ -65,20 +59,16 @@ export function ImageCarousel({
     });
   };
 
-  // Manejar carga completa de imagen
-  const handleImageLoad = (index: number) => {
-    // Llamar al callback de carga completa si está definido
+  const handleImageLoad = () => {
     if (onFullyLoaded) {
       onFullyLoaded();
     }
   };
 
-  // Manejar cambio manual de imagen
   const handleImageChange = (index: number) => {
     setCurrentImageIndex(index);
   };
 
-  // Manejar navegación con flechas
   const handlePrevImage = () => {
     setCurrentImageIndex((prevIndex) =>
       prevIndex === 0 ? safeImages.length - 1 : prevIndex - 1
@@ -91,14 +81,12 @@ export function ImageCarousel({
     );
   };
 
-  // Pasar referencias de imágenes al padre si se proporciona
   useEffect(() => {
     if (imageRefs) {
       imageRefs(imageElementRefs.current);
     }
   }, [safeImages, imageRefs]);
 
-  // Render method with careful styling
   return (
     <div
       className={`${className} relative w-full h-full overflow-hidden`}
@@ -145,15 +133,9 @@ export function ImageCarousel({
           const isCurrentImage = index === currentImageIndex;
           const isErrored = imageLoadErrors.includes(index);
 
-          // Solo la imagen visible (actual) se carga con prioridad alta.
-          // Nota: React todavía puede advertir sobre props no estándar como
-          // `fetchPriority`. Para evitar la advertencia, solo pasamos
-          // `loading` como prop y usamos la referencia del elemento para
-          // establecer el atributo DOM `fetchpriority` en minúsculas cuando
-          // corresponda.
-          const imgProps = isCurrentImage && index === 0
-            ? { loading: 'eager' as 'eager' }
-            : { loading: 'lazy' as 'lazy' };
+          const imgProps = { loading: loading ?? (isCurrentImage && index === 0 ? 'eager' : 'lazy') } as {
+            loading: HTMLImageElement['loading'];
+          };
 
           return (
             <div
@@ -172,8 +154,6 @@ export function ImageCarousel({
                 <img
                   ref={(el) => {
                     imageElementRefs.current[index] = el;
-                    // Establecer o eliminar el atributo fetchpriority en minúsculas
-                    // directamente en el DOM para evitar la advertencia de React.
                     if (el) {
                       if (isCurrentImage && index === 0) {
                         el.setAttribute('fetchpriority', 'high');
@@ -188,7 +168,7 @@ export function ImageCarousel({
                   alt={`${alt} - imagen ${index + 1}`}
                   srcSet={typeof image === 'object' ? image.srcSet : undefined}
                   onError={() => handleImageError(index)}
-                  onLoad={() => handleImageLoad(index)}
+                  onLoad={() => handleImageLoad()}
                   className="w-full h-full object-cover absolute inset-0 transform scale-100"
                   {...imgProps}
                 />

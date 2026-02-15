@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { Product } from '../types/database';
 import { ImageCarousel } from './ImageCarousel';
-import { generateWebPSrcset, convertToWebP, generateLowResPlaceholder, optimizeImage } from '../utils/imageOptimization';
+import { generateWebPSrcset, generateLowResPlaceholder, optimizeImage } from '../utils/imageOptimization';
 import { useCart } from '../context/CartContext';
 import { ShoppingCart } from 'lucide-react';
 
@@ -14,8 +14,8 @@ export function ProductCard({ product, className }: ProductCardProps) {
   const { addItem } = useCart();
   const [imageLoadProgress, setImageLoadProgress] = useState(0);
   const [isImageFullyLoaded, setIsImageFullyLoaded] = useState(false);
-  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const imageLoadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const imageLoadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const validImages = React.useMemo(() => {
     if (!product.images || product.images.length === 0) {
@@ -26,7 +26,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
   }, [product.images]);
 
   const imageData = React.useMemo(() => {
-    return validImages.map((src, index) => {
+    return validImages.map((src) => {
       const optimizedSrc = optimizeImage(src);
       return {
         src: optimizedSrc,
@@ -37,9 +37,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
     });
   }, [validImages]);
 
-  // Callback para manejar la carga completa de imágenes
   const handleImageFullyLoaded = useCallback(() => {
-    // Detener intervalos y timeouts
     if (progressIntervalRef.current) {
       clearInterval(progressIntervalRef.current);
     }
@@ -47,17 +45,14 @@ export function ProductCard({ product, className }: ProductCardProps) {
       clearTimeout(imageLoadTimeoutRef.current);
     }
 
-    // Establecer progreso al 100% y marcar como cargado
     setImageLoadProgress(100);
     setIsImageFullyLoaded(true);
   }, []);
 
   useEffect(() => {
-    // Reiniciar estados
     setImageLoadProgress(0);
     setIsImageFullyLoaded(false);
 
-    // Simular progreso de carga gradual
     progressIntervalRef.current = setInterval(() => {
       setImageLoadProgress(prev => {
         if (prev < 80) {  // Dejar espacio para la carga final
@@ -68,7 +63,6 @@ export function ProductCard({ product, className }: ProductCardProps) {
       });
     }, 200);
 
-    // Timeout de seguridad
     imageLoadTimeoutRef.current = setTimeout(() => {
       handleImageFullyLoaded();
     }, 5000);

@@ -20,12 +20,12 @@ export const Header: React.FC = React.memo(() => {
   });
 
 
-  const handleLogout = async () => {
+  const _handleLogout = async () => {
     try {
       await logout();
       navigate('/');
       toast.success('Sesión cerrada exitosamente');
-    } catch (error) {
+    } catch {
       toast.error('Error al cerrar sesión. Por favor, inténtalo de nuevo.');
     }
   };

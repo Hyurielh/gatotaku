@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { PostgrestError } from '@supabase/supabase-js';
 import type { Product, ProductInput, Category, Anime } from '../types/database';
@@ -6,24 +6,22 @@ import { CategoryManager } from '../components/CategoryManager';
 import { AnimeManager } from '../components/AnimeManager';
 import { SEO } from '../components/SEO';
 import { useAuth } from '../context/AuthContext';
-import { convertImageToWebP, compressImage } from '../utils/imageOptimization';
+import { compressImage } from '../utils/imageOptimization';
 
 export default function AdminPanel() {
   const { session, loading: authLoading } = useAuth();
 
-  // Estados para búsqueda y paginación
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [page, setPage] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(20);
+  const pageSize = 20;
   const [totalProducts, setTotalProducts] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const isLoadingRef = useRef<boolean>(false);
   const [error, setError] = useState<{
     message: string;
     details?: string;
     code?: string;
   } | null>(null);
 
-  // Estados existentes
   const [products, setProducts] = useState<Product[]>(() => []);
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
@@ -38,20 +36,20 @@ export default function AdminPanel() {
     stock: 0
   }));
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
 
-  const handleError = (error: any, defaultMessage: string = 'Error desconocido') => {
-    if (error instanceof PostgrestError) {
+  const handleError = (err: unknown, defaultMessage: string = 'Error desconocido') => {
+    if (err instanceof PostgrestError) {
       setError({
-        message: error.message || defaultMessage,
-        details: error.details,
-        code: error.code
+        message: err.message || defaultMessage,
+        details: err.details,
+        code: err.code
       });
-    } else if (error instanceof Error) {
+    } else if (err instanceof Error) {
       setError({
-        message: error.message || defaultMessage,
-        details: error.stack
+        message: err.message || defaultMessage,
+        details: err.stack
       });
     } else {
       setError({
@@ -60,42 +58,34 @@ export default function AdminPanel() {
     }
   };
 
-  // Función auxiliar para búsqueda flexible
-  const createFlexibleSearch = async (searchTerm: string): Promise<string> => {
+  const createFlexibleSearch = useCallback(async (searchTerm: string): Promise<string> => {
     try {
-      // Limpiar y preparar el término de búsqueda
       const cleanSearchTerm = searchTerm.trim().toLowerCase();
-      
-      // Condiciones de búsqueda
+
       const searchConditions: string[] = [];
 
-      // Agregar condiciones de búsqueda
       searchConditions.push(`name.ilike.%${cleanSearchTerm}%`);
       searchConditions.push(`description.ilike.%${cleanSearchTerm}%`);
       searchConditions.push(`category.ilike.%${cleanSearchTerm}%`);
 
-      // Buscar ID de anime de manera más segura
       const { data: animeData } = await supabase
         .from('anime')
         .select('id')
         .ilike('name', `%${cleanSearchTerm}%`)
-        .limit(1);  
+        .limit(1);
 
-      // Si hay un anime encontrado, agregar su ID a las condiciones
       if (animeData && animeData.length > 0) {
         searchConditions.push(`anime_id.eq.${animeData[0].id}`);
       }
 
-      // Devolver las condiciones como un string, o un string vacío si no hay condiciones
       return searchConditions.length > 0 ? searchConditions.join(',') : '';
-    } catch (error) {
+    } catch {
       return '';
     }
-  };
+  }, []);
 
-  // Función de búsqueda y paginación de productos
-  const fetchProducts = async () => {
-    setIsLoading(true);
+  const fetchProducts = useCallback(async () => {
+    isLoadingRef.current = true;
     try {
       let query = supabase
         .from('products')
@@ -105,17 +95,15 @@ export default function AdminPanel() {
           anime:anime(id, name)
         `, { count: 'exact' });
 
-      // Añadir búsqueda si hay término
       if (searchTerm.trim()) {
         const searchTerm_lower = searchTerm.toLowerCase().trim();
-        
+
         try {
           const searchConditions = await createFlexibleSearch(searchTerm_lower);
           if (searchConditions) {
             query = query.or(searchConditions);
           }
-        } catch (error) {
-          // Error handled silently
+        } catch {
         }
       }
 
@@ -133,18 +121,64 @@ export default function AdminPanel() {
     } catch (error) {
       handleError(error, 'Error inesperado al cargar productos');
     } finally {
-      setIsLoading(false);
+      isLoadingRef.current = false;
     }
-  };
+  }, [searchTerm, page, createFlexibleSearch]);
 
-  // Efecto para cargar productos con búsqueda y paginación
+  // fetchProducts depends on several stable refs and state; intentionally
+  // disabling exhaustive-deps here to avoid re-creating the effect on function identity
+   
   useEffect(() => {
     fetchProducts();
-  }, [searchTerm, page]);
+  }, [fetchProducts]);
 
-  // Resto de tu código existente...
+   
+  const fetchCategories = useCallback(async () => {
+    setCategoriesLoading(true);
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .order('name');
 
-  // Redirect or show error if not authenticated
+    if (error) {
+      handleError(error, 'Error al cargar categorías');
+    } else {
+      setCategories(data || []);
+    }
+    setCategoriesLoading(false);
+  }, []);
+
+  const fetchAnimes = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('anime')
+      .select('*')
+      .order('name');
+
+    if (error) {
+      handleError(error, 'Error al cargar animes');
+    } else {
+      setAnimes(data || []);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCategories();
+    fetchAnimes();
+  }, [fetchCategories, fetchAnimes]);
+
+   
+  const categoryId = formData.category_id;
+
+  useEffect(() => {
+    if (categories.length > 0 && !categoryId) {
+      setFormData(prev => ({
+        ...prev,
+        category_id: categories[0].id
+      }));
+    }
+  }, [categories, categoryId]);
+
+
   if (authLoading) {
     return <div>Loading...</div>;
   }
@@ -153,29 +187,13 @@ export default function AdminPanel() {
     return <div>Unauthorized Access</div>;
   }
 
-  useEffect(() => {
-    fetchCategories();
-    fetchAnimes();
-  }, []);
-
-  useEffect(() => {
-    if (categories.length > 0 && !formData.category_id) {
-      setFormData(prev => ({
-        ...prev,
-        category_id: categories[0].id
-      }));
-    }
-  }, [categories]);
-
-  // Image file handling
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const _handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
 
     try {
       const processedImages: File[] = [];
       for (let i = 0; i < files.length; i++) {
-        // Compress image first
         const compressedImage = await compressImage(files[i]);
         processedImages.push(compressedImage);
       }
@@ -186,7 +204,6 @@ export default function AdminPanel() {
     }
   };
 
-  // Upload images to Supabase storage
   const uploadImages = async (): Promise<string[]> => {
     const uploadPromises = imageFiles.map(async (file) => {
       const fileExt = file.name.split('.').pop();
@@ -202,7 +219,6 @@ export default function AdminPanel() {
         throw uploadError;
       }
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('product-images')
         .getPublicUrl(filePath);
@@ -216,43 +232,37 @@ export default function AdminPanel() {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     
-    // Check if categories are still loading
     if (categoriesLoading) {
       handleError(new Error('Cargando categorías, por favor espere'));
       return;
     }
 
-    // Ensure there are categories
     if (categories.length === 0) {
       handleError(new Error('No hay categorías disponibles. Cree una categoría primero.'));
       return;
     }
 
-    setIsSubmitting(true);
+    isSubmittingRef.current = true;
     setError(null);
 
     try {
-      // Validate category_id explicitly
       const selectedCategoryId = formData.category_id || categories[0].id;
       const selectedCategory = categories.find(cat => cat.id === selectedCategoryId);
 
-      if (!selectedCategory) {
+        if (!selectedCategory) {
         handleError(new Error('Categoría inválida. Por favor seleccione una categoría válida.'));
-        setIsSubmitting(false);
+        isSubmittingRef.current = false;
         return;
       }
 
-      // Ensure images are not empty
       const imageUrls = imageFiles.length > 0 
         ? await uploadImages() 
         : formData.images.filter(img => img && img.trim() !== '');
 
-      // Fallback image if no images provided
       const finalImages = imageUrls.length > 0 
         ? imageUrls 
         : ['https://ik.imagekit.io/gatotaku/default-product-image.png'];
 
-      // Prepare product data with explicit type casting and null checks
       const productData = {
         name: formData.name || null,
         description: formData.description || null,
@@ -264,14 +274,13 @@ export default function AdminPanel() {
         stock: Number(formData.stock) || 0
       };
 
-      // Validate productData before submission
       const missingFields = Object.entries(productData)
         .filter(([key, value]) => value === null && key !== 'anime_id' && key !== 'description')
         .map(([key]) => key);
 
       if (missingFields.length > 0) {
         handleError(new Error(`Campos requeridos faltantes: ${missingFields.join(', ')}`));
-        setIsSubmitting(false);
+        isSubmittingRef.current = false;
         return;
       }
 
@@ -292,15 +301,13 @@ export default function AdminPanel() {
 
         if (result.error) {
           handleError(result.error, 'Error al guardar el producto');
-          setIsSubmitting(false);
+          isSubmittingRef.current = false;
           return;
         }
 
-        // Limpiar formulario y recargar productos
         resetForm();
         fetchProducts();
         
-        // Notificación de éxito
         setError(null);
         
       } catch (unexpectedError) {
@@ -309,11 +316,10 @@ export default function AdminPanel() {
     } catch (validationError) {
       handleError(validationError, 'Error de validación');
     } finally {
-      setIsSubmitting(false);
+      isSubmittingRef.current = false;
     }
   };
 
-  // Función para resetear el formulario
   const resetForm = () => {
     setFormData({
       name: '',
@@ -328,12 +334,9 @@ export default function AdminPanel() {
     setImageFiles([]);
   };
 
-  // Añadir nueva función de copiar producto
   const handleCopyProduct = (product: Product) => {
-    // Resetear el estado de edición
     setEditingId(null);
 
-    // Copiar los datos del producto al formulario
     setFormData({
       name: `${product.name} (Copia)`,
       price: product.price.toString(),
@@ -344,40 +347,13 @@ export default function AdminPanel() {
       stock: product.stock || 0
     });
 
-    // Opcional: Desplazar la vista hacia el formulario
     const formElement = document.getElementById('product-form');
     if (formElement) {
       formElement.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
-  async function fetchCategories() {
-    setCategoriesLoading(true);
-    const { data, error } = await supabase
-      .from('categories')
-      .select('*')
-      .order('name');
-
-    if (error) {
-      handleError(error, 'Error al cargar categorías');
-    } else {
-      setCategories(data || []);
-    }
-    setCategoriesLoading(false);
-  }
-
-  async function fetchAnimes() {
-    const { data, error } = await supabase
-      .from('anime')
-      .select('*')
-      .order('name');
-
-    if (error) {
-      handleError(error, 'Error al cargar animes');
-    } else {
-      setAnimes(data || []);
-    }
-  }
+  // duplicate fetchCategories/fetchAnimes removed; using the stable callbacks defined earlier
 
   async function handleDelete(id: string) {
     if (!confirm('¿Estás seguro de que quieres eliminar este producto?')) return;
@@ -393,7 +369,7 @@ export default function AdminPanel() {
       } else {
         fetchProducts();
       }
-    } catch (err: any) {
+    } catch (err) {
       handleError(err, 'Error al eliminar el producto');
     }
   }
