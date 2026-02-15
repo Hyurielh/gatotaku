@@ -81,6 +81,15 @@ export function ImageCarousel({
     );
   };
 
+  const [viewerOpen, setViewerOpen] = useState(false);
+
+  const openViewer = (index: number) => {
+    setCurrentImageIndex(index);
+    setViewerOpen(true);
+  };
+
+  const closeViewer = () => setViewerOpen(false);
+
   useEffect(() => {
     if (imageRefs) {
       imageRefs(imageElementRefs.current);
@@ -104,6 +113,38 @@ export function ImageCarousel({
             </span>
           </div>
         </button>
+      )}
+
+      {/* Viewer / Lightbox */}
+      {viewerOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          onClick={closeViewer}
+        >
+          <div className="max-w-full max-h-full">
+            <img
+              src={typeof safeImages[currentImageIndex] === 'string' ? safeImages[currentImageIndex] : (safeImages[currentImageIndex] as any).src}
+              alt={`${alt} - imagen ${currentImageIndex + 1}`}
+              className="max-h-[90vh] max-w-[90vw] object-contain"
+            />
+            <div className="mt-4 flex justify-center space-x-4">
+              <a
+                href={typeof safeImages[currentImageIndex] === 'string' ? safeImages[currentImageIndex] : (safeImages[currentImageIndex] as any).src}
+                download
+                className="px-4 py-2 bg-white text-black rounded"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Descargar
+              </a>
+              <button
+                onClick={(e) => { e.stopPropagation(); closeViewer(); }}
+                className="px-4 py-2 bg-white text-black rounded"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Botón de siguiente imagen */}
@@ -173,6 +214,22 @@ export function ImageCarousel({
                   {...imgProps}
                 />
               </picture>
+              {/* Mobile-only actions: ver/descargar */}
+              <div className="absolute bottom-3 left-3 z-30 flex space-x-2 md:hidden">
+                <button
+                  onClick={() => openViewer(index)}
+                  className="bg-black/60 text-white px-3 py-1 rounded backdrop-blur-sm"
+                >
+                  Ver
+                </button>
+                <a
+                  href={isErrored ? 'https://via.placeholder.com/400x400?text=Image+Error' : src}
+                  download
+                  className="bg-black/60 text-white px-3 py-1 rounded backdrop-blur-sm"
+                >
+                  Descargar
+                </a>
+              </div>
             </div>
           );
         })}
