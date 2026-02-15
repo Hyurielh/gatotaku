@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash, faPlus, faEdit, faCopy } from '@fortawesome/free-solid-svg-icons';
 import { supabase } from '../lib/supabase';
 import { PostgrestError } from '@supabase/supabase-js';
 import type { Product, ProductInput, Category, Anime } from '../types/database';
@@ -558,7 +560,7 @@ export default function AdminPanel() {
                   className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
                   aria-label="Eliminar imagen"
                 >
-                  <i className="fas fa-trash"></i>
+                  <FontAwesomeIcon icon={faTrash} />
                 </button>
               </div>
             ))}
@@ -567,7 +569,7 @@ export default function AdminPanel() {
               onClick={addImageField}
               className="mt-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
             >
-              <i className="fas fa-plus mr-2"></i>
+              <FontAwesomeIcon icon={faPlus} className="mr-2" />
               Agregar imagen
             </button>
           </div>
@@ -682,21 +684,21 @@ export default function AdminPanel() {
                       className="text-indigo-600 hover:text-indigo-900 mr-4"
                       aria-label="Editar producto"
                     >
-                      <i className="fas fa-edit"></i>
+                      <FontAwesomeIcon icon={faEdit} />
                     </button>
                     <button
                       onClick={() => handleCopyProduct(product)}
                       className="text-green-600 hover:text-green-900 mr-4"
                       aria-label="Copiar producto"
                     >
-                      <i className="fas fa-copy"></i>
+                      <FontAwesomeIcon icon={faCopy} />
                     </button>
                     <button
                       onClick={() => handleDelete(product.id)}
                       className="text-red-600 hover:text-red-900"
                       aria-label="Eliminar producto"
                     >
-                      <i className="fas fa-trash"></i>
+                      <FontAwesomeIcon icon={faTrash} />
                     </button>
                   </td>
                 </tr>
