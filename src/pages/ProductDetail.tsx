@@ -37,8 +37,9 @@ export default function ProductDetail() {
         }
 
         setProduct(data);
-      } catch{
-        setError(err.message || 'Error al cargar el producto');
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message || 'Error al cargar el producto');
       } finally {
         setLoading(false);
       }
