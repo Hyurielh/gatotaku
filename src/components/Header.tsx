@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaBars, FaTimes, FaUserShield, FaWhatsapp } from 'react-icons/fa';
+import { FaBars, FaTimes, FaUserShield, FaWhatsapp, FaFacebook, FaInstagram, FaTiktok } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import { MobileMenu } from './MobileMenu';
@@ -101,6 +101,39 @@ export const Header: React.FC = React.memo(() => {
           </div>
         </div>
       </header>
+
+      <div className="fixed top-[10vh] left-0 right-0 z-10 bg-gray-900 h-9 flex items-center justify-center gap-6">
+        <a
+          href={SOCIAL_MEDIA.tiktok}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 text-gray-300 hover:text-white transition-colors text-sm"
+          title="TikTok"
+        >
+          <FaTiktok size={14} />
+          <span className="hidden sm:inline">TikTok</span>
+        </a>
+        <a
+          href={SOCIAL_MEDIA.facebook}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 text-gray-300 hover:text-white transition-colors text-sm"
+          title="Facebook"
+        >
+          <FaFacebook size={14} />
+          <span className="hidden sm:inline">Facebook</span>
+        </a>
+        <a
+          href={SOCIAL_MEDIA.instagram}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 text-gray-300 hover:text-white transition-colors text-sm"
+          title="Instagram"
+        >
+          <FaInstagram size={14} />
+          <span className="hidden sm:inline">Instagram</span>
+        </a>
+      </div>
 
       <SocialMediaFloat 
         position={position}

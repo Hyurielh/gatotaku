@@ -37,7 +37,7 @@ function App() {
                 <div className="flex flex-col min-h-screen">
                   <Header />
                   <Suspense fallback={<div>Loading...</div>}>
-                    <main id="main-content" className="flex-grow pt-[12vh] px-4 sm:px-6 lg:px-8 pb-20">
+                    <main id="main-content" className="flex-grow pt-[calc(12vh+36px)] px-4 sm:px-6 lg:px-8 pb-20">
                       <AppRoutes />
                     </main>
                   </Suspense>

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { FaWhatsapp } from 'react-icons/fa';
+import { FaWhatsapp, FaFacebook, FaInstagram, FaTiktok } from 'react-icons/fa';
+import { SOCIAL_MEDIA } from '../constants/social';
 
 export const Footer = () => {
   const whatsappNumber = "+50578364365";
@@ -24,6 +25,33 @@ export const Footer = () => {
               <ul className="space-y-2">
                 <li><Link to="/" className="hover:text-gray-300">Inicio</Link></li>
                 <li><Link to="/about" className="hover:text-gray-300">Sobre Nosotros</Link></li>
+                <li>
+                  <a href={SOCIAL_MEDIA.tiktok}
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     className="flex items-center hover:text-gray-300">
+                    <FaTiktok className="mr-2" />
+                    TikTok
+                  </a>
+                </li>
+                <li>
+                  <a href={SOCIAL_MEDIA.facebook}
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     className="flex items-center hover:text-gray-300">
+                    <FaFacebook className="mr-2" />
+                    Facebook
+                  </a>
+                </li>
+                <li>
+                  <a href={SOCIAL_MEDIA.instagram}
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     className="flex items-center hover:text-gray-300">
+                    <FaInstagram className="mr-2" />
+                    Instagram
+                  </a>
+                </li>
                 <li>
                   <a href={whatsappUrl} 
                      target="_blank" 

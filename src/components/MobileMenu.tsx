@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { FaTimes, FaWhatsapp, FaUserShield } from 'react-icons/fa';
+import { FaTimes, FaWhatsapp, FaUserShield, FaFacebook, FaInstagram, FaTiktok } from 'react-icons/fa';
+import { SOCIAL_MEDIA } from '../constants/social';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -79,6 +80,36 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
           >
             <FaWhatsapp size={18} />
             WhatsApp
+          </a>
+          <a 
+            href={SOCIAL_MEDIA.tiktok} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            onClick={onClose}
+            className="text-lg hover:text-orange-500 transition-colors flex items-center"
+          >
+            <FaTiktok size={18} />
+            TikTok
+          </a>
+          <a 
+            href={SOCIAL_MEDIA.facebook} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            onClick={onClose}
+            className="text-lg hover:text-orange-500 transition-colors flex items-center"
+          >
+            <FaFacebook size={18} />
+            Facebook
+          </a>
+          <a 
+            href={SOCIAL_MEDIA.instagram} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            onClick={onClose}
+            className="text-lg hover:text-orange-500 transition-colors flex items-center"
+          >
+            <FaInstagram size={18} />
+            Instagram
           </a>
           {session && (
             <Link 
