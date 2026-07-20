@@ -5,7 +5,7 @@ const About = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="space-y-8">
-        <h1 className="section-title animate-fade-up">Sobre Nosotros</h1>
+        <h1 className="section-title animate-fade-up bg-white/90 backdrop-blur-sm px-4 py-2 rounded-xl border-2 border-black shadow-hard inline-block">Sobre Nosotros</h1>
         
         <Reveal>
           <div className="card">
