@@ -87,7 +87,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
   return (
     <div className={[
       className,
-      "product-card bg-white border border-gray-200 rounded-xl overflow-hidden shadow-md hover:shadow-2xl hover:border-orange-300 flex flex-col h-full relative transition-all duration-300 hover:scale-[1.02] hover:-translate-y-2 group"
+      "product-card bg-white border-2 border-black rounded-xl overflow-hidden shadow-hard hover:shadow-hard-orange flex flex-col h-full relative transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 group"
     ].filter(Boolean).join(' ')} >
       {/* Imagen con proporción equilibrada */}
       <div className="w-full aspect-[4/5] sm:aspect-square overflow-hidden relative bg-gray-100">
@@ -136,20 +136,22 @@ export function ProductCard({ product, className }: ProductCardProps) {
           {/* Tags con mejor tamaño */}
           <div className="flex flex-wrap gap-1">
             {product.category_ref && (
-              <span className="bg-orange-100 text-orange-700 px-2 py-0.5 sm:px-2 sm:py-1 rounded text-xs font-medium inline-block transition-transform duration-200 hover:scale-110">
+              <span className="bg-orange-100 text-orange-700 px-2 py-0.5 sm:px-2 sm:py-1 rounded text-xs font-medium inline-block border border-black/30 transition-transform duration-200 hover:scale-110">
                 {product.category_ref.name}
               </span>
             )}
             {product.anime && (
-              <span className="bg-blue-100 text-blue-700 px-2 py-0.5 sm:px-2 sm:py-1 rounded text-xs font-medium inline-block transition-transform duration-200 hover:scale-110">
+              <span className="bg-blue-100 text-blue-700 px-2 py-0.5 sm:px-2 sm:py-1 rounded text-xs font-medium inline-block border border-black/30 transition-transform duration-200 hover:scale-110">
                 {product.anime.name}
               </span>
             )}
           </div>
 
-          {/* Precio bien visible */}
-          <div className="text-lg sm:text-xl font-bold text-orange-600">
-            C${product.price.toFixed(2)}
+          {/* Precio estilo sticker manga */}
+          <div>
+            <span className="inline-block bg-orange-500 text-white text-base sm:text-lg font-bold px-2.5 py-0.5 border-2 border-black shadow-hard-sm -rotate-1">
+              C${product.price.toFixed(2)}
+            </span>
           </div>
 
           {/* Descripción legible */}
@@ -158,10 +160,10 @@ export function ProductCard({ product, className }: ProductCardProps) {
           </p>
         </div>
 
-        {/* Botón con mejor tamaño */}
+        {/* Botón estilo manga: sombra dura que colapsa al presionar */}
         <button
           onClick={handleAddToCart}
-          className="w-full bg-orange-500 text-white py-2 sm:py-2 px-3 sm:px-3 rounded-md flex items-center justify-center gap-2 hover:bg-orange-600 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md active:scale-95 mt-3"
+          className="w-full bg-orange-500 text-white py-2 sm:py-2 px-3 sm:px-3 rounded-md flex items-center justify-center gap-2 border-2 border-black shadow-hard-sm hover:bg-orange-600 transition-all duration-200 font-bold text-sm active:translate-x-[2px] active:translate-y-[2px] active:shadow-none mt-3"
           aria-label={`Agregar ${product.name} al carrito`}
         >
           <ShoppingCart size={14} className={`sm:w-4 sm:h-4 ${justAdded ? 'animate-pop' : ''}`} />

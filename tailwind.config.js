@@ -55,6 +55,14 @@ export default {
           '0%': { transform: 'translateX(-100%)' },
           '100%': { transform: 'translateX(0)' },
         },
+        marquee: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
+        'rotate-slow': {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' },
+        },
       },
       animation: {
         'fade-up': 'fade-up 0.5s ease-out both',
@@ -69,6 +77,8 @@ export default {
         shake: 'shake 0.3s ease-in-out',
         'slide-in-right': 'slide-in-right 0.35s cubic-bezier(0.32, 0.72, 0, 1) both',
         'slide-in-left': 'slide-in-left 0.35s cubic-bezier(0.32, 0.72, 0, 1) both',
+        marquee: 'marquee 20s linear infinite',
+        'rotate-slow': 'rotate-slow 14s linear infinite',
       },
       boxShadow: {
         'hard-sm': '3px 3px 0 0 rgba(0, 0, 0, 0.9)',

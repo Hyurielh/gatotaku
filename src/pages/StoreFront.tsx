@@ -5,6 +5,7 @@ import { SEO } from '../components/SEO';
 import { SearchAndFilters } from '../components/SearchAndFilters';
 import { ProductCard } from '../components/ProductCard';
 import { Reveal } from '../components/Reveal';
+import { Ticker } from '../components/Ticker';
 import type { Product, Filters } from '../types/database';
 import { ErrorBoundary } from 'react-error-boundary';
 
@@ -377,27 +378,31 @@ function StoreFrontContent() {
   };
 
   return (
-    <div className="relative min-h-screen bg-gray-50 pattern-dots overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+    <div className="relative min-h-screen bg-gray-400 pattern-bg overflow-hidden">
+      {/* Cinta marquee estilo manga (full-bleed) */}
+      <Ticker
+        items={[
+          'Envíos a todo Nicaragua',
+          'Figuras',
+          'Peluches',
+          'Manga y más',
+          'Pedidos por WhatsApp',
+          'Tu tienda otaku de confianza',
+        ]}
+      />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 pt-6 relative z-10">
         <SEO 
           title="GATOTAKU - Tu Tienda de Anime"
           description="Descubre nuestra colección de productos de anime. Figuras, accesorios y más."
         />
         
-        {/* Banner decorativo (sólido + patrón, sin degradado) */}
-        <div className="mb-4 bg-black text-white rounded-xl shadow-lg overflow-hidden relative animate-fade-up">
-          <div className="absolute inset-0 pattern-paws-light" aria-hidden="true" />
-          <p className="relative z-10 text-center font-baloo text-sm sm:text-base py-2.5 px-4 tracking-wide">
-            ¡Envíos a todo Nicaragua! ✦ Tu tienda de anime de confianza
-          </p>
-        </div>
-
         {/* Redesigned Filter Section */}
-        <div className="mb-6 bg-white rounded-xl shadow-lg p-4 border border-gray-200 animate-fade-up" style={{ animationDelay: '100ms' }}>
+        <div className="mb-6 bg-white rounded-xl shadow-hard p-4 border-2 border-black animate-fade-up" style={{ animationDelay: '100ms' }}>
           {isLoading ? (
-            <h1 className="text-3xl font-bold text-gray-800 border-b-2 border-orange-200 pb-2">
+            <div className="text-3xl font-bold text-gray-800 pb-2" role="status">
               GATOTAKU
-            </h1>
+            </div>
           ) : (
             <SearchAndFilters 
               onFilterChange={handleFilterChange}
@@ -452,7 +457,7 @@ function StoreFrontContent() {
 /* Skeleton de carga inicial: misma silueta que ProductCard, shimmer sólido */
 function SkeletonProductCard() {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-md flex flex-col h-full animate-fade-in">
+    <div className="bg-white border-2 border-black rounded-xl overflow-hidden shadow-hard flex flex-col h-full animate-fade-in">
       <div className="relative w-full aspect-[4/5] sm:aspect-square bg-gray-200 overflow-hidden">
         <div className="absolute inset-0 animate-shimmer bg-white/50" />
       </div>

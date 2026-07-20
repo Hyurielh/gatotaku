@@ -29,8 +29,9 @@ const Information = () => {
       <div className="flex flex-col md:flex-row gap-8">
         {/* Sidebar Navigation */}
         <div className="md:w-64 flex-shrink-0">
-          <h2 className="text-xl font-bold mb-4">Información</h2>
-          <nav className="flex flex-col space-y-2">
+          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-hard p-4 border-2 border-black sticky top-[calc(12vh+44px)]">
+            <h2 className="text-xl font-bold mb-4">Información</h2>
+            <nav className="flex flex-col space-y-2">
             <button 
               onClick={() => handleNavigation('general')}
               className={`nav-link ${location.pathname.endsWith('general') ? 'active' : ''}`}
@@ -68,12 +69,14 @@ const Information = () => {
               Apartado
             </button>
           </nav>
+          </div>
         </div>
 
         {/* Content Area */}
         <div key={location.pathname} className="flex-grow animate-fade-up">
-          <Suspense fallback={<div>Cargando...</div>}>
-            <Routes>
+          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-hard p-4 border-2 border-black">
+            <Suspense fallback={<div>Cargando...</div>}>
+              <Routes>
               <Route path="*" element={<Navigate to="general" replace />} />
               <Route path="general" element={<GeneralInfo />} />
               <Route path="about" element={<About />} />
@@ -83,6 +86,7 @@ const Information = () => {
               <Route path="layaway" element={<Layaway />} />
             </Routes>
           </Suspense>
+          </div>
         </div>
       </div>
     </div>

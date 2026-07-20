@@ -23,7 +23,7 @@ const PARTICLES: Particle[] = [
   { top: '88%', left: '65%', size: 30, delay: '1s', duration: '4.8s', rotate: -20, tone: 'gray' },
 ];
 
-function PawShape({ size, rotate }: { size: number; rotate: number }) {
+function PawShape({ size, rotate, className }: { size: number; rotate: number; className?: string }) {
   return (
     <svg
       width={size}
@@ -31,6 +31,7 @@ function PawShape({ size, rotate }: { size: number; rotate: number }) {
       viewBox="0 0 56 56"
       fill="currentColor"
       aria-hidden="true"
+      className={className}
       style={{ transform: `rotate(${rotate}deg)` }}
     >
       <ellipse cx="28" cy="36" rx="8" ry="6.5" />
@@ -40,6 +41,8 @@ function PawShape({ size, rotate }: { size: number; rotate: number }) {
     </svg>
   );
 }
+
+export { PawShape };
 
 /**
  * Fondo ambiental: huellitas flotando suave.

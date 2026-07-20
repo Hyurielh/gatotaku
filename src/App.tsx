@@ -19,7 +19,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <HelmetProvider>
-        <div className="bg-gray-100">
+        <div className="bg-gray-400 pattern-bg">
           <a href="#main-content" className="sr-only focus:not-sr-only">
             Skip to main content
           </a>
