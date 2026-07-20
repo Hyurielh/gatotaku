@@ -27,3 +27,6 @@ brief.md
 *.sln
 *.sw?
 .env
+
+# AI agent folder
+.agents/

@@ -31,8 +31,8 @@ export default function LoginPage() {
       });
 
       if (error) throw error;
-    } catch{
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
     } finally {
       setLoading(false);
     }
