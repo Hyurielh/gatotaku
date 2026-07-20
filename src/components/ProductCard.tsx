@@ -14,6 +14,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
   const { addItem } = useCart();
   const [imageLoadProgress, setImageLoadProgress] = useState(0);
   const [isImageFullyLoaded, setIsImageFullyLoaded] = useState(false);
+  const [justAdded, setJustAdded] = useState(false);
   const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const imageLoadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -77,10 +78,16 @@ export function ProductCard({ product, className }: ProductCardProps) {
     };
   }, [product, handleImageFullyLoaded]);
 
+  const handleAddToCart = useCallback(() => {
+    addItem(product);
+    setJustAdded(true);
+    setTimeout(() => setJustAdded(false), 500);
+  }, [addItem, product]);
+
   return (
     <div className={[
       className,
-      "product-card bg-white border border-gray-200 rounded-xl overflow-hidden shadow-md hover:shadow-2xl flex flex-col h-full relative transition-all duration-300 hover:scale-[1.02] hover:-translate-y-2 group"
+      "product-card bg-white border border-gray-200 rounded-xl overflow-hidden shadow-md hover:shadow-2xl hover:border-orange-300 flex flex-col h-full relative transition-all duration-300 hover:scale-[1.02] hover:-translate-y-2 group"
     ].filter(Boolean).join(' ')} >
       {/* Imagen con proporción equilibrada */}
       <div className="w-full aspect-[4/5] sm:aspect-square overflow-hidden relative bg-gray-100">
@@ -91,6 +98,12 @@ export function ProductCard({ product, className }: ProductCardProps) {
             width: `${imageLoadProgress}%`,
             opacity: isImageFullyLoaded ? 0 : 1
           }}
+        />
+
+        {/* Barrido de luz al hover (decorativo) */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 left-0 z-30 w-1/3 bg-white/40 -translate-x-[150%] -skew-x-[15deg] group-hover:animate-shine"
         />
 
         {/* Placeholder de baja resolución */}
@@ -107,7 +120,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
           images={imageData}
           alt={product.name}
           loading="lazy"
-          className="w-full h-full relative z-20 transition-opacity duration-500"
+          className="product-card-zoom w-full h-full relative z-20 transition-opacity duration-500"
           onFullyLoaded={handleImageFullyLoaded}
         />
       </div>
@@ -123,12 +136,12 @@ export function ProductCard({ product, className }: ProductCardProps) {
           {/* Tags con mejor tamaño */}
           <div className="flex flex-wrap gap-1">
             {product.category_ref && (
-              <span className="bg-orange-100 text-orange-700 px-2 py-0.5 sm:px-2 sm:py-1 rounded text-xs font-medium">
+              <span className="bg-orange-100 text-orange-700 px-2 py-0.5 sm:px-2 sm:py-1 rounded text-xs font-medium inline-block transition-transform duration-200 hover:scale-110">
                 {product.category_ref.name}
               </span>
             )}
             {product.anime && (
-              <span className="bg-blue-100 text-blue-700 px-2 py-0.5 sm:px-2 sm:py-1 rounded text-xs font-medium">
+              <span className="bg-blue-100 text-blue-700 px-2 py-0.5 sm:px-2 sm:py-1 rounded text-xs font-medium inline-block transition-transform duration-200 hover:scale-110">
                 {product.anime.name}
               </span>
             )}
@@ -147,12 +160,12 @@ export function ProductCard({ product, className }: ProductCardProps) {
 
         {/* Botón con mejor tamaño */}
         <button
-          onClick={() => addItem(product)}
-          className="w-full bg-orange-500 text-white py-2 sm:py-2 px-3 sm:px-3 rounded-md flex items-center justify-center gap-2 hover:bg-orange-600 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md mt-3"
+          onClick={handleAddToCart}
+          className="w-full bg-orange-500 text-white py-2 sm:py-2 px-3 sm:px-3 rounded-md flex items-center justify-center gap-2 hover:bg-orange-600 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md active:scale-95 mt-3"
           aria-label={`Agregar ${product.name} al carrito`}
         >
-          <ShoppingCart size={14} className="sm:w-4 sm:h-4" />
-          <span>Agregar</span>
+          <ShoppingCart size={14} className={`sm:w-4 sm:h-4 ${justAdded ? 'animate-pop' : ''}`} />
+          <span>{justAdded ? '¡Agregado!' : 'Agregar'}</span>
         </button>
       </div>
     </div>

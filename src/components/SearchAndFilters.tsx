@@ -113,7 +113,7 @@ export function SearchAndFilters({
           value={localFilters.search || ''} 
           onChange={handleSearchChange}
           aria-label="Buscar productos por nombre o descripción"
-          className="block w-full p-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
+          className="block w-full p-2 border border-gray-300 rounded-md transition-all duration-200 hover:border-orange-400 focus:ring-orange-500 focus:border-orange-500"
         />
       </div>
 
@@ -121,16 +121,16 @@ export function SearchAndFilters({
       <div className="md:hidden flex justify-end mb-4">
         <button 
           onClick={toggleMobileFilters} 
-          className="flex items-center px-4 py-2 bg-orange-500 text-white rounded-md"
+          className="flex items-center px-4 py-2 bg-orange-500 text-white rounded-md transition-all duration-200 hover:bg-orange-600 active:scale-95"
         >
-          <FaFilter className="mr-2" /> Filtros
+          <FaFilter className={`mr-2 transition-transform duration-300 ${isMobileFilterOpen ? 'rotate-180' : ''}`} /> Filtros
         </button>
       </div>
 
       <div className={`
         additional-filters
         grid grid-cols-1 
-        ${isMobileFilterOpen ? 'grid' : 'hidden'} 
+        ${isMobileFilterOpen ? 'grid animate-fade-up' : 'hidden'} 
         md:grid md:grid-cols-2 md:gap-4
       `}>
         <div className="md:flex md:space-x-4 md:col-span-2">
@@ -143,7 +143,7 @@ export function SearchAndFilters({
               value={localFilters.category || ''} 
               onChange={handleCategoryChange}
               aria-label="Seleccionar categoría de producto"
-              className="block w-full p-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
+              className="block w-full p-2 border border-gray-300 rounded-md transition-all duration-200 hover:border-orange-400 focus:ring-orange-500 focus:border-orange-500"
             >
               <option value="">Todas las categorías</option>
               {categories.sort((a, b) => a.name.localeCompare(b.name)).map((category) => (
@@ -162,7 +162,7 @@ export function SearchAndFilters({
               value={localFilters.anime || ''} 
               onChange={handleAnimeChange}
               aria-label="Seleccionar anime"
-              className="block w-full p-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
+              className="block w-full p-2 border border-gray-300 rounded-md transition-all duration-200 hover:border-orange-400 focus:ring-orange-500 focus:border-orange-500"
             >
               <option value="">Todos los Animes</option>
               {animes.sort((a, b) => a.name.localeCompare(b.name)).map((anime) => (
@@ -185,7 +185,7 @@ export function SearchAndFilters({
               aria-label="Filtrar productos por precio mínimo"
               min="0"
               step="0.01"
-              className="block w-full p-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
+              className="block w-full p-2 border border-gray-300 rounded-md transition-all duration-200 hover:border-orange-400 focus:ring-orange-500 focus:border-orange-500"
             />
           </div>
 
@@ -199,7 +199,7 @@ export function SearchAndFilters({
               aria-label="Filtrar productos por precio máximo"
               min="0"
               step="0.01"
-              className="block w-full p-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
+              className="block w-full p-2 border border-gray-300 rounded-md transition-all duration-200 hover:border-orange-400 focus:ring-orange-500 focus:border-orange-500"
             />
           </div>
         </div>
@@ -207,7 +207,7 @@ export function SearchAndFilters({
         <div className="filter-group col-span-full">
           <button 
             onClick={resetFilters}
-            className="w-full px-4 py-2 mt-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+            className="w-full px-4 py-2 mt-4 bg-gray-200 text-gray-800 rounded-md transition-all duration-200 hover:bg-gray-300 active:scale-95"
           >
             Restablecer Filtros
           </button>

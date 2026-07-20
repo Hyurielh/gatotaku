@@ -71,7 +71,7 @@ const Information = () => {
         </div>
 
         {/* Content Area */}
-        <div className="flex-grow">
+        <div key={location.pathname} className="flex-grow animate-fade-up">
           <Suspense fallback={<div>Cargando...</div>}>
             <Routes>
               <Route path="*" element={<Navigate to="general" replace />} />

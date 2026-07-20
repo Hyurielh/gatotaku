@@ -38,7 +38,7 @@ export const Header: React.FC = React.memo(() => {
             {/* Logo */}
             <Link 
               to="/" 
-              className="flex items-center"
+              className="flex items-center group"
               aria-label="Página de inicio de Gatotaku"
               onClick={() => {
                 window.dispatchEvent(new CustomEvent('reset-store-filters'));
@@ -47,10 +47,10 @@ export const Header: React.FC = React.memo(() => {
               <img 
                 src="/logo.png" 
                 alt="Logo de Gatotaku" 
-                className="w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg" 
+                className="w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" 
               />
               <span 
-                className="ml-3 text-2xl lg:text-4xl font-black tracking-wide text-white" 
+                className="ml-3 text-2xl lg:text-4xl font-black tracking-wide text-white inline-block transition-all duration-300 group-hover:text-orange-400 group-hover:animate-wiggle" 
                 style={{ 
                   fontFamily: "Poppins",
                   textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)'
@@ -63,21 +63,21 @@ export const Header: React.FC = React.memo(() => {
             {/* Desktop Menu */}
             <nav className="hidden md:flex items-center space-x-8">
               <Link to="/" className="menu-desktop-link group">
-                <span>Inicio</span>
-                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-orange-500 transform scale-x-0 transition-transform group-hover:scale-x-100"></span>
+                <span className="transition-colors duration-200 group-hover:text-orange-400">Inicio</span>
+                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-orange-500 transform scale-x-0 origin-left transition-transform duration-300 ease-out group-hover:scale-x-100"></span>
               </Link>
               <Link to="/about" className="menu-desktop-link group">
-                <span>Sobre Nosotros</span>
-                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-orange-500 transform scale-x-0 transition-transform group-hover:scale-x-100"></span>
+                <span className="transition-colors duration-200 group-hover:text-orange-400">Sobre Nosotros</span>
+                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-orange-500 transform scale-x-0 origin-left transition-transform duration-300 ease-out group-hover:scale-x-100"></span>
               </Link>
               <Link to="/information" className="menu-desktop-link group">
-                <span>Información</span>
-                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-orange-500 transform scale-x-0 transition-transform group-hover:scale-x-100"></span>
+                <span className="transition-colors duration-200 group-hover:text-orange-400">Información</span>
+                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-orange-500 transform scale-x-0 origin-left transition-transform duration-300 ease-out group-hover:scale-x-100"></span>
               </Link>
               <a href={SOCIAL_MEDIA.whatsapp.url}
                  target="_blank" 
                  rel="noopener noreferrer" 
-                 className="relative group px-2 rounded-full hover:bg-green-500/20 transition-all duration-200"
+                 className="relative group px-2 rounded-full hover:bg-green-500/20 transition-all duration-200 hover:scale-125 active:scale-95"
                  title="Contáctanos por WhatsApp"
               >
                 <FaWhatsapp size={24} className="text-green-400 hover:text-green-300 transition-colors" />
@@ -91,7 +91,7 @@ export const Header: React.FC = React.memo(() => {
 
             {/* Botón de menú móvil */}
             <button 
-              className="md:hidden"
+              className="md:hidden transition-transform duration-200 hover:scale-110 active:scale-90"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
               aria-expanded={isMenuOpen}
@@ -107,7 +107,7 @@ export const Header: React.FC = React.memo(() => {
           href={SOCIAL_MEDIA.tiktok}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1.5 text-gray-300 hover:text-white transition-colors text-sm"
+          className="flex items-center gap-1.5 text-gray-300 hover:text-white hover:-translate-y-0.5 transition-all duration-200 text-sm"
           title="TikTok"
         >
           <FaTiktok size={14} />
@@ -117,7 +117,7 @@ export const Header: React.FC = React.memo(() => {
           href={SOCIAL_MEDIA.facebook}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1.5 text-gray-300 hover:text-white transition-colors text-sm"
+          className="flex items-center gap-1.5 text-gray-300 hover:text-white hover:-translate-y-0.5 transition-all duration-200 text-sm"
           title="Facebook"
         >
           <FaFacebook size={14} />
@@ -127,7 +127,7 @@ export const Header: React.FC = React.memo(() => {
           href={SOCIAL_MEDIA.instagram}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1.5 text-gray-300 hover:text-white transition-colors text-sm"
+          className="flex items-center gap-1.5 text-gray-300 hover:text-white hover:-translate-y-0.5 transition-all duration-200 text-sm"
           title="Instagram"
         >
           <FaInstagram size={14} />

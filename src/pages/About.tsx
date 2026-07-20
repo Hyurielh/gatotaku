@@ -1,12 +1,14 @@
 import { FaStore, FaMapMarkerAlt, FaTruck } from 'react-icons/fa';
+import { Reveal } from '../components/Reveal';
 
 const About = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="space-y-8">
-        <h1 className="section-title">Sobre Nosotros</h1>
+        <h1 className="section-title animate-fade-up">Sobre Nosotros</h1>
         
-        <div className="card">
+        <Reveal>
+          <div className="card">
           <div className="flex items-start space-x-4">
             <div className="icon-container shrink-0">
               <FaStore className="w-5 h-5" />
@@ -19,9 +21,11 @@ const About = () => {
               </p>
             </div>
           </div>
-        </div>
+          </div>
+        </Reveal>
 
-        <div className="card">
+        <Reveal delay={120}>
+          <div className="card">
           <div className="flex items-start space-x-4">
             <div className="icon-container shrink-0">
               <FaMapMarkerAlt className="w-5 h-5" />
@@ -34,9 +38,11 @@ const About = () => {
               </p>
             </div>
           </div>
-        </div>
+          </div>
+        </Reveal>
 
-        <div className="card">
+        <Reveal delay={240}>
+          <div className="card">
           <div className="flex items-start space-x-4">
             <div className="icon-container shrink-0">
               <FaTruck className="w-5 h-5" />
@@ -50,7 +56,8 @@ const About = () => {
               </p>
             </div>
           </div>
-        </div>
+          </div>
+        </Reveal>
       </div>
     </div>
   );

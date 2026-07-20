@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { SEO } from '../components/SEO';
 import { SearchAndFilters } from '../components/SearchAndFilters';
 import { ProductCard } from '../components/ProductCard';
+import { Reveal } from '../components/Reveal';
 import type { Product, Filters } from '../types/database';
 import { ErrorBoundary } from 'react-error-boundary';
 
@@ -342,7 +343,7 @@ function StoreFrontContent() {
           <button 
             onClick={() => handlePageChange(currentPage - 1)} 
             disabled={currentPage === 1}
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-md bg-gray-100 hover:bg-orange-100 disabled:opacity-50 transition-colors flex items-center justify-center text-sm"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-md bg-gray-100 hover:bg-orange-100 disabled:opacity-50 transition-all active:scale-90 flex items-center justify-center text-sm"
           >
             ←
           </button>
@@ -352,9 +353,9 @@ function StoreFrontContent() {
             <button
               key={number}
               onClick={() => handlePageChange(number)}
-              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-md transition-colors flex items-center justify-center text-sm font-medium ${
+              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-md transition-all active:scale-90 flex items-center justify-center text-sm font-medium ${
                 currentPage === number 
-                  ? 'bg-orange-500 text-white shadow-sm' 
+                  ? 'bg-orange-500 text-white shadow-sm animate-glow-pulse' 
                   : 'bg-gray-100 hover:bg-orange-100 text-gray-700'
               }`}
             >
@@ -366,7 +367,7 @@ function StoreFrontContent() {
           <button 
             onClick={() => handlePageChange(currentPage + 1)} 
             disabled={currentPage === totalPages}
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-md bg-gray-100 hover:bg-orange-100 disabled:opacity-50 transition-colors flex items-center justify-center text-sm"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-md bg-gray-100 hover:bg-orange-100 disabled:opacity-50 transition-all active:scale-90 flex items-center justify-center text-sm"
           >
             →
           </button>
@@ -376,15 +377,23 @@ function StoreFrontContent() {
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
+    <div className="relative min-h-screen bg-gray-50 pattern-dots overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         <SEO 
           title="GATOTAKU - Tu Tienda de Anime"
           description="Descubre nuestra colección de productos de anime. Figuras, accesorios y más."
         />
         
+        {/* Banner decorativo (sólido + patrón, sin degradado) */}
+        <div className="mb-4 bg-black text-white rounded-xl shadow-lg overflow-hidden relative animate-fade-up">
+          <div className="absolute inset-0 pattern-paws-light" aria-hidden="true" />
+          <p className="relative z-10 text-center font-baloo text-sm sm:text-base py-2.5 px-4 tracking-wide">
+            ¡Envíos a todo Nicaragua! ✦ Tu tienda de anime de confianza
+          </p>
+        </div>
+
         {/* Redesigned Filter Section */}
-        <div className="mb-6 bg-white rounded-xl shadow-lg p-4 border border-gray-200">
+        <div className="mb-6 bg-white rounded-xl shadow-lg p-4 border border-gray-200 animate-fade-up" style={{ animationDelay: '100ms' }}>
           {isLoading ? (
             <h1 className="text-3xl font-bold text-gray-800 border-b-2 border-orange-200 pb-2">
               GATOTAKU
@@ -417,25 +426,46 @@ function StoreFrontContent() {
               isPageChanging ? 'opacity-50' : 'opacity-100'
             }`}
           >
-            {queryData?.products?.map((product, index) => (
-              <div 
-                key={product.id} 
-                className="transition-all duration-300"
-                style={{ 
-                  transitionDelay: `${index * 50}ms`,
-                  willChange: 'transform, opacity'
-                }}
-              >
-                <ProductCard 
-                  product={product} 
-                />
-              </div>
-            ))}
+            {isLoading ? (
+              Array.from({ length: 8 }).map((_, index) => (
+                <SkeletonProductCard key={`skeleton-${index}`} />
+              ))
+            ) : (
+              queryData?.products?.map((product, index) => (
+                <Reveal key={product.id} delay={index * 50} className="h-full">
+                  <ProductCard 
+                    product={product} 
+                  />
+                </Reveal>
+              ))
+            )}
           </div>
         </div>
         
         {/* Pagination Controls */}
         {renderPagination()}
+      </div>
+    </div>
+  );
+}
+
+/* Skeleton de carga inicial: misma silueta que ProductCard, shimmer sólido */
+function SkeletonProductCard() {
+  return (
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-md flex flex-col h-full animate-fade-in">
+      <div className="relative w-full aspect-[4/5] sm:aspect-square bg-gray-200 overflow-hidden">
+        <div className="absolute inset-0 animate-shimmer bg-white/50" />
+      </div>
+      <div className="p-3 sm:p-4 space-y-3 flex-grow">
+        <div className="h-4 bg-gray-200 rounded w-3/4 relative overflow-hidden">
+          <div className="absolute inset-0 animate-shimmer bg-white/50" />
+        </div>
+        <div className="h-3 bg-gray-200 rounded w-1/2 relative overflow-hidden">
+          <div className="absolute inset-0 animate-shimmer bg-white/50" />
+        </div>
+        <div className="h-5 bg-gray-200 rounded w-1/3 relative overflow-hidden">
+          <div className="absolute inset-0 animate-shimmer bg-white/50" />
+        </div>
       </div>
     </div>
   );

@@ -40,7 +40,8 @@ export const SocialMediaFloat: React.FC<SocialMediaFloatProps> = ({
         cursor: isDragging ? 'grabbing' : 'grab'
       })}
     >
-      <div className="flex flex-col space-y-3">
+      {/* Flotación suave en reposo; NUNCA en wrapper (rompería drag) */}
+      <div className={`flex flex-col space-y-3 ${isDragging ? '' : 'animate-bounce-soft'}`}>
         {/* WhatsApp - siempre visible */}
         <div className="relative">
           <button
@@ -79,7 +80,7 @@ export const SocialMediaFloat: React.FC<SocialMediaFloatProps> = ({
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="w-12 h-12 bg-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center group"
+              className="w-12 h-12 bg-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center group animate-pop"
               title="Facebook"
             >
               <FaFacebook size={20} className="text-blue-600 group-hover:text-blue-700 transition-colors" />
@@ -89,7 +90,8 @@ export const SocialMediaFloat: React.FC<SocialMediaFloatProps> = ({
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="w-12 h-12 bg-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center group"
+              className="w-12 h-12 bg-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center group animate-pop"
+              style={{ animationDelay: '60ms' }}
               title="TikTok"
             >
               <FaTiktok size={20} className="text-gray-800 group-hover:text-black transition-colors" />

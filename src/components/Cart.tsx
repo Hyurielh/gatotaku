@@ -46,7 +46,7 @@ export function Cart() {
         <div className="relative">
           <ShoppingCart className="text-white w-5 h-5 sm:w-6 sm:h-6" />
           {items.length > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-md animate-bounce">
+            <span key={items.length} className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-md animate-pop">
               {items.length}
             </span>
           )}
@@ -57,12 +57,12 @@ export function Cart() {
       {isOpen && (
         <div className="fixed inset-0 z-[100] overflow-hidden">
           <div
-            className="absolute inset-0 bg-black bg-opacity-50 transition-opacity duration-300"
+            className="absolute inset-0 bg-black bg-opacity-50 animate-fade-in"
             onClick={() => setIsOpen(false)}
           />
 
           <div className="fixed inset-y-0 right-0 max-w-full flex">
-            <div className="w-screen max-w-md transform transition-transform duration-300 translate-x-0">
+            <div className="w-screen max-w-md animate-slide-in-right">
               <div className="h-full flex flex-col bg-white shadow-xl rounded-l-2xl">
                 <div className="flex justify-between items-center p-6 bg-orange-500 text-white rounded-tl-2xl">
                   <h2 className="text-xl font-bold flex items-center">
@@ -98,10 +98,11 @@ export function Cart() {
                         <Trash2 className="mr-2" size={16} />
                         Vaciar carrito
                       </button>
-                      {items.map((item) => (
+                      {items.map((item, index) => (
                         <div
                           key={item.product.id}
-                          className="flex items-center justify-between bg-gray-50 rounded-xl p-4 mb-3 hover:bg-gray-100 transition-colors"
+                          className="flex items-center justify-between bg-gray-50 rounded-xl p-4 mb-3 hover:bg-gray-100 transition-colors animate-fade-up"
+                          style={{ animationDelay: `${index * 60}ms` }}
                         >
                           <div className="flex items-center flex-1">
                             <img
@@ -134,7 +135,7 @@ export function Cart() {
                             </div>
                             <button
                               onClick={() => removeItem(item.product.id)}
-                              className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all"
+                              className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all hover:animate-shake"
                             >
                               <X size={16} />
                             </button>
@@ -150,7 +151,7 @@ export function Cart() {
                   <div className="p-6 bg-gray-50 border-t">
                     <div className="flex justify-between items-center mb-6 p-4 bg-white rounded-lg shadow-sm border-2 border-orange-100">
                       <span className="text-lg font-bold text-gray-800">Total:</span>
-                      <span className="text-2xl font-bold text-orange-600">C${total.toFixed(2)}</span>
+                      <span key={total.toFixed(2)} className="text-2xl font-bold text-orange-600 inline-block animate-pop">C${total.toFixed(2)}</span>
                     </div>
                     <button
                       onClick={handleOrder}

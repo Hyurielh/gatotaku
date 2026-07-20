@@ -17,11 +17,11 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
 
   return isOpen ? (
     <div 
-      className="fixed inset-0 bg-black bg-opacity-50 z-40" 
+      className="fixed inset-0 bg-black bg-opacity-50 z-40 animate-fade-in" 
       onClick={onClose}
     >
       <div 
-        className="fixed top-0 right-0 w-64 h-full bg-white shadow-lg transform transition-transform duration-300 ease-in-out"
+        className="fixed top-0 right-0 w-64 h-full bg-white shadow-lg animate-slide-in-right"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-4 border-b flex justify-between items-center">
@@ -50,7 +50,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
           </button>
         </div>
         
-        <nav className="flex flex-col p-4 space-y-4">
+        <nav className="mobile-menu-nav flex flex-col p-4 space-y-4">
           <Link 
             to="/" 
             className="text-lg hover:text-orange-500 transition-colors"

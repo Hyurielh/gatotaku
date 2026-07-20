@@ -8,6 +8,7 @@ import { SEO } from './components/SEO';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { Cart } from './components/Cart';
+import { AmbientBackground } from './components/AmbientBackground';
 import AppRoutes from './routes/AppRoutes';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -35,6 +36,7 @@ function App() {
             <CartProvider>
               <Router>
                 <div className="flex flex-col min-h-screen">
+                  <AmbientBackground />
                   <Header />
                   <Suspense fallback={<div>Loading...</div>}>
                     <main id="main-content" className="flex-grow pt-[calc(12vh+36px)] px-4 sm:px-6 lg:px-8 pb-20">

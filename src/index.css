@@ -40,6 +40,41 @@
     font-family: 'Baloo', cursive;
   }
 
+  /* Accesibilidad: apagar TODA animación si usuario prefiere movimiento reducido */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* Scrollbar personalizado (sólido, sin degradado) */
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: #f97316 #f3f4f6;
+  }
+
+  /* Toasts con identidad Gatotaku */
+  :root {
+    --toastify-color-success: #f97316;
+    --toastify-font-family: 'Quicksand', sans-serif;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #f3f4f6;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #f97316;
+    border-radius: 8px;
+    border: 2px solid #f3f4f6;
+  }
+
   .section-title {
     @apply text-3xl font-bold mb-6 text-gray-800 border-b-2 border-orange-200 pb-2;
   }
@@ -55,7 +90,7 @@
 
 @layer components {
   .nav-link {
-    @apply p-3 rounded-lg flex items-center space-x-2 transition-all duration-300 hover:bg-orange-50 hover:text-orange-600 hover:shadow-sm;
+    @apply p-3 rounded-lg flex items-center space-x-2 transition-all duration-300 hover:bg-orange-50 hover:text-orange-600 hover:shadow-sm active:scale-[0.98];
   }
 
   .nav-link.active {
@@ -65,6 +100,11 @@
 
   .icon-container {
     @apply w-8 h-8 flex items-center justify-center rounded-full bg-orange-100 text-orange-600;
+  }
+
+  /* Tarjeta info (usada en About, Shipping, Refunds, PaymentMethods, Layaway, GeneralInfo) */
+  .card {
+    @apply bg-white rounded-xl shadow-md border border-gray-200 p-5 transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
   }
 
   
@@ -92,6 +132,30 @@
   .menu-mobile-icon {
     @apply text-white hover:text-orange-400 transition-colors flex items-center font-baloo text-[16px];
   }
+
+  /* Zoom interno de imagen en ProductCard (solo <picture>, NO toca lightbox) */
+  .product-card .product-card-zoom picture img {
+    transition: transform 0.5s ease-out;
+  }
+
+  .product-card:hover .product-card-zoom picture img {
+    transform: scale(1.08);
+  }
+
+  /* Menú móvil: links entran escalonados */
+  .mobile-menu-nav > * {
+    opacity: 0;
+    animation: fade-up 0.4s ease-out forwards;
+  }
+
+  .mobile-menu-nav > *:nth-child(1) { animation-delay: 60ms; }
+  .mobile-menu-nav > *:nth-child(2) { animation-delay: 120ms; }
+  .mobile-menu-nav > *:nth-child(3) { animation-delay: 180ms; }
+  .mobile-menu-nav > *:nth-child(4) { animation-delay: 240ms; }
+  .mobile-menu-nav > *:nth-child(5) { animation-delay: 300ms; }
+  .mobile-menu-nav > *:nth-child(6) { animation-delay: 360ms; }
+  .mobile-menu-nav > *:nth-child(7) { animation-delay: 420ms; }
+  .mobile-menu-nav > *:nth-child(8) { animation-delay: 480ms; }
 }
 
 @layer utilities {
@@ -101,5 +165,40 @@
 
   .brand-text {
     @apply font-bold text-2xl bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent;
+  }
+
+  /* Scroll reveal: estado inicial oculto, .is-visible revela (usar con useReveal) */
+  .animate-on-scroll {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+      opacity 0.5s ease-out,
+      transform 0.5s ease-out;
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  .animate-on-scroll.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-on-scroll {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* Texturas sutiles (SVG plano, SIN degradados) */
+  .pattern-dots {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Ccircle cx='2' cy='2' r='1.5' fill='%23000000' fill-opacity='0.05'/%3E%3C/svg%3E");
+  }
+
+  .pattern-paws {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='%23000000' fill-opacity='0.06'%3E%3Cellipse cx='28' cy='36' rx='8' ry='6.5'/%3E%3Ccircle cx='15' cy='24' r='4'/%3E%3Ccircle cx='28' cy='18' r='4'/%3E%3Ccircle cx='41' cy='24' r='4'/%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  .pattern-paws-light {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='%23ffffff' fill-opacity='0.10'%3E%3Cellipse cx='28' cy='36' rx='8' ry='6.5'/%3E%3Ccircle cx='15' cy='24' r='4'/%3E%3Ccircle cx='28' cy='18' r='4'/%3E%3Ccircle cx='41' cy='24' r='4'/%3E%3C/g%3E%3C/svg%3E");
   }
 }
