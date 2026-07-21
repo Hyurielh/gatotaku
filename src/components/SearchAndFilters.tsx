@@ -20,8 +20,8 @@ export interface SearchAndFiltersProps {
   onResetFilters?: () => void;
 }
 
-export function SearchAndFilters({ 
-  onFilterChange, 
+export function SearchAndFilters({
+  onFilterChange,
   currentFilters = {},
   categories,
   animes,
@@ -31,8 +31,8 @@ export function SearchAndFilters({
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   const handleFilterChange = (newFilters: Partial<Filters>) => {
-    const updatedFilters = { 
-      ...currentFilters, 
+    const updatedFilters = {
+      ...currentFilters,
       ...newFilters,
       page: 1  // Siempre resetear a la primera página cuando se cambia un filtro
     };
@@ -41,14 +41,14 @@ export function SearchAndFilters({
   };
 
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    handleFilterChange({ 
-      category: e.target.value === '' ? undefined : e.target.value 
+    handleFilterChange({
+      category: e.target.value === '' ? undefined : e.target.value
     });
   };
 
   const handleAnimeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    handleFilterChange({ 
-      anime: e.target.value === '' ? undefined : e.target.value 
+    handleFilterChange({
+      anime: e.target.value === '' ? undefined : e.target.value
     });
   };
 
@@ -63,21 +63,21 @@ export function SearchAndFilters({
   };
 
   const _handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    handleFilterChange({ 
-      sortBy: e.target.value as Filters['sortBy'] 
+    handleFilterChange({
+      sortBy: e.target.value as Filters['sortBy']
     });
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const searchValue = e.target.value;
-    
+
     setLocalFilters(prev => ({
       ...prev,
       search: searchValue === '' ? undefined : searchValue
     }));
-    
-    onFilterChange({ 
-      search: searchValue === '' ? undefined : searchValue 
+
+    onFilterChange({
+      search: searchValue === '' ? undefined : searchValue
     });
   };
 
@@ -96,7 +96,7 @@ export function SearchAndFilters({
     };
     setLocalFilters(initialFilters);
     onFilterChange(initialFilters);
-    
+
     if (onResetFilters) {
       onResetFilters();
     }
@@ -105,23 +105,23 @@ export function SearchAndFilters({
   return (
     <div className="search-and-filters-container pt-4">
       {/* Búsqueda (siempre visible) */}
-      <div className="filter-group mb-4">
-        <input 
+      <div className="filter-group mb-6 relative">
+        <input
           id="search-input-desktop"
-          type="text" 
-          placeholder="Buscar productos..." 
-          value={localFilters.search || ''} 
+          type="text"
+          placeholder="Buscar productos..."
+          value={localFilters.search || ''}
           onChange={handleSearchChange}
           aria-label="Buscar productos por nombre o descripción"
-          className="block w-full p-2 border border-gray-300 rounded-md transition-all duration-200 hover:border-orange-400 focus:ring-orange-500 focus:border-orange-500"
+          className="block w-full px-4 py-3 bg-white text-gray-800 font-medium border-2 border-black rounded-xl shadow-hard-sm focus:outline-none focus:ring-0 focus:border-orange-500 focus:shadow-hard-orange transition-all duration-200"
         />
       </div>
 
       {/* Botón de filtros para móvil */}
       <div className="md:hidden flex justify-end mb-4">
-        <button 
-          onClick={toggleMobileFilters} 
-          className="flex items-center px-4 py-2 bg-orange-500 text-white rounded-md transition-all duration-200 hover:bg-orange-600 active:scale-95"
+        <button
+          onClick={toggleMobileFilters}
+          className="flex items-center px-4 py-2.5 bg-orange-400 text-black font-bold border-2 border-black rounded-xl shadow-hard-sm hover:bg-orange-300 active:translate-y-1 active:shadow-none transition-all duration-200"
         >
           <FaFilter className={`mr-2 transition-transform duration-300 ${isMobileFilterOpen ? 'rotate-180' : ''}`} /> Filtros
         </button>
@@ -138,12 +138,12 @@ export function SearchAndFilters({
             <label htmlFor="category-select" className=" my-2 block text-sm font-medium text-gray-700 mb-1">
               Categoría
             </label>
-            <select 
+            <select
               id="category-select"
-              value={localFilters.category || ''} 
+              value={localFilters.category || ''}
               onChange={handleCategoryChange}
               aria-label="Seleccionar categoría de producto"
-              className="block w-full p-2 border border-gray-300 rounded-md transition-all duration-200 hover:border-orange-400 focus:ring-orange-500 focus:border-orange-500"
+              className="block w-full px-3 py-2.5 bg-white text-gray-800 font-medium border-2 border-black rounded-xl shadow-hard-sm focus:outline-none focus:ring-0 focus:border-orange-500 focus:shadow-hard-orange transition-all duration-200"
             >
               <option value="">Todas las categorías</option>
               {categories.sort((a, b) => a.name.localeCompare(b.name)).map((category) => (
@@ -157,12 +157,12 @@ export function SearchAndFilters({
             <label htmlFor="anime-select" className=" my-2 block text-sm font-medium text-gray-700 mb-1">
               Anime
             </label>
-            <select 
+            <select
               id="anime-select"
-              value={localFilters.anime || ''} 
+              value={localFilters.anime || ''}
               onChange={handleAnimeChange}
               aria-label="Seleccionar anime"
-              className="block w-full p-2 border border-gray-300 rounded-md transition-all duration-200 hover:border-orange-400 focus:ring-orange-500 focus:border-orange-500"
+              className="block w-full px-3 py-2.5 bg-white text-gray-800 font-medium border-2 border-black rounded-xl shadow-hard-sm focus:outline-none focus:ring-0 focus:border-orange-500 focus:shadow-hard-orange transition-all duration-200"
             >
               <option value="">Todos los Animes</option>
               {animes.sort((a, b) => a.name.localeCompare(b.name)).map((anime) => (
@@ -176,38 +176,38 @@ export function SearchAndFilters({
 
         <div className="md:flex md:space-x-4 md:col-span-2 my-4">
           <div className="filter-group flex-1">
-            <input 
+            <input
               id="min-price-input"
-              type="number" 
-              placeholder="Precio mínimo" 
-              value={localFilters.minPrice !== undefined ? localFilters.minPrice : ''} 
+              type="number"
+              placeholder="Precio mínimo"
+              value={localFilters.minPrice !== undefined ? localFilters.minPrice : ''}
               onChange={handleMinPriceChange}
               aria-label="Filtrar productos por precio mínimo"
               min="0"
               step="0.01"
-              className="block w-full p-2 border border-gray-300 rounded-md transition-all duration-200 hover:border-orange-400 focus:ring-orange-500 focus:border-orange-500"
+              className="block w-full px-4 py-2.5 bg-white text-gray-800 font-medium border-2 border-black rounded-xl shadow-hard-sm focus:outline-none focus:ring-0 focus:border-orange-500 focus:shadow-hard-orange transition-all duration-200"
             />
           </div>
 
           <div className="filter-group flex-1">
-            <input 
+            <input
               id="max-price-input"
-              type="number" 
-              placeholder="Precio máximo" 
-              value={localFilters.maxPrice !== undefined ? localFilters.maxPrice : ''} 
+              type="number"
+              placeholder="Precio máximo"
+              value={localFilters.maxPrice !== undefined ? localFilters.maxPrice : ''}
               onChange={handleMaxPriceChange}
               aria-label="Filtrar productos por precio máximo"
               min="0"
               step="0.01"
-              className="block w-full p-2 border border-gray-300 rounded-md transition-all duration-200 hover:border-orange-400 focus:ring-orange-500 focus:border-orange-500"
+              className="block w-full px-4 py-2.5 bg-white text-gray-800 font-medium border-2 border-black rounded-xl shadow-hard-sm focus:outline-none focus:ring-0 focus:border-orange-500 focus:shadow-hard-orange transition-all duration-200"
             />
           </div>
         </div>
 
         <div className="filter-group col-span-full">
-          <button 
+          <button
             onClick={resetFilters}
-            className="w-full px-4 py-2 mt-4 bg-gray-200 text-gray-800 rounded-md transition-all duration-200 hover:bg-gray-300 active:scale-95"
+            className="w-full px-4 py-3 mt-4 bg-white text-black font-bold border-2 border-black rounded-xl shadow-hard-sm hover:bg-gray-50 active:translate-y-1 active:shadow-none transition-all duration-200"
           >
             Restablecer Filtros
           </button>

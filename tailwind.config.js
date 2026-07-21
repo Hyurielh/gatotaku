@@ -81,9 +81,9 @@ export default {
         'rotate-slow': 'rotate-slow 14s linear infinite',
       },
       boxShadow: {
-        'hard-sm': '3px 3px 0 0 rgba(0, 0, 0, 0.9)',
-        hard: '5px 5px 0 0 rgba(0, 0, 0, 0.9)',
-        'hard-orange': '5px 5px 0 0 rgba(249, 115, 22, 1)',
+        'hard-sm': '2px 2px 0 0 rgba(0, 0, 0, 0.4)',
+        hard: '4px 4px 0 0 rgba(0, 0, 0, 0.4)',
+        'hard-orange': '4px 4px 0 0 rgba(249, 115, 22, 0.6)',
       },
     },
   },
