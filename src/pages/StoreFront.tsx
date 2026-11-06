@@ -47,8 +47,8 @@ function StoreFrontContent() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState<Filters>(() => ({
     search: searchParams.get('q') ?? '',
-    category: '',
-    anime: '',
+    category: [],
+    anime: [],
     sortBy: 'name_asc',
     minPrice: undefined,
     maxPrice: undefined,
@@ -84,8 +84,8 @@ function StoreFrontContent() {
     const resetFiltersHandler = () => {
       setFilters({
         search: '',
-        category: '',
-        anime: '',
+        category: [],
+        anime: [],
         sortBy: 'name_asc',
         minPrice: undefined,
         maxPrice: undefined,
@@ -182,12 +182,12 @@ function StoreFrontContent() {
         }
       }
 
-      if (filters.category && filters.category.trim() !== '') {
-        query = query.eq('category_id', filters.category);
+      if (filters.category.length > 0) {
+        query = query.in('category_id', filters.category);
       }
 
-      if (filters.anime && filters.anime.trim() !== '') {
-        query = query.eq('anime_id', filters.anime);
+      if (filters.anime.length > 0) {
+        query = query.in('anime_id', filters.anime);
       }
 
       if (filters.minPrice !== undefined) {

@@ -37,8 +37,8 @@ export interface ProductInput {
 
 export type Filters = {
   search: string;
-  category: string;
-  anime: string;
+  category: string[];
+  anime: string[];
   minPrice?: number;
   maxPrice?: number;
   page?: number;

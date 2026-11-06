@@ -11,7 +11,7 @@ export interface ProductFiltersProps {
 }
 
 interface ActiveFilter {
-  key: 'search' | 'category' | 'anime' | 'price';
+  id: string;
   label: string;
   onRemove: () => void;
 }
@@ -52,8 +52,8 @@ export function ProductFilters({
   const clearAllFilters = () => {
     const clearedFilters = {
       search: '',
-      category: '',
-      anime: '',
+      category: [],
+      anime: [],
       minPrice: undefined,
       maxPrice: undefined,
       page: 1,
@@ -63,31 +63,35 @@ export function ProductFilters({
     onResetFilters?.();
   };
 
-  const selectedCategory = sortedCategories.find((category) => category.id === currentFilters.category);
-  const selectedAnime = sortedAnimes.find((anime) => anime.id === currentFilters.anime);
+  const selectedCategories = sortedCategories.filter((category) => currentFilters.category.includes(category.id));
+  const selectedAnimes = sortedAnimes.filter((anime) => currentFilters.anime.includes(anime.id));
 
   const activeFilters: ActiveFilter[] = [];
   if (currentFilters.search) {
     activeFilters.push({
-      key: 'search',
+      id: 'search',
       label: `Búsqueda: ${currentFilters.search}`,
       onRemove: () => updateFilters({ search: '' }),
     });
   }
-  if (selectedCategory) {
+  selectedCategories.forEach((category) => {
     activeFilters.push({
-      key: 'category',
-      label: selectedCategory.name,
-      onRemove: () => updateFilters({ category: '' }),
+      id: `category-${category.id}`,
+      label: category.name,
+      onRemove: () => updateFilters({
+        category: currentFilters.category.filter((selectedId) => selectedId !== category.id),
+      }),
     });
-  }
-  if (selectedAnime) {
+  });
+  selectedAnimes.forEach((anime) => {
     activeFilters.push({
-      key: 'anime',
-      label: selectedAnime.name,
-      onRemove: () => updateFilters({ anime: '' }),
+      id: `anime-${anime.id}`,
+      label: anime.name,
+      onRemove: () => updateFilters({
+        anime: currentFilters.anime.filter((selectedId) => selectedId !== anime.id),
+      }),
     });
-  }
+  });
   if (currentFilters.minPrice !== undefined || currentFilters.maxPrice !== undefined) {
     const label = currentFilters.minPrice !== undefined && currentFilters.maxPrice !== undefined
       ? `C${currentFilters.minPrice} - C${currentFilters.maxPrice}`
@@ -96,14 +100,19 @@ export function ProductFilters({
         : `Hasta C$${currentFilters.maxPrice}`;
 
     activeFilters.push({
-      key: 'price',
+      id: 'price',
       label,
       onRemove: () => updateFilters({ minPrice: undefined, maxPrice: undefined }),
     });
   }
 
-  const toggleSingleValue = (field: 'category' | 'anime', value: string) => {
-    updateFilters({ [field]: currentFilters[field] === value ? '' : value });
+  const toggleArrayValue = (field: 'category' | 'anime', value: string) => {
+    const selectedValues = currentFilters[field];
+    updateFilters({
+      [field]: selectedValues.includes(value)
+        ? selectedValues.filter((selectedValue) => selectedValue !== value)
+        : [...selectedValues, value],
+    });
   };
 
   const handlePriceInput = (field: 'minPrice' | 'maxPrice', rawValue: string) => {
@@ -133,7 +142,7 @@ export function ProductFilters({
       {activeFilters.length > 0 && (
         <div className="flex flex-wrap gap-2" aria-label="Filtros activos">
           {activeFilters.map((filter) => (
-            <span key={filter.key} className="chip max-w-full">
+            <span key={filter.id} className="chip max-w-full">
               <span className="truncate">{filter.label}</span>
               <button
                 type="button"
@@ -160,8 +169,8 @@ export function ProductFilters({
             <label key={category.id} className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-sm text-slate-700 transition hover:bg-slate-50">
               <input
                 type="checkbox"
-                checked={currentFilters.category === category.id}
-                onChange={() => toggleSingleValue('category', category.id)}
+                checked={currentFilters.category.includes(category.id)}
+                onChange={() => toggleArrayValue('category', category.id)}
                 className="h-4 w-4 rounded border-slate-300 accent-teal-600"
               />
               <span className="min-w-0 truncate">{category.name}</span>
@@ -182,8 +191,8 @@ export function ProductFilters({
             <label key={anime.id} className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-sm text-slate-700 transition hover:bg-slate-50">
               <input
                 type="checkbox"
-                checked={currentFilters.anime === anime.id}
-                onChange={() => toggleSingleValue('anime', anime.id)}
+                checked={currentFilters.anime.includes(anime.id)}
+                onChange={() => toggleArrayValue('anime', anime.id)}
                 className="h-4 w-4 rounded border-slate-300 accent-teal-600"
               />
               <span className="min-w-0 truncate">{anime.name}</span>
