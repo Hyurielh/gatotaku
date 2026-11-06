@@ -7,11 +7,25 @@ import type { Product, ProductInput, Category, Anime } from '../types/database';
 import { CategoryManager } from '../components/CategoryManager';
 import { AnimeManager } from '../components/AnimeManager';
 import { SEO } from '../components/SEO';
+import { LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-toastify';
 import { compressImage } from '../utils/imageOptimization';
 
 export default function AdminPanel() {
-  const { session, loading: authLoading } = useAuth();
+  const { session, loading: authLoading, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast.success('Sesión cerrada correctamente');
+      navigate('/', { replace: true });
+    } catch {
+      toast.error('No se pudo cerrar la sesión');
+    }
+  };
 
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [page, setPage] = useState<number>(1);
@@ -406,18 +420,7 @@ export default function AdminPanel() {
 
   const renderErrorDetails = () => {
     if (!error) return null;
-    return (
-      <div className="error-details">
-        <p className="error-message">{error.message}</p>
-        {error.details && (
-          <details>
-            <summary>Detalles del error</summary>
-            <pre>{error.details}</pre>
-          </details>
-        )}
-        {error.code && <p>Código de error: {error.code}</p>}
-      </div>
-    );
+    return <p className="font-medium">{error.message}</p>;
   };
 
   return (
@@ -427,8 +430,18 @@ export default function AdminPanel() {
         description="Panel de administración de GATOTAKU"
       />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-3xl font-bold mb-8">Panel de Administración</h1>
+      <div className="w-full">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-teal-700">Administración</p>
+            <h1 className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl">Panel de Administración</h1>
+            <p className="mt-1 text-sm text-slate-500">Gestiona productos, categorías y animes desde un solo lugar.</p>
+          </div>
+          <button type="button" onClick={handleLogout} className="btn-secondary shrink-0" aria-label="Cerrar sesión">
+            <LogOut size={17} aria-hidden="true" />
+            Cerrar sesión
+          </button>
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           <CategoryManager />
@@ -441,7 +454,7 @@ export default function AdminPanel() {
           </div>
         )}
         
-        <form onSubmit={handleSubmit} id="product-form" className="bg-white p-6 rounded-lg shadow-md mb-8">
+        <form onSubmit={handleSubmit} id="product-form" className="panel p-4 sm:p-6 mb-8">
           <h2 className="text-xl font-semibold mb-4">
             {editingId ? 'Editar Producto' : 'Nuevo Producto'}
           </h2>
@@ -455,7 +468,7 @@ export default function AdminPanel() {
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full p-2 border rounded"
+                className="field"
                 required
               />
             </div>
@@ -473,7 +486,7 @@ export default function AdminPanel() {
                     step="0.01"
                     value={formData.price}
                     onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    className="mt-1 block w-full pl-8 pr-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                    className="mt-1 block w-full pl-8 pr-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-100 sm:text-sm"
                   />
                 </div>
               </div>
@@ -485,7 +498,7 @@ export default function AdminPanel() {
                   name="stock"
                   value={formData.stock}
                   onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) || 0 })}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-100 sm:text-sm"
                   min="0"
                 />
               </div>
@@ -498,7 +511,7 @@ export default function AdminPanel() {
               <select
                 value={formData.category_id}
                 onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
-                className="w-full p-2 border rounded"
+                className="field"
                 required
               >
                 <option value="">Selecciona una categoría</option>
@@ -517,7 +530,7 @@ export default function AdminPanel() {
               <select
                 value={formData.anime_id}
                 onChange={(e) => setFormData({ ...formData, anime_id: e.target.value })}
-                className="w-full p-2 border rounded"
+                className="field"
                 required
               >
                 <option value="">Selecciona un anime</option>
@@ -537,7 +550,7 @@ export default function AdminPanel() {
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full p-2 border rounded"
+              className="field"
               rows={3}
               required
             />
@@ -550,7 +563,7 @@ export default function AdminPanel() {
                   type="url"
                   value={url}
                   onChange={(e) => handleImageChange(index, e.target.value)}
-                  className="flex-1 p-2 border rounded"
+                  className="field flex-1"
                   placeholder="URL de la imagen"
                   required
                 />
@@ -597,7 +610,7 @@ export default function AdminPanel() {
             )}
             <button
               type="submit"
-              className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600"
+              className="px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700"
             >
               {editingId ? 'Actualizar' : 'Crear'} Producto
             </button>
@@ -617,8 +630,9 @@ export default function AdminPanel() {
           />
         </div>
 
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
+        <div className="panel overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-[760px] w-full divide-y divide-slate-200">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -660,11 +674,11 @@ export default function AdminPanel() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      ${product.price.toFixed(2)}
+                      C${product.price.toFixed(2)}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">
+                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-teal-50 text-teal-800">
                       {product.category_ref?.name}
                     </span>
                   </td>
@@ -704,14 +718,15 @@ export default function AdminPanel() {
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
 
         <div className="pagination flex justify-center items-center space-x-4 mt-4">
           <button 
             onClick={() => setPage(page - 1)} 
             disabled={page === 1}
-            className="px-4 py-2 bg-orange-500 text-white rounded-md disabled:opacity-50"
+            className="px-4 py-2 bg-teal-600 text-white rounded-md disabled:opacity-50"
           >
             Anterior
           </button>
@@ -721,7 +736,7 @@ export default function AdminPanel() {
           <button 
             onClick={() => setPage(page + 1)} 
             disabled={page * pageSize >= totalProducts}
-            className="px-4 py-2 bg-orange-500 text-white rounded-md disabled:opacity-50"
+            className="px-4 py-2 bg-teal-600 text-white rounded-md disabled:opacity-50"
           >
             Siguiente
           </button>

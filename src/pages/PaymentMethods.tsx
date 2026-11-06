@@ -44,8 +44,8 @@ const PaymentMethods = () => {
               <p className="info-text">
                 Aceptamos transferencias a través de BAC en dólares estadounidenses (USD).
               </p>
-              <div className="mt-2 p-3 bg-orange-50 rounded-md border border-orange-200">
-                <p className="text-sm text-orange-700">
+              <div className="mt-2 p-3 bg-teal-50 rounded-md border border-teal-200">
+                <p className="text-sm text-teal-800">
                   Contacta con nosotros para obtener los detalles de la cuenta bancaria.
                 </p>
               </div>

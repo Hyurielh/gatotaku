@@ -42,4 +42,5 @@ export type Filters = {
   minPrice?: number;
   maxPrice?: number;
   page?: number;
+  sortBy?: 'name_asc' | 'name_desc' | 'price_asc' | 'price_desc';
 };

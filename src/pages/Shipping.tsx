@@ -18,11 +18,11 @@ const Shipping = () => {
               </p>
               <ul className="space-y-2">
                 <li className="list-item">
-                  <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
+                  <span className="w-2 h-2 bg-teal-600 rounded-full"></span>
                   <span>Miércoles</span>
                 </li>
                 <li className="list-item">
-                  <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
+                  <span className="w-2 h-2 bg-teal-600 rounded-full"></span>
                   <span>Jueves</span>
                 </li>
               </ul>
@@ -40,8 +40,8 @@ const Shipping = () => {
               <p className="info-text">
                 Entregas gratuitas en el centro de Rivas.
               </p>
-              <div className="mt-2 p-3 bg-orange-50 rounded-md border border-orange-200">
-                <p className="text-sm text-orange-700">
+              <div className="mt-2 p-3 bg-teal-50 rounded-md border border-teal-200">
+                <p className="text-sm text-teal-800">
                   ¡Sin costo adicional por entrega!
                 </p>
               </div>
@@ -59,8 +59,8 @@ const Shipping = () => {
               <p className="info-text">
                 Envíos a otros departamentos disponibles con cargo adicional por transporte.
               </p>
-              <div className="mt-2 p-3 bg-orange-50 rounded-md border border-orange-200">
-                <p className="text-sm text-orange-700">
+              <div className="mt-2 p-3 bg-teal-50 rounded-md border border-teal-200">
+                <p className="text-sm text-teal-800">
                   Contacta con nosotros para conocer las tarifas específicas de tu ubicación.
                 </p>
               </div>

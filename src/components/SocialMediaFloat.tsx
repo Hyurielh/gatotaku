@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { FaWhatsapp, FaFacebook, FaTiktok, FaPlus } from 'react-icons/fa';
+import { SOCIAL_MEDIA } from '../constants/social';
 
 interface SocialMediaFloatProps {
   position: { x: number; y: number };
@@ -23,9 +24,9 @@ export const SocialMediaFloat: React.FC<SocialMediaFloatProps> = ({
     setIsSocialMenuOpen(!isSocialMenuOpen);
   };
 
-  const whatsappUrl = `https://wa.me/+50578364365`;
-  const facebookUrl = "https://www.facebook.com/gatotaku.rivas";
-  const tiktokUrl = "https://www.tiktok.com/@gatotaku2022";
+  const whatsappUrl = SOCIAL_MEDIA.whatsapp.url;
+  const facebookUrl = SOCIAL_MEDIA.facebook;
+  const tiktokUrl = SOCIAL_MEDIA.tiktok;
 
   return (
     <div
@@ -49,7 +50,7 @@ export const SocialMediaFloat: React.FC<SocialMediaFloatProps> = ({
               e.stopPropagation();
               window.open(whatsappUrl, '_blank');
             }}
-            className="w-12 h-12 bg-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center group border-2 border-orange-300"
+            className="w-12 h-12 bg-white rounded-full border border-teal-100 shadow-sm transition-all duration-300 hover:scale-110 hover:shadow-md flex items-center justify-center group"
             title="WhatsApp"
           >
             <FaWhatsapp size={20} className="text-green-500 group-hover:text-green-600 transition-colors" />
@@ -61,7 +62,7 @@ export const SocialMediaFloat: React.FC<SocialMediaFloatProps> = ({
               e.stopPropagation();
               toggleSocialMenu();
             }}
-            className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 hover:bg-orange-600 rounded-full shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110 flex items-center justify-center group z-10"
+            className="absolute -top-1 -right-1 z-10 flex h-5 w-5 items-center justify-center rounded-full border border-teal-700 bg-teal-600 shadow-sm transition-all duration-300 hover:scale-110 hover:bg-teal-700"
             title={isSocialMenuOpen ? "Cerrar redes sociales" : "Más redes sociales"}
           >
             <FaPlus

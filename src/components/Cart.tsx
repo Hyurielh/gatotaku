@@ -34,37 +34,18 @@ export function Cart() {
 
   return (
     <>
-      {/* Cart button with improved design */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-16 right-6 sm:bottom-20 sm:right-8 md:bottom-24 md:right-12 z-50 
-                 bg-orange-500 text-white w-14 h-14 sm:w-16 sm:h-16 rounded-full shadow-xl 
-                 hover:bg-orange-600 transition-all duration-300 hover:scale-105 
-                 border-3 border-white flex items-center justify-center"
-        aria-label="Abrir carrito"
-      >
-        <div className="relative">
-          <ShoppingCart className="text-white w-5 h-5 sm:w-6 sm:h-6" />
-          {items.length > 0 && (
-            <span key={items.length} className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-md animate-pop">
-              {items.length}
-            </span>
-          )}
-        </div>
-      </button>
-
       {/* Cart modal with animation */}
       {isOpen && (
-        <div className="fixed inset-0 z-[100] overflow-hidden">
+        <div className="cart-panel fixed inset-0 z-[100] overflow-hidden">
           <div
-            className="absolute inset-0 bg-black bg-opacity-50 animate-fade-in"
+            className="absolute inset-0 bg-slate-900/45 animate-fade-in"
             onClick={() => setIsOpen(false)}
           />
 
           <div className="fixed inset-y-0 right-0 max-w-full flex">
             <div className="w-screen max-w-md animate-slide-in-right">
-              <div className="h-full flex flex-col bg-white shadow-xl rounded-l-2xl">
-                <div className="flex justify-between items-center p-6 bg-orange-500 text-white rounded-tl-2xl">
+              <div className="h-full flex flex-col bg-white shadow-2xl border-l border-slate-200">
+                <div className="flex justify-between items-center p-5 sm:p-6 border-b border-slate-200 bg-teal-700 text-white">
                   <h2 className="text-xl font-bold flex items-center">
                     <ShoppingCart className="mr-3 w-6 h-6" />
                     Carrito de Compras
@@ -93,7 +74,7 @@ export function Cart() {
                             clearCart();
                           }
                         }}
-                        className="mb-6 text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-lg flex items-center transition-all duration-200"
+                        className="mb-6 text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-lg flex items-center transition-all duration-200"
                       >
                         <Trash2 className="mr-2" size={16} />
                         Vaciar carrito
@@ -101,18 +82,18 @@ export function Cart() {
                       {items.map((item, index) => (
                         <div
                           key={item.product.id}
-                          className="flex items-center justify-between bg-gray-50 rounded-xl p-4 mb-3 hover:bg-gray-100 transition-colors animate-fade-up"
+                          className="flex items-center justify-between bg-slate-50 rounded-xl border border-slate-200 p-3 sm:p-4 mb-3 hover:border-teal-200 transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01] animate-bounce-in"
                           style={{ animationDelay: `${index * 60}ms` }}
                         >
                           <div className="flex items-center flex-1">
                             <img
                               src={item.product.images[0]}
                               alt={item.product.name}
-                              className="w-16 h-16 object-cover rounded-lg mr-4 shadow-sm"
+                              className="h-16 w-16 rounded-lg border border-slate-200 bg-white object-contain p-1 mr-4"
                             />
                             <div className="flex-1">
                               <h3 className="font-semibold text-gray-800 text-sm">{item.product.name}</h3>
-                              <p className="text-orange-600 font-bold">C${item.product.price.toFixed(2)}</p>
+                              <p className="text-teal-700 font-bold">C${item.product.price.toFixed(2)}</p>
                             </div>
                           </div>
                           <div className="flex items-center space-x-2">
@@ -148,18 +129,18 @@ export function Cart() {
 
                 {/* Total and order button */}
                 {items.length > 0 && (
-                  <div className="p-6 bg-gray-50 border-t">
-                    <div className="flex justify-between items-center mb-6 p-4 bg-white rounded-lg shadow-sm border-2 border-orange-100">
-                      <span className="text-lg font-bold text-gray-800">Total:</span>
-                      <span key={total.toFixed(2)} className="text-2xl font-bold text-orange-600 inline-block animate-pop">C${total.toFixed(2)}</span>
+                  <div className="p-5 sm:p-6 bg-slate-50 border-t border-slate-200">
+                    <div className="flex justify-between items-center mb-5 p-4 bg-white rounded-xl border border-slate-200">
+                      <span className="text-base font-semibold text-slate-600">Total</span>
+                      <span key={total.toFixed(2)} className="text-2xl font-bold text-teal-700 inline-block animate-pop">C${total.toFixed(2)}</span>
                     </div>
                     <button
                       onClick={handleOrder}
                       disabled={isOrdering}
-                      className="w-full bg-green-500 text-white py-4 rounded-xl 
-                               hover:bg-green-600 transition-all duration-300 
-                               flex items-center justify-center disabled:opacity-50 shadow-lg font-semibold text-lg
-                               transform hover:scale-[1.02] active:scale-[0.98]"
+                      className="w-full bg-teal-600 text-white py-3.5 rounded-xl
+                               hover:bg-teal-700 transition-colors
+                               flex items-center justify-center disabled:opacity-50 shadow-sm font-semibold
+                               active:scale-[0.98]"
                     >
                       {isOrdering ? (
                         <Loader className="animate-spin mr-2" size={20} />

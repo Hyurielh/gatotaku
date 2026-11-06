@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { optimizeImage } from '../utils/imageOptimization';
 
 interface ImageCarouselProps {
@@ -49,6 +50,9 @@ export function ImageCarousel({
       img.src = typeof src === 'string' ? src : src.src;
     });
   }, [safeImages]);
+
+  const getImageSrc = (image: (typeof safeImages)[number]) =>
+    typeof image === 'string' ? image : image.src;
 
   const handleImageError = (index: number) => {
     setImageLoadErrors(prev => {
@@ -105,9 +109,9 @@ export function ImageCarousel({
       {safeImages.length > 1 && (
         <button
           onClick={handlePrevImage}
-          className="absolute left-2 top-1/2 transform -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center"
+          className="absolute left-2 top-1/2 transform -translate-y-1/2 z-20 flex h-10 w-10 items-center justify-center transition-transform duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-110 active:scale-90"
         >
-          <div className="bg-orange-500/50 hover:bg-orange-600/60 rounded-full w-8 h-8 flex items-center justify-center shadow-lg transition-all duration-300">
+          <div className="bg-teal-600/85 hover:bg-teal-700/95 rounded-full w-8 h-8 flex items-center justify-center shadow-sm transition-colors duration-200">
             <span className="text-white text-xl font-bold transform -translate-x-0.5">
               ‹
             </span>
@@ -116,20 +120,23 @@ export function ImageCarousel({
       )}
 
       {/* Viewer / Lightbox */}
-      {viewerOpen && (
+      {viewerOpen && createPortal(
         <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/90 p-4"
           onClick={closeViewer}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Imagen ampliada de ${alt}`}
         >
           <div className="max-w-full max-h-full">
             <img
-              src={typeof safeImages[currentImageIndex] === 'string' ? safeImages[currentImageIndex] : (safeImages[currentImageIndex] as any).src}
+              src={getImageSrc(safeImages[currentImageIndex])}
               alt={`${alt} - imagen ${currentImageIndex + 1}`}
               className="max-h-[90vh] max-w-[90vw] object-contain"
             />
             <div className="mt-4 flex justify-center space-x-4">
               <a
-                href={typeof safeImages[currentImageIndex] === 'string' ? safeImages[currentImageIndex] : (safeImages[currentImageIndex] as any).src}
+                href={getImageSrc(safeImages[currentImageIndex])}
                 download
                 className="px-4 py-2 bg-white text-black rounded"
                 onClick={(e) => e.stopPropagation()}
@@ -144,16 +151,17 @@ export function ImageCarousel({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Botón de siguiente imagen */}
       {safeImages.length > 1 && (
         <button
           onClick={handleNextImage}
-          className="absolute right-2 top-1/2 transform -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center"
+          className="absolute right-2 top-1/2 transform -translate-y-1/2 z-20 flex h-10 w-10 items-center justify-center transition-transform duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-110 active:scale-90"
         >
-          <div className="bg-orange-500/50 hover:bg-orange-600/60 rounded-full w-8 h-8 flex items-center justify-center shadow-lg transition-all duration-300">
+          <div className="bg-teal-600/85 hover:bg-teal-700/95 rounded-full w-8 h-8 flex items-center justify-center shadow-sm transition-colors duration-200">
             <span className="text-white text-xl font-bold transform translate-x-0.5">
               ›
             </span>
@@ -210,7 +218,7 @@ export function ImageCarousel({
                   srcSet={typeof image === 'object' ? image.srcSet : undefined}
                   onError={() => handleImageError(index)}
                   onLoad={() => handleImageLoad()}
-                  className="w-full h-full object-cover absolute inset-0 transform scale-100"
+                  className="w-full h-full object-contain absolute inset-0 p-4"
                   {...imgProps}
                 />
               </picture>
@@ -218,14 +226,14 @@ export function ImageCarousel({
               <div className="absolute bottom-3 left-3 z-30 flex space-x-2 md:hidden">
                 <button
                   onClick={() => openViewer(index)}
-                  className="bg-black/60 text-white px-3 py-1 rounded backdrop-blur-sm"
+                  className="rounded bg-black/60 px-3 py-1 text-white backdrop-blur-sm transition-transform duration-200 hover:scale-105 active:scale-95"
                 >
                   Ver
                 </button>
                 <a
                   href={isErrored ? 'https://via.placeholder.com/400x400?text=Image+Error' : src}
                   download
-                  className="bg-black/60 text-white px-3 py-1 rounded backdrop-blur-sm"
+                  className="rounded bg-black/60 px-3 py-1 text-white backdrop-blur-sm transition-transform duration-200 hover:scale-105 active:scale-95"
                 >
                   Descargar
                 </a>
@@ -244,7 +252,7 @@ export function ImageCarousel({
               onClick={() => handleImageChange(index)}
               className={`
                 w-2 h-2 rounded-full transition-colors duration-300
-                ${index === currentImageIndex ? 'bg-orange-500' : 'bg-gray-300'}
+                ${index === currentImageIndex ? 'bg-teal-600' : 'bg-slate-300'}
               `}
             />
           ))}

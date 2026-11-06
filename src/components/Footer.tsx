@@ -3,79 +3,56 @@ import { FaWhatsapp, FaFacebook, FaInstagram, FaTiktok } from 'react-icons/fa';
 import { SOCIAL_MEDIA } from '../constants/social';
 
 export const Footer = () => {
-  const whatsappNumber = "+50578364365";
-  const whatsappUrl = `https://wa.me/${whatsappNumber}`;
+  const whatsappNumber = '+505 7836 4365';
 
   return (
-    <footer className="bg-black text-white !mt-0 relative z-30 border-t-4 border-orange-500">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex flex-col items-center gap-4">
-          <div className="flex items-center gap-4">
-            <img src="/logo.png" 
-                 alt="Logo" 
-                 className="w-10 h-10 rounded-full transition-transform duration-300 hover:rotate-12" />
-            <span className="text-3xl font-black tracking-wider" style={{ fontFamily: "'Poppins', sans-serif" }}>
-              GATOTAKU
-            </span>
+    <footer className="border-t border-slate-200 bg-slate-50 text-slate-700">
+      <div className="px-4 py-6 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+            <Link to="/" className="inline-flex w-fit items-center gap-3" aria-label="Gatotaku, ir al inicio">
+              <img src="/logo.png" alt="Logo de Gatotaku" className="h-10 w-10 rounded-xl object-cover" />
+              <span className="text-xl font-bold tracking-tight text-slate-900">GATOTAKU</span>
+            </Link>
+
+            <div className="flex items-center gap-2" aria-label="Redes sociales">
+              <a href={SOCIAL_MEDIA.tiktok} target="_blank" rel="noopener noreferrer" className="icon-button h-9 w-9" aria-label="TikTok" title="TikTok">
+                <FaTiktok size={16} />
+              </a>
+              <a href={SOCIAL_MEDIA.facebook} target="_blank" rel="noopener noreferrer" className="icon-button h-9 w-9" aria-label="Facebook" title="Facebook">
+                <FaFacebook size={16} />
+              </a>
+              <a href={SOCIAL_MEDIA.instagram} target="_blank" rel="noopener noreferrer" className="icon-button h-9 w-9" aria-label="Instagram" title="Instagram">
+                <FaInstagram size={16} />
+              </a>
+              <a href={SOCIAL_MEDIA.whatsapp.url} target="_blank" rel="noopener noreferrer" className="icon-button h-9 w-9" aria-label="WhatsApp" title="WhatsApp">
+                <FaWhatsapp size={18} />
+              </a>
+            </div>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-4xl">
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Enlaces Rápidos</h3>
-              <ul className="space-y-2">
-                <li><Link to="/" className="inline-block hover:text-orange-400 transition-all duration-200 hover:translate-x-1">Inicio</Link></li>
-                <li><Link to="/about" className="inline-block hover:text-orange-400 transition-all duration-200 hover:translate-x-1">Sobre Nosotros</Link></li>
-                <li>
-                  <a href={SOCIAL_MEDIA.tiktok}
-                     target="_blank"
-                     rel="noopener noreferrer"
-                     className="flex items-center hover:text-orange-400 transition-all duration-200 hover:translate-x-1">
-                    <FaTiktok className="mr-2" />
-                    TikTok
-                  </a>
-                </li>
-                <li>
-                  <a href={SOCIAL_MEDIA.facebook}
-                     target="_blank"
-                     rel="noopener noreferrer"
-                     className="flex items-center hover:text-orange-400 transition-all duration-200 hover:translate-x-1">
-                    <FaFacebook className="mr-2" />
-                    Facebook
-                  </a>
-                </li>
-                <li>
-                  <a href={SOCIAL_MEDIA.instagram}
-                     target="_blank"
-                     rel="noopener noreferrer"
-                     className="flex items-center hover:text-orange-400 transition-all duration-200 hover:translate-x-1">
-                    <FaInstagram className="mr-2" />
-                    Instagram
-                  </a>
-                </li>
-                <li>
-                  <a href={whatsappUrl} 
-                     target="_blank" 
-                     rel="noopener noreferrer" 
-                     className="flex items-center hover:text-orange-400 transition-all duration-200 hover:translate-x-1">
-                    <FaWhatsapp className="mr-2" />
-                    Contáctenos
-                  </a>
-                </li>
+
+          <div className="grid gap-6 border-t border-slate-200 pt-6 text-sm sm:grid-cols-3">
+            <nav aria-label="Enlaces rápidos">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Enlaces</h2>
+              <ul className="mt-2 space-y-1.5">
+                <li><Link to="/" className="inline-block py-1 transition hover:text-teal-700">Inicio</Link></li>
+                <li><Link to="/about" className="inline-block py-1 transition hover:text-teal-700">Sobre nosotros</Link></li>
+                <li><Link to="/information/general" className="inline-block py-1 transition hover:text-teal-700">Información</Link></li>
               </ul>
-            </div>
-            
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Información</h3>
-              <ul className="space-y-2">
-                <li><Link to="/information/payment-methods" className="inline-block hover:text-orange-400 transition-all duration-200 hover:translate-x-1">Métodos de pago</Link></li>
-                <li><Link to="/information/shipping" className="inline-block hover:text-orange-400 transition-all duration-200 hover:translate-x-1">Envíos</Link></li>
-                <li><Link to="/information/refunds" className="inline-block hover:text-orange-400 transition-all duration-200 hover:translate-x-1">Reembolsos</Link></li>
+            </nav>
+
+            <nav aria-label="Información de compra">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Compra</h2>
+              <ul className="mt-2 space-y-1.5">
+                <li><Link to="/information/payment-methods" className="inline-block py-1 transition hover:text-teal-700">Métodos de pago</Link></li>
+                <li><Link to="/information/shipping" className="inline-block py-1 transition hover:text-teal-700">Envíos</Link></li>
+                <li><Link to="/information/refunds" className="inline-block py-1 transition hover:text-teal-700">Reembolsos</Link></li>
               </ul>
-            </div>
-            
+            </nav>
+
             <div>
-              <h3 className="text-lg font-semibold mb-2">Contacto</h3>
-              <ul className="space-y-2">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Contacto</h2>
+              <ul className="mt-2 space-y-1.5">
                 <li>WhatsApp: {whatsappNumber}</li>
                 <li>Email: gatotaku2022@gmail.com</li>
               </ul>

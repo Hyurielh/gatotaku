@@ -132,7 +132,7 @@ export function AnimeManager() {
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
+    <div className="panel p-4 sm:p-6">
       <h2 className="text-xl font-semibold mb-4">Gestionar Animes</h2>
 
       {error && (
@@ -148,7 +148,7 @@ export function AnimeManager() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar anime..."
-            className="w-full p-2 pl-10 border rounded focus:ring-2 focus:ring-orange-500"
+            className="w-full p-2 pl-10 border rounded focus:ring-2 focus:ring-teal-500"
           />
           <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
         </div>
@@ -160,11 +160,11 @@ export function AnimeManager() {
           value={newAnime}
           onChange={(e) => setNewAnime(e.target.value)}
           placeholder="Nuevo anime"
-          className="flex-1 p-2 border rounded focus:ring-2 focus:ring-orange-500"
+          className="field flex-1"
         />
         <button
           type="submit"
-          className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 flex items-center gap-2"
+          className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700 flex items-center gap-2"
         >
           <Plus className="h-5 w-5" />
           Agregar
@@ -173,7 +173,7 @@ export function AnimeManager() {
 
       {isLoading ? (
         <div className="flex justify-center py-4">
-          <Loader className="h-8 w-8 animate-spin text-orange-500" />
+          <Loader className="h-8 w-8 animate-spin text-teal-700" />
         </div>
       ) : (
         <>

@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 
 const Spinner = () => (
   <div className="min-h-screen flex items-center justify-center">
-    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-600"></div>
   </div>
 );
 
@@ -36,6 +36,7 @@ const AppRoutes: React.FC = () => {
         <Route path="/" element={lazyLoadPage(() => import('../pages/StoreFront'))} />
         <Route path="/about" element={lazyLoadPage(() => import('../pages/About'))} />
         <Route path="/login" element={lazyLoadPage(() => import('../pages/LoginPage'))} />
+        <Route path="/admin/login" element={lazyLoadPage(() => import('../pages/AdminLoginPage'))} />
         <Route 
           path="/admin" 
           element={

@@ -25,56 +25,57 @@ const Information = () => {
   }, [location, navigate]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="flex flex-col md:flex-row gap-8">
+    <div className="mx-auto w-full max-w-7xl">
+      <div className="flex flex-col gap-5 md:flex-row md:items-start">
         {/* Sidebar Navigation */}
         <div className="md:w-64 flex-shrink-0">
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-hard p-4 border-2 border-black sticky top-[calc(12vh+44px)]">
-            <h2 className="text-xl font-bold mb-4">Información</h2>
-            <nav className="flex flex-col space-y-2">
+          <aside className="panel p-4 md:sticky md:top-6" aria-label="Secciones de información">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-teal-700">Ayuda</p>
+            <h1 className="mt-1 text-xl font-bold text-slate-900">Información</h1>
+            <nav className="mt-4 flex flex-col space-y-1.5" aria-label="Secciones">
             <button 
               onClick={() => handleNavigation('general')}
-              className={`nav-link ${location.pathname.endsWith('general') ? 'active' : ''}`}
+              className={`nav-link w-full text-left ${location.pathname.endsWith('general') ? 'active' : ''}`}
             >
               Información General
             </button>
             <button 
               onClick={() => handleNavigation('about')}
-              className={`nav-link ${location.pathname.endsWith('about') ? 'active' : ''}`}
+              className={`nav-link w-full text-left ${location.pathname.endsWith('about') ? 'active' : ''}`}
             >
               Sobre Nosotros
             </button>
             <button 
               onClick={() => handleNavigation('payment-methods')}
-              className={`nav-link ${location.pathname.endsWith('payment-methods') ? 'active' : ''}`}
+              className={`nav-link w-full text-left ${location.pathname.endsWith('payment-methods') ? 'active' : ''}`}
             >
               Métodos de Pago
             </button>
             <button 
               onClick={() => handleNavigation('shipping')}
-              className={`nav-link ${location.pathname.endsWith('shipping') ? 'active' : ''}`}
+              className={`nav-link w-full text-left ${location.pathname.endsWith('shipping') ? 'active' : ''}`}
             >
               Envíos
             </button>
             <button 
               onClick={() => handleNavigation('refunds')}
-              className={`nav-link ${location.pathname.endsWith('refunds') ? 'active' : ''}`}
+              className={`nav-link w-full text-left ${location.pathname.endsWith('refunds') ? 'active' : ''}`}
             >
               Devoluciones
             </button>
             <button 
               onClick={() => handleNavigation('layaway')}
-              className={`nav-link ${location.pathname.endsWith('layaway') ? 'active' : ''}`}
+              className={`nav-link w-full text-left ${location.pathname.endsWith('layaway') ? 'active' : ''}`}
             >
               Apartado
             </button>
-          </nav>
-          </div>
+            </nav>
+          </aside>
         </div>
 
         {/* Content Area */}
         <div key={location.pathname} className="flex-grow animate-fade-up">
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-hard p-4 border-2 border-black">
+          <div className="panel p-4 sm:p-6">
             <Suspense fallback={<div>Cargando...</div>}>
               <Routes>
               <Route path="*" element={<Navigate to="general" replace />} />

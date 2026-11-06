@@ -1,11 +1,12 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { SEO } from '../components/SEO';
-import { SearchAndFilters } from '../components/SearchAndFilters';
+import { ProductFilters } from '../components/ProductFilters';
 import { ProductCard } from '../components/ProductCard';
 import { Reveal } from '../components/Reveal';
-import { Ticker } from '../components/Ticker';
+import { SearchX } from 'lucide-react';
 import type { Product, Filters } from '../types/database';
 import { ErrorBoundary } from 'react-error-boundary';
 
@@ -43,8 +44,9 @@ export default function StoreFront() {
 }
 
 function StoreFrontContent() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState<Filters>(() => ({
-    search: '',
+    search: searchParams.get('q') ?? '',
     category: '',
     anime: '',
     sortBy: 'name_asc',
@@ -52,6 +54,29 @@ function StoreFrontContent() {
     maxPrice: undefined,
     page: 1
   }));
+
+  useEffect(() => {
+    const querySearch = searchParams.get('q') ?? '';
+
+    setFilters(previousFilters =>
+      previousFilters.search === querySearch
+        ? previousFilters
+        : { ...previousFilters, search: querySearch, page: 1 }
+    );
+  }, [searchParams]);
+
+  const updateSearchParam = useCallback((search: string) => {
+    const nextParams = new URLSearchParams(searchParams);
+
+    if (search.trim()) {
+      nextParams.set('q', search);
+    } else {
+      nextParams.delete('q');
+    }
+
+    const queryString = nextParams.toString();
+    setSearchParams(queryString ? nextParams : {}, { replace: true });
+  }, [searchParams, setSearchParams]);
   
   const [isPageChanging, setIsPageChanging] = useState(false);
 
@@ -61,10 +86,12 @@ function StoreFrontContent() {
         search: '',
         category: '',
         anime: '',
+        sortBy: 'name_asc',
         minPrice: undefined,
         maxPrice: undefined,
         page: 1
       });
+      setSearchParams({}, { replace: true });
     };
 
     window.addEventListener('reset-store-filters', resetFiltersHandler);
@@ -72,7 +99,7 @@ function StoreFrontContent() {
     return () => {
       window.removeEventListener('reset-store-filters', resetFiltersHandler);
     };
-  }, []);
+  }, [setSearchParams]);
 
   const fetchCategoriesAndAnimes = useCallback(async () => {
     const [categoriesResponse, animesResponse] = await Promise.all([
@@ -129,9 +156,10 @@ function StoreFrontContent() {
     }
   };
 
-  const fetchProducts = useCallback(async ({ pageParam = 1 }): Promise<{ 
-    products: Product[], 
-    totalPages: number 
+  const fetchProducts = useCallback(async ({ pageParam = 1 }): Promise<{
+    products: Product[],
+    totalPages: number,
+    totalCount: number
   }> => {
     try {
       const productsPerPage = 12;
@@ -140,7 +168,7 @@ function StoreFrontContent() {
 
       let query = supabase
         .from('products')
-        .select('*, categories(id, name), anime(id, name)', { count: 'exact' });
+        .select('*, category_ref:categories(id, name), anime(id, name)', { count: 'exact' });
 
       if (filters.search && filters.search.trim() !== '') {
         const searchTerm = filters.search.toLowerCase().trim();
@@ -170,18 +198,35 @@ function StoreFrontContent() {
         query = query.lte('price', filters.maxPrice);
       }
 
+      switch (filters.sortBy) {
+        case 'name_desc':
+          query = query.order('name', { ascending: false });
+          break;
+        case 'price_asc':
+          query = query.order('price', { ascending: true });
+          break;
+        case 'price_desc':
+          query = query.order('price', { ascending: false });
+          break;
+        case 'name_asc':
+        default:
+          query = query.order('name', { ascending: true });
+      }
+
       const { data, error, count } = await query.range(from, to);
 
       if (error) throw error;
 
-      const totalPages = count ? Math.ceil(count / productsPerPage) : 0;
+      const totalCount = count ?? 0;
+      const totalPages = Math.ceil(totalCount / productsPerPage);
 
-      return { 
-        products: data || [], 
-        totalPages 
+      return {
+        products: (data as Product[] | null) ?? [],
+        totalPages,
+        totalCount
       };
     } catch{
-      return { products: [], totalPages: 0 };
+      return { products: [], totalPages: 0, totalCount: 0 };
     }
   }, [filters]);
 
@@ -212,40 +257,27 @@ function StoreFrontContent() {
   });
 
   const handleFilterChange = useCallback((newFilters: Partial<Filters>) => {
+    if (Object.prototype.hasOwnProperty.call(newFilters, 'search')) {
+      updateSearchParam(newFilters.search ?? '');
+    }
+
     setFilters(prevFilters => {
       const updatedFilters = { ...prevFilters, ...newFilters };
       return updatedFilters;
     });
-  }, []);
+  }, [updateSearchParam]);
 
   const handlePageChange = (newPage: number) => {
     setIsPageChanging(true);
-    
-    setTimeout(() => {
-      setFilters(prev => ({ ...prev, page: newPage }));
-      
-      setTimeout(() => {
-        const productsSection = document.querySelector('.products-grid-wrapper');
-        if (productsSection) {
-          productsSection.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start' 
-          });
-        } else {
-          const mainContent = document.getElementById('main-content');
-          if (mainContent) {
-            mainContent.scrollIntoView({ 
-              behavior: 'smooth', 
-              block: 'start' 
-            });
-          }
-        }
-        
-        setTimeout(() => {
-          setIsPageChanging(false);
-        }, 300);
-      }, 100);
-    }, 150);
+    setFilters(prev => ({ ...prev, page: newPage }));
+
+    window.requestAnimationFrame(() => {
+      document.getElementById('products-section')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+      window.setTimeout(() => setIsPageChanging(false), 300);
+    });
   };
 
   const handleResetFilters = () => {
@@ -253,51 +285,13 @@ function StoreFrontContent() {
       search: '',
       category: '',
       anime: '',
+      sortBy: 'name_asc',
       minPrice: undefined,
       maxPrice: undefined,
-      page: 1  // Forzar a la primera página
+      page: 1
     });
+    updateSearchParam('');
   };
-
-  // `renderProducts` removed (inlined rendering used below)
-
-  const [paginationOffset, setPaginationOffset] = useState(0);
-
-  useEffect(() => {
-    let ticking = false;
-    
-    const updatePaginationPosition = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          const footer = document.querySelector('footer');
-          const viewportHeight = window.innerHeight;
-          
-          if (footer) {
-            const footerRect = footer.getBoundingClientRect();
-            
-            if (footerRect.top < viewportHeight) {
-              const overlap = viewportHeight - footerRect.top;
-              setPaginationOffset(overlap); // Sin margen adicional para pegarlo
-            } else {
-              setPaginationOffset(0);
-            }
-          }
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    updatePaginationPosition();
-    
-    window.addEventListener('scroll', updatePaginationPosition, { passive: true });
-    window.addEventListener('resize', updatePaginationPosition);
-
-    return () => {
-      window.removeEventListener('scroll', updatePaginationPosition);
-      window.removeEventListener('resize', updatePaginationPosition);
-    };
-  }, []);
 
   const renderPagination = () => {
     const totalPages = queryData?.totalPages || 0;
@@ -328,127 +322,140 @@ function StoreFrontContent() {
     const pageNumbers = getPageNumbers();
 
     return (
-      <div 
-        className="fixed bottom-0 left-0 right-0 flex justify-center items-center py-2 z-50 bg-white/95 backdrop-blur-sm transition-transform duration-200 ease-out shadow-lg border-t border-gray-200"
-        style={{
-          transform: `translateY(-${paginationOffset}px)`
-        }}
-      >
-        <div className="flex items-center space-x-1 sm:space-x-2">
-          {/* Texto de página solo en desktop */}
-          <span className="hidden md:block text-xs text-gray-500 mr-2">
-            {currentPage}/{totalPages}
-          </span>
-          
-          {/* Botón anterior */}
-          <button 
-            onClick={() => handlePageChange(currentPage - 1)} 
-            disabled={currentPage === 1}
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-md bg-gray-100 hover:bg-orange-100 disabled:opacity-50 transition-all active:scale-90 flex items-center justify-center text-sm"
-          >
-            ←
-          </button>
+      <nav className="mt-6 flex flex-wrap items-center justify-center gap-2 border-t border-slate-200 pt-5" aria-label="Paginación de productos">
+        <span className="mr-1 text-xs font-medium text-slate-500">
+          Página {currentPage} de {totalPages}
+        </span>
 
-          {/* Botones de números */}
-          {pageNumbers.map((number) => (
-            <button
-              key={number}
-              onClick={() => handlePageChange(number)}
-              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-md transition-all active:scale-90 flex items-center justify-center text-sm font-medium ${
-                currentPage === number 
-                  ? 'bg-orange-500 text-white shadow-sm animate-glow-pulse' 
-                  : 'bg-gray-100 hover:bg-orange-100 text-gray-700'
-              }`}
-            >
-              {number}
-            </button>
-          ))}
+        <button
+          type="button"
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="btn-secondary h-9 px-3"
+          aria-label="Página anterior"
+        >
+          <span aria-hidden="true">←</span>
+        </button>
 
-          {/* Botón siguiente */}
-          <button 
-            onClick={() => handlePageChange(currentPage + 1)} 
-            disabled={currentPage === totalPages}
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-md bg-gray-100 hover:bg-orange-100 disabled:opacity-50 transition-all active:scale-90 flex items-center justify-center text-sm"
+        {pageNumbers.map((number) => (
+          <button
+            key={number}
+            type="button"
+            onClick={() => handlePageChange(number)}
+            className={`flex h-9 min-w-9 items-center justify-center rounded-lg px-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-teal-200 ${
+              currentPage === number
+                ? 'bg-teal-600 text-white'
+                : 'border border-slate-200 bg-white text-slate-600 hover:border-teal-300 hover:text-teal-700'
+            }`}
+            aria-current={currentPage === number ? 'page' : undefined}
+            aria-label={`Página ${number}`}
           >
-            →
+            {number}
           </button>
-        </div>
-      </div>
+        ))}
+
+        <button
+          type="button"
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="btn-secondary h-9 px-3"
+          aria-label="Página siguiente"
+        >
+          <span aria-hidden="true">→</span>
+        </button>
+      </nav>
     );
   };
 
   return (
-    <div className="relative min-h-screen bg-gray-400 pattern-bg overflow-hidden">
-      {/* Cinta marquee estilo manga (full-bleed) */}
-      <Ticker
-        items={[
-          'Envíos a todo Nicaragua',
-          'Figuras',
-          'Peluches',
-          'Manga y más',
-          'Pedidos por WhatsApp',
-          'Tu tienda otaku de confianza',
-        ]}
+    <div className="mx-auto flex w-full max-w-7xl flex-col">
+      <SEO
+        title="GATOTAKU - Tu Tienda de Anime"
+        description="Descubre nuestra colección de productos de anime. Figuras, accesorios y más."
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 pt-6 relative z-10">
-        <SEO 
-          title="GATOTAKU - Tu Tienda de Anime"
-          description="Descubre nuestra colección de productos de anime. Figuras, accesorios y más."
-        />
-        
-        {/* Redesigned Filter Section */}
-        <div className="mb-6 bg-white rounded-xl shadow-hard p-4 border-2 border-black animate-fade-up" style={{ animationDelay: '100ms' }}>
-          {isLoading ? (
-            <div className="text-3xl font-bold text-gray-800 pb-2" role="status">
-              GATOTAKU
-            </div>
-          ) : (
-            <SearchAndFilters 
-              onFilterChange={handleFilterChange}
-              currentFilters={filters}
-              categories={queryData?.categoriesWithProducts || []}
-              animes={queryData?.animesWithProducts || []}
-              onResetFilters={handleResetFilters}
-            />
-          )}
+      <section className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-teal-700">Catálogo</p>
+          <h1 className="mt-1 text-2xl font-bold sm:text-3xl">Productos de anime</h1>
+          <p className="mt-1 text-sm text-slate-500">Figuras, peluches, manga y accesorios para fans.</p>
         </div>
-        
-        {/* Product Grid - Wrapper con ID para scroll */}
-        <div id="products-section" className="relative products-grid-wrapper">
-          {/* Overlay de transición */}
-          {isPageChanging && (
-            <div className="absolute inset-0 bg-white/70 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
-              <div className="flex items-center space-x-2 text-orange-600">
-                <div className="animate-spin rounded-full h-6 w-6 border-2 border-orange-600 border-t-transparent"></div>
-                <span className="text-sm font-medium">Cargando...</span>
-              </div>
-            </div>
-          )}
-          
-          <div 
-            className={`grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4 sm:gap-4 md:gap-6 transition-opacity duration-300 ${
-              isPageChanging ? 'opacity-50' : 'opacity-100'
-            }`}
+
+        <label className="flex items-center gap-2">
+          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Ordenar</span>
+          <select
+            value={filters.sortBy ?? 'name_asc'}
+            onChange={(event) => handleFilterChange({ sortBy: event.target.value as Filters['sortBy'] })}
+            className="field h-10 w-44"
+            aria-label="Ordenar productos"
           >
-            {isLoading ? (
-              Array.from({ length: 8 }).map((_, index) => (
-                <SkeletonProductCard key={`skeleton-${index}`} />
-              ))
-            ) : (
-              queryData?.products?.map((product, index) => (
-                <Reveal key={product.id} delay={index * 50} className="h-full">
-                  <ProductCard 
-                    product={product} 
-                  />
-                </Reveal>
-              ))
+            <option value="name_asc">Nombre A-Z</option>
+            <option value="name_desc">Nombre Z-A</option>
+            <option value="price_asc">Precio menor</option>
+            <option value="price_desc">Precio mayor</option>
+          </select>
+        </label>
+      </section>
+
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
+        <ProductFilters
+          onFilterChange={handleFilterChange}
+          currentFilters={filters}
+          categories={queryData?.categoriesWithProducts || []}
+          animes={queryData?.animesWithProducts || []}
+          onResetFilters={handleResetFilters}
+        />
+
+        <section id="products-section" className="min-w-0 flex-1" aria-label="Catálogo de productos">
+          <div className="mb-3 flex min-h-6 items-center justify-between gap-3">
+            <p className="text-sm text-slate-500" role="status">
+              {isLoading ? 'Cargando catálogo...' : `${queryData?.totalCount ?? 0} productos encontrados`}
+            </p>
+            {filters.search && (
+              <span className="chip max-w-[50%]">
+                <span className="truncate">{filters.search}</span>
+              </span>
             )}
           </div>
-        </div>
-        
-        {/* Pagination Controls */}
-        {renderPagination()}
+
+          <div className="relative products-grid-wrapper">
+            {isPageChanging && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/70 backdrop-blur-sm">
+                <div className="flex items-center gap-2 text-teal-700">
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-teal-700 border-t-transparent" />
+                  <span className="text-sm font-medium">Cargando...</span>
+                </div>
+              </div>
+            )}
+
+            {isLoading ? (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {Array.from({ length: 8 }).map((_, index) => (
+                  <SkeletonProductCard key={`skeleton-${index}`} />
+                ))}
+              </div>
+            ) : queryData?.products?.length ? (
+              <div className={`grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 transition-opacity duration-300 ${isPageChanging ? 'opacity-50' : 'opacity-100'}`}>
+                {queryData.products.map((product, index) => (
+                  <Reveal key={product.id} delay={index * 40} className="h-full">
+                    <ProductCard product={product} />
+                  </Reveal>
+                ))}
+              </div>
+            ) : (
+              <div className="panel flex flex-col items-center justify-center px-4 py-14 text-center">
+                <SearchX className="mb-4 h-12 w-12 text-slate-300" aria-hidden="true" />
+                <h2 className="text-lg font-semibold text-slate-900">Sin resultados</h2>
+                <p className="mt-1 max-w-sm text-sm text-slate-500">Prueba con otro término o elimina los filtros activos.</p>
+                <button type="button" onClick={handleResetFilters} className="btn-primary mt-5">
+                  Restablecer filtros
+                </button>
+              </div>
+            )}
+          </div>
+
+          {renderPagination()}
+        </section>
       </div>
     </div>
   );
@@ -457,20 +464,15 @@ function StoreFrontContent() {
 /* Skeleton de carga inicial: misma silueta que ProductCard, shimmer sólido */
 function SkeletonProductCard() {
   return (
-    <div className="bg-white border-2 border-black rounded-xl overflow-hidden shadow-hard flex flex-col h-full animate-fade-in">
-      <div className="relative w-full aspect-[4/5] sm:aspect-square bg-gray-200 overflow-hidden">
-        <div className="absolute inset-0 animate-shimmer bg-white/50" />
+    <div className="panel h-full overflow-hidden">
+      <div className="relative aspect-[4/3] w-full bg-[#F0F0F0] overflow-hidden">
+        <div className="absolute inset-0 animate-shimmer bg-white/60" />
       </div>
-      <div className="p-3 sm:p-4 space-y-3 flex-grow">
-        <div className="h-4 bg-gray-200 rounded w-3/4 relative overflow-hidden">
-          <div className="absolute inset-0 animate-shimmer bg-white/50" />
-        </div>
-        <div className="h-3 bg-gray-200 rounded w-1/2 relative overflow-hidden">
-          <div className="absolute inset-0 animate-shimmer bg-white/50" />
-        </div>
-        <div className="h-5 bg-gray-200 rounded w-1/3 relative overflow-hidden">
-          <div className="absolute inset-0 animate-shimmer bg-white/50" />
-        </div>
+      <div className="space-y-3 p-3 sm:p-4">
+        <div className="h-4 w-3/4 rounded bg-slate-200" />
+        <div className="h-3 w-1/2 rounded bg-slate-200" />
+        <div className="h-6 w-1/3 rounded bg-slate-200" />
+        <div className="h-10 w-full rounded-lg bg-slate-200" />
       </div>
     </div>
   );

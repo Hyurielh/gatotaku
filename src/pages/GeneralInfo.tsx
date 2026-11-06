@@ -2,8 +2,7 @@ import { FaInfoCircle, FaQuestionCircle, FaHandshake } from 'react-icons/fa';
 
 const GeneralInfo = () => {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="space-y-8">
+    <div className="space-y-8">
         <h1 className="section-title">Información General</h1>
         
         <div className="card">
@@ -71,7 +70,6 @@ const GeneralInfo = () => {
           </div>
         </div>
       </div>
-    </div>
   );
 };
 

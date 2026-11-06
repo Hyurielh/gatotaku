@@ -15,8 +15,8 @@ const Refunds = () => {
             <p className="info-text">
               Tienes hasta 3 días después de recibir tu producto para solicitar un reembolso.
             </p>
-            <div className="mt-2 p-3 bg-orange-50 rounded-md border border-orange-200">
-              <p className="text-sm text-orange-700">
+            <div className="mt-2 p-3 bg-teal-50 rounded-md border border-teal-200">
+              <p className="text-sm text-teal-800">
                 No se aceptarán solicitudes de reembolso después de este período.
               </p>
             </div>
@@ -33,11 +33,11 @@ const Refunds = () => {
             <h2 className="text-xl font-semibold mb-2 text-gray-800">Condiciones</h2>
             <ul className="space-y-2">
               <li className="list-item flex items-center space-x-2">
-                <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
+                <span className="w-2 h-2 bg-teal-600 rounded-full"></span>
                 <span className="ml-0 pl-0">El producto debe estar en su empaque original</span>
               </li>
               <li className="list-item flex items-center space-x-2">
-                <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
+                <span className="w-2 h-2 bg-teal-600 rounded-full"></span>
                 <span className="ml-0 pl-0">No debe mostrar señales de uso o daño</span>
               </li>
             </ul>
@@ -56,8 +56,8 @@ const Refunds = () => {
               Una vez aprobada tu solicitud, el reembolso se realizará por el mismo método 
               que utilizaste para realizar la compra.
             </p>
-            <div className="mt-2 p-3 bg-orange-50 rounded-md border border-orange-200">
-              <p className="text-sm text-orange-700">
+            <div className="mt-2 p-3 bg-teal-50 rounded-md border border-teal-200">
+              <p className="text-sm text-teal-800">
                 El tiempo de procesamiento puede variar según el método de pago utilizado.
               </p>
             </div>

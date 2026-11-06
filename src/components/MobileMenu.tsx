@@ -13,7 +13,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   onClose,
   session
 }) => {
-  const whatsappUrl = `https://wa.me/+50578364365`;
+  const whatsappUrl = `https://wa.me/50578364365`;
 
   return isOpen ? (
     <div 
@@ -53,21 +53,21 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
         <nav className="mobile-menu-nav flex flex-col p-4 space-y-4">
           <Link 
             to="/" 
-            className="text-lg hover:text-orange-500 transition-colors"
+            className="text-lg hover:text-teal-700 transition-colors"
             onClick={onClose}
           >
             Inicio
           </Link>
           <Link 
             to="/about" 
-            className="text-lg hover:text-orange-500 transition-colors"
+            className="text-lg hover:text-teal-700 transition-colors"
             onClick={onClose}
           >
             Sobre Nosotros
           </Link>
           <Link 
             to="/information" 
-            className="text-lg hover:text-orange-500 transition-colors"
+            className="text-lg hover:text-teal-700 transition-colors"
             onClick={onClose}
           >
             Información
@@ -76,7 +76,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
             href={whatsappUrl} 
             target="_blank" 
             rel="noopener noreferrer" 
-            className="text-lg hover:text-orange-500 transition-colors flex items-center"
+            className="text-lg hover:text-teal-700 transition-colors flex items-center"
           >
             <FaWhatsapp size={18} />
             WhatsApp
@@ -86,7 +86,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
             target="_blank" 
             rel="noopener noreferrer" 
             onClick={onClose}
-            className="text-lg hover:text-orange-500 transition-colors flex items-center"
+            className="text-lg hover:text-teal-700 transition-colors flex items-center"
           >
             <FaTiktok size={18} />
             TikTok
@@ -96,7 +96,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
             target="_blank" 
             rel="noopener noreferrer" 
             onClick={onClose}
-            className="text-lg hover:text-orange-500 transition-colors flex items-center"
+            className="text-lg hover:text-teal-700 transition-colors flex items-center"
           >
             <FaFacebook size={18} />
             Facebook
@@ -106,7 +106,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
             target="_blank" 
             rel="noopener noreferrer" 
             onClick={onClose}
-            className="text-lg hover:text-orange-500 transition-colors flex items-center"
+            className="text-lg hover:text-teal-700 transition-colors flex items-center"
           >
             <FaInstagram size={18} />
             Instagram
@@ -114,7 +114,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
           {session && (
             <Link 
               to="/admin" 
-              className="text-lg hover:text-orange-500 transition-colors flex items-center"
+              className="text-lg hover:text-teal-700 transition-colors flex items-center"
               onClick={onClose}
             >
               <FaUserShield className="mr-2" />

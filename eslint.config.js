@@ -7,9 +7,11 @@ import tsParser from '@typescript-eslint/parser';
 import unusedImports from 'eslint-plugin-unused-imports';
 
 export default [
-  js.configs.recommended,
   {
     ignores: ['dist', 'scripts'],
+  },
+  js.configs.recommended,
+  {
     plugins: {
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,

@@ -5,10 +5,8 @@ import { queryClient } from './config/queryClient';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { SEO } from './components/SEO';
-import { Header } from './components/Header';
-import { Footer } from './components/Footer';
+import { AppShell } from './components/AppShell';
 import { Cart } from './components/Cart';
-import { AmbientBackground } from './components/AmbientBackground';
 import AppRoutes from './routes/AppRoutes';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -19,45 +17,38 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <HelmetProvider>
-        <div className="bg-gray-400 pattern-bg">
-          <a href="#main-content" className="sr-only focus:not-sr-only">
-            Skip to main content
-          </a>
-          <SEO 
-            title="Gatotaku"
-            description="Tienda online de productos de anime y manga. Encuentra los mejores artículos de tus series favoritas."
-            openGraph={{
-              title: "Gatotaku",
-              description: "Tu Tienda de Anime",
-              image: "https://gatotaku.com/logo.png"
-            }}
-          />
-          <AuthProvider>
-            <CartProvider>
-              <Router>
-                <div className="flex flex-col min-h-screen">
-                  <AmbientBackground />
-                  <Header />
-                  <Suspense fallback={<div>Loading...</div>}>
-                    <main id="main-content" className="flex-grow pt-[calc(12vh+36px)] px-4 sm:px-6 lg:px-8 pb-20">
-                      <AppRoutes />
-                    </main>
-                  </Suspense>
-                  <Footer />
-                  <Cart />
-                  <ToastContainer 
-                    position="top-right"
-                    autoClose={3000}
-                    hideProgressBar={false}
-                    closeOnClick
-                    pauseOnHover
-                    theme="colored"
-                  />
-                </div>
-              </Router>
-            </CartProvider>
-          </AuthProvider>
-        </div>
+        <a href="#main-content" className="sr-only focus:not-sr-only">
+          Saltar al contenido principal
+        </a>
+        <SEO
+          title="Gatotaku"
+          description="Tienda online de productos de anime y manga. Encuentra los mejores artículos de tus series favoritas."
+          openGraph={{
+            title: "Gatotaku",
+            description: "Tu Tienda de Anime",
+            image: "https://gatotaku.com/logo.png"
+          }}
+        />
+        <AuthProvider>
+          <CartProvider>
+            <Router>
+              <AppShell>
+                <Suspense fallback={<div className="flex justify-center py-16 text-sm font-medium text-slate-500">Cargando...</div>}>
+                  <AppRoutes />
+                </Suspense>
+              </AppShell>
+              <Cart />
+              <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                closeOnClick
+                pauseOnHover
+                theme="colored"
+              />
+            </Router>
+          </CartProvider>
+        </AuthProvider>
       </HelmetProvider>
     </QueryClientProvider>
   );
