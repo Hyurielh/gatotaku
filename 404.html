@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>404 - Gatotaku</title>
+    <script>
+      // GitHub Pages sirve este archivo cuando la ruta solicitada no existe.
+      // La app usa HashRouter, así que redirigimos a la raíz conservando la ruta
+      // original dentro del hash: React Router cae en la ruta comodín y muestra
+      // la página 404 personalizada en lugar de la de GitHub.
+      (function () {
+        var l = window.location;
+        var requested = (l.pathname + l.search).replace(/^\/+/, '');
+        l.replace(l.protocol + '//' + l.host + '/#' + requested);
+      })();
+    </script>
+  </head>
+  <body>
+    <p>Redirigiendo a Gatotaku...</p>
+  </body>
+</html>
