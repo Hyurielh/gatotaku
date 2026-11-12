@@ -52,13 +52,40 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
     icon: User,
     avatarUrl: profile?.avatar_url ?? undefined,
   };
-  const navigationItems = [
-    ...primaryItems,
+  const accountItems: SidebarItem[] = [
     accountItem,
     { label: 'Mis Pedidos', to: '/mis-pedidos', icon: ClipboardList },
     { label: 'Mis Cupones', to: '/mis-cupones', icon: Ticket },
     ...(isAdmin ? [{ label: 'Admin', to: '/admin', icon: Shield }] : []),
   ];
+
+  const renderItems = (items: SidebarItem[]) =>
+    items.map((item) => {
+      const Icon = item.icon;
+      const active = isItemActive(location.pathname, item);
+
+      return (
+        <Link
+          key={item.to}
+          to={item.to}
+          className={`sidebar-link ${active ? 'active' : ''}`}
+          aria-label={item.label}
+          title={item.label}
+          aria-current={active ? 'page' : undefined}
+        >
+          {item.avatarUrl ? (
+            <img
+              src={item.avatarUrl}
+              alt=""
+              className="h-5 w-5 shrink-0 rounded-full object-cover"
+            />
+          ) : (
+            <Icon size={20} strokeWidth={2} className="shrink-0" />
+          )}
+          <span className="truncate">{item.label}</span>
+        </Link>
+      );
+    });
 
   const renderNav = (showCloseButton = false) => (
     <div className="flex h-full w-full flex-col border-r border-slate-200 bg-white px-3 py-4">
@@ -93,31 +120,13 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
       </div>
 
       <nav className="mt-6 flex w-full flex-col gap-1.5" aria-label="Navegación principal">
-        {navigationItems.map((item) => {
-          const Icon = item.icon;
-          const active = isItemActive(location.pathname, item);
-          return (
-            <Link
-              key={item.to}
-              to={item.to}
-              className={`sidebar-link ${active ? 'active' : ''}`}
-              aria-label={item.label}
-              title={item.label}
-              aria-current={active ? 'page' : undefined}
-            >
-              {item.avatarUrl ? (
-                <img
-                  src={item.avatarUrl}
-                  alt=""
-                  className="h-5 w-5 shrink-0 rounded-full object-cover"
-                />
-              ) : (
-                <Icon size={20} strokeWidth={2} className="shrink-0" />
-              )}
-              <span className="truncate">{item.label}</span>
-            </Link>
-          );
-        })}
+        {renderItems(primaryItems)}
+      </nav>
+
+      <div className="my-4 h-px w-full bg-slate-200" aria-hidden="true" />
+
+      <nav className="flex w-full flex-col gap-1.5" aria-label="Cuenta">
+        {renderItems(accountItems)}
       </nav>
 
       <div className="my-5 h-px w-full bg-slate-200" aria-hidden="true" />
