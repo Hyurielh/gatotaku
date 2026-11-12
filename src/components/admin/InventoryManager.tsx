@@ -39,6 +39,12 @@ export function InventoryManager() {
   const isSubmittingRef = useRef(false);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
 
+  // Selección múltiple para cambiar precios en bloque
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkPrice, setBulkPrice] = useState('');
+  const [isApplyingBulk, setIsApplyingBulk] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState('');
+
   const handleError = (err: unknown, defaultMessage: string = 'Error desconocido') => {
     if (err instanceof PostgrestError) {
       setError({
@@ -95,6 +101,10 @@ export function InventoryManager() {
           anime:anime(id, name)
         `, { count: 'exact' });
 
+      if (categoryFilter) {
+        query = query.eq('category_id', categoryFilter);
+      }
+
       if (searchTerm.trim()) {
         const searchTerm_lower = searchTerm.toLowerCase().trim();
 
@@ -123,7 +133,7 @@ export function InventoryManager() {
     } finally {
       isLoadingRef.current = false;
     }
-  }, [searchTerm, page, createFlexibleSearch]);
+  }, [searchTerm, page, categoryFilter, createFlexibleSearch]);
 
   // fetchProducts depends on several stable refs and state; intentionally
   // disabling exhaustive-deps here to avoid re-creating the effect on function identity
@@ -398,6 +408,68 @@ export function InventoryManager() {
     setFormData({ ...formData, images: newImages });
   }
 
+  const toggleSelected = (productId: string) => {
+    setSelectedIds((current) =>
+      current.includes(productId)
+        ? current.filter((id) => id !== productId)
+        : [...current, productId],
+    );
+  };
+
+  const allVisibleSelected =
+    products.length > 0 && products.every((product) => selectedIds.includes(product.id));
+
+  const toggleSelectAll = () => {
+    if (allVisibleSelected) {
+      setSelectedIds((current) => current.filter((id) => !products.some((p) => p.id === id)));
+      return;
+    }
+
+    setSelectedIds((current) => [
+      ...current,
+      ...products.filter((product) => !current.includes(product.id)).map((product) => product.id),
+    ]);
+  };
+
+  const applyBulkPrice = async () => {
+    const price = Number(bulkPrice);
+
+    if (!Number.isFinite(price) || price <= 0) {
+      toast.error('Escribe un precio válido');
+      return;
+    }
+
+    if (selectedIds.length === 0) return;
+
+    if (
+      !window.confirm(
+        `¿Cambiar el precio de ${selectedIds.length} producto(s) a C$${price.toFixed(2)}?`,
+      )
+    ) {
+      return;
+    }
+
+    setIsApplyingBulk(true);
+
+    try {
+      const { error: updateError } = await supabase
+        .from('products')
+        .update({ price })
+        .in('id', selectedIds);
+
+      if (updateError) throw updateError;
+
+      toast.success(`Precio actualizado en ${selectedIds.length} producto(s)`);
+      setSelectedIds([]);
+      setBulkPrice('');
+      await fetchProducts();
+    } catch (error) {
+      handleError(error, 'Error al actualizar los precios');
+    } finally {
+      setIsApplyingBulk(false);
+    }
+  };
+
   const renderErrorDetails = () => {
     if (!error) return null;
     return <p className="font-medium">{error.message}</p>;
@@ -633,24 +705,96 @@ export function InventoryManager() {
           </div>
         </form>
 
-        <div className="search-bar mb-4 flex items-center space-x-4">
-          <input 
-            type="text" 
-            placeholder="Buscar productos..." 
+        <div className="search-bar mb-4 flex flex-wrap items-center gap-3">
+          <input
+            type="text"
+            placeholder="Buscar productos..."
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
+              setSelectedIds([]);
               setPage(1); // Reiniciar página al buscar
             }}
-            className="flex-grow p-2 border rounded-md"
+            className="min-w-[14rem] flex-grow rounded-md border p-2"
           />
+
+          <select
+            value={categoryFilter}
+            onChange={(e) => {
+              setCategoryFilter(e.target.value);
+              setSelectedIds([]);
+              setPage(1);
+            }}
+            className="rounded-md border p-2 text-sm"
+            aria-label="Filtrar por categoría"
+          >
+            <option value="">Todas las categorías</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
         </div>
+
+        {selectedIds.length > 0 && (
+          <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-teal-200 bg-teal-50 p-4">
+            <span className="text-sm font-semibold text-teal-900">
+              {selectedIds.length} producto(s) seleccionado(s)
+            </span>
+
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-teal-800">Nuevo precio</span>
+              <div className="relative">
+                <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-gray-500">
+                  C$
+                </span>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={bulkPrice}
+                  onChange={(e) => setBulkPrice(e.target.value)}
+                  placeholder="0.00"
+                  className="w-32 rounded-md border border-teal-300 bg-white py-2 pl-8 pr-3 text-sm"
+                  aria-label="Nuevo precio para los seleccionados"
+                />
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => void applyBulkPrice()}
+              disabled={isApplyingBulk || !bulkPrice}
+              className="btn-primary"
+            >
+              {isApplyingBulk ? 'Aplicando...' : 'Aplicar precio'}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setSelectedIds([])}
+              className="text-sm font-semibold text-teal-800 hover:text-teal-950"
+            >
+              Limpiar selección
+            </button>
+          </div>
+        )}
 
         <div className="panel overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-[760px] w-full divide-y divide-slate-200">
+            <table className="min-w-[820px] w-full divide-y divide-slate-200">
             <thead className="bg-gray-50">
               <tr>
+                <th className="px-4 py-3 text-left">
+                  <input
+                    type="checkbox"
+                    checked={allVisibleSelected}
+                    onChange={toggleSelectAll}
+                    className="h-4 w-4 rounded border-slate-300 accent-teal-600"
+                    aria-label="Seleccionar todos los productos de esta página"
+                  />
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Producto
                 </th>
@@ -673,7 +817,16 @@ export function InventoryManager() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {products.map((product) => (
-                <tr key={product.id}>
+                <tr key={product.id} className={selectedIds.includes(product.id) ? 'bg-teal-50/60' : undefined}>
+                  <td className="px-4 py-4">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(product.id)}
+                      onChange={() => toggleSelected(product.id)}
+                      className="h-4 w-4 rounded border-slate-300 accent-teal-600"
+                      aria-label={`Seleccionar ${product.name}`}
+                    />
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <img
