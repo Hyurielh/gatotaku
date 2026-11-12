@@ -3,6 +3,7 @@ import type { Product } from '../types/database';
 import { ImageCarousel } from './ImageCarousel';
 import { generateWebPSrcset, generateLowResPlaceholder, optimizeImage } from '../utils/imageOptimization';
 import { useCart } from '../context/CartContext';
+import { useFavorites } from '../context/FavoritesContext';
 import { Heart, ShoppingCart } from 'lucide-react';
 
 interface ProductCardProps {
@@ -12,11 +13,12 @@ interface ProductCardProps {
 
 export function ProductCard({ product, className }: ProductCardProps) {
   const { addItem } = useCart();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [imageLoadProgress, setImageLoadProgress] = useState(0);
   const [isImageFullyLoaded, setIsImageFullyLoaded] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
   const [justFavorited, setJustFavorited] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const favorite = isFavorite(product.id);
   const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const imageLoadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -87,10 +89,10 @@ export function ProductCard({ product, className }: ProductCardProps) {
   }, [addItem, product]);
 
   const handleToggleFavorite = useCallback(() => {
-    setIsFavorite((current) => !current);
+    void toggleFavorite(product.id);
     setJustFavorited(true);
     setTimeout(() => setJustFavorited(false), 500);
-  }, []);
+  }, [toggleFavorite, product.id]);
 
   return (
     <div className={[
@@ -122,11 +124,11 @@ export function ProductCard({ product, className }: ProductCardProps) {
           type="button"
           onClick={handleToggleFavorite}
           className="absolute right-3 top-3 z-30 flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white/95 text-slate-500 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:scale-110 hover:border-teal-300 hover:text-teal-700 active:scale-90 focus:outline-none focus:ring-2 focus:ring-teal-200"
-          aria-label={isFavorite ? `Quitar ${product.name} de favoritos` : `Agregar ${product.name} a favoritos`}
-          aria-pressed={isFavorite}
-          title={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+          aria-label={favorite ? `Quitar ${product.name} de favoritos` : `Agregar ${product.name} a favoritos`}
+          aria-pressed={favorite}
+          title={favorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
         >
-          <Heart size={17} strokeWidth={2} className={`${isFavorite ? 'fill-teal-600 text-teal-600' : ''} ${justFavorited ? 'animate-jelly' : ''}`} />
+          <Heart size={17} strokeWidth={2} className={`${favorite ? 'fill-teal-600 text-teal-600' : ''} ${justFavorited ? 'animate-jelly' : ''}`} />
         </button>
 
         <ImageCarousel

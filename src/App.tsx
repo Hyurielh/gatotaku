@@ -4,6 +4,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './config/queryClient';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { FavoritesProvider } from './context/FavoritesContext';
 import { SEO } from './components/SEO';
 import { AppShell } from './components/AppShell';
 import { Cart } from './components/Cart';
@@ -31,7 +32,8 @@ function App() {
           }}
         />
         <AuthProvider>
-          <CartProvider>
+          <FavoritesProvider>
+            <CartProvider>
             <Router>
               <AppShell>
                 <RouteErrorBoundary>
@@ -50,7 +52,8 @@ function App() {
                 theme="colored"
               />
             </Router>
-          </CartProvider>
+            </CartProvider>
+          </FavoritesProvider>
         </AuthProvider>
       </HelmetProvider>
     </QueryClientProvider>

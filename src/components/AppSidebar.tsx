@@ -9,6 +9,7 @@ import {
   Shield,
   Ticket,
   ClipboardList,
+  Heart,
   X,
   type LucideIcon,
 } from 'lucide-react';
@@ -55,6 +56,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   const accountItems: SidebarItem[] = [
     accountItem,
     { label: 'Mis Pedidos', to: '/mis-pedidos', icon: ClipboardList },
+    { label: 'Mis Favoritos', to: '/mis-favoritos', icon: Heart },
     { label: 'Mis Cupones', to: '/mis-cupones', icon: Ticket },
     ...(isAdmin ? [{ label: 'Admin', to: '/admin', icon: Shield }] : []),
   ];

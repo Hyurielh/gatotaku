@@ -14,6 +14,7 @@ const AboutPage = lazy(() => import('../pages/About'));
 const AccountPage = lazy(() => import('../pages/AccountPage'));
 const MyCouponsPage = lazy(() => import('../pages/MyCouponsPage'));
 const MyOrdersPage = lazy(() => import('../pages/MyOrdersPage'));
+const MyFavoritesPage = lazy(() => import('../pages/MyFavoritesPage'));
 const AdminLoginPage = lazy(() => import('../pages/AdminLoginPage'));
 const AdminPanel = lazy(() => import('../pages/AdminPanel'));
 const InformationPage = lazy(() => import('../pages/Information'));
@@ -41,6 +42,7 @@ const AppRoutes: React.FC = () => {
         <Route path="/cuenta" element={<AccountPage />} />
         <Route path="/mis-cupones" element={<MyCouponsPage />} />
         <Route path="/mis-pedidos" element={<MyOrdersPage />} />
+        <Route path="/mis-favoritos" element={<MyFavoritesPage />} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route
           path="/admin"
