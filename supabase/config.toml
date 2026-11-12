@@ -1,0 +1,16 @@
+project_id = "gatotaku"
+
+[functions.imagekit-auth]
+verify_jwt = true
+
+[functions.coupon-apply]
+verify_jwt = true
+
+[functions.coupon-redeem]
+verify_jwt = true
+
+[functions.admin-users]
+verify_jwt = true
+
+[functions.account-status]
+verify_jwt = false

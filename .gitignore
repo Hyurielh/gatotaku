@@ -30,3 +30,6 @@ brief.md
 
 # AI agent folder
 .agents/
+
+# Supabase CLI cache
+supabase/.temp/

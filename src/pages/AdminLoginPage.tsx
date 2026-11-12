@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 
@@ -9,13 +9,15 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { session } = useAuth();
+  const { session, isAdmin, isAdminLoading } = useAuth();
 
   React.useEffect(() => {
-    if (session) {
+    if (session && isAdmin) {
       navigate('/admin', { replace: true });
     }
-  }, [session, navigate]);
+  }, [session, isAdmin, navigate]);
+
+  const isBlocked = Boolean(session) && !isAdmin && !isAdminLoading;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -47,6 +49,15 @@ export default function LoginPage() {
           <h1 className="mt-1 text-2xl font-bold text-slate-900">Iniciar sesión</h1>
           <p className="mt-1 text-sm text-slate-500">Ingresa tus credenciales para administrar la tienda.</p>
         </div>
+
+        {isBlocked && (
+          <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800" role="alert">
+            <span>Tu cuenta no tiene acceso administrativo.</span>
+            <Link to="/cuenta" className="mt-2 block font-semibold text-teal-700 hover:underline">
+              Ir a mi cuenta
+            </Link>
+          </div>
+        )}
 
         {error && (
           <div className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">

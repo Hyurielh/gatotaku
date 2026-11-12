@@ -54,6 +54,7 @@ export function ProductFilters({
       search: '',
       category: [],
       anime: [],
+      service: false,
       minPrice: undefined,
       maxPrice: undefined,
       page: 1,
@@ -92,6 +93,13 @@ export function ProductFilters({
       }),
     });
   });
+  if (currentFilters.service) {
+    activeFilters.push({
+      id: 'service',
+      label: 'Servicios',
+      onRemove: () => updateFilters({ service: false }),
+    });
+  }
   if (currentFilters.minPrice !== undefined || currentFilters.maxPrice !== undefined) {
     const label = currentFilters.minPrice !== undefined && currentFilters.maxPrice !== undefined
       ? `C${currentFilters.minPrice} - C${currentFilters.maxPrice}`
@@ -113,6 +121,10 @@ export function ProductFilters({
         ? selectedValues.filter((selectedValue) => selectedValue !== value)
         : [...selectedValues, value],
     });
+  };
+
+  const handleServiceToggle = (checked: boolean) => {
+    updateFilters({ service: checked });
   };
 
   const handlePriceInput = (field: 'minPrice' | 'maxPrice', rawValue: string) => {
@@ -198,6 +210,24 @@ export function ProductFilters({
               <span className="min-w-0 truncate">{anime.name}</span>
             </label>
           ))}
+        </div>
+      </details>
+
+      <details open className="group border-b border-slate-200 pb-4">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-2 font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-200">
+          Servicios
+          <ChevronDown size={18} className="text-slate-400 transition-transform group-open:rotate-180" aria-hidden="true" />
+        </summary>
+        <div className="mt-3">
+          <label className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-sm text-slate-700 transition hover:bg-slate-50">
+            <input
+              type="checkbox"
+              checked={currentFilters.service}
+              onChange={(event) => handleServiceToggle(event.target.checked)}
+              className="h-4 w-4 rounded border-slate-300 accent-teal-600"
+            />
+            <span>Servicios</span>
+          </label>
         </div>
       </details>
 

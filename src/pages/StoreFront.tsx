@@ -49,6 +49,7 @@ function StoreFrontContent() {
     search: searchParams.get('q') ?? '',
     category: [],
     anime: [],
+    service: false,
     sortBy: 'name_asc',
     minPrice: undefined,
     maxPrice: undefined,
@@ -86,6 +87,7 @@ function StoreFrontContent() {
         search: '',
         category: [],
         anime: [],
+        service: false,
         sortBy: 'name_asc',
         minPrice: undefined,
         maxPrice: undefined,
@@ -169,6 +171,10 @@ function StoreFrontContent() {
       let query = supabase
         .from('products')
         .select('*, category_ref:categories(id, name), anime(id, name)', { count: 'exact' });
+
+      if (filters.service) {
+        query = query.eq('is_service', true);
+      }
 
       if (filters.search && filters.search.trim() !== '') {
         const searchTerm = filters.search.toLowerCase().trim();
@@ -283,8 +289,9 @@ function StoreFrontContent() {
   const handleResetFilters = () => {
     setFilters({
       search: '',
-      category: '',
-      anime: '',
+      category: [],
+      anime: [],
+      service: false,
       sortBy: 'name_asc',
       minPrice: undefined,
       maxPrice: undefined,

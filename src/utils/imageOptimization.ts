@@ -148,25 +148,26 @@ export function compressImage(file: File, maxSizeKB: number = 500): Promise<File
         canvas.height = height;
         
         ctx.drawImage(img, 0, 0, width, height);
-        
-        const compressedDataUrl = canvas.toDataURL('image/webp', 0.7);
-        
-        fetch(compressedDataUrl)
-          .then(res => res.blob())
-          .then(blob => {
-            const compressedFile = new File([blob], file.name, {
-              type: 'image/webp',
-              lastModified: Date.now()
-            });
-            
-            if (compressedFile.size > maxSizeKB * 1024) {
-              reject(new Error(`File too large. Maximum size is ${maxSizeKB}KB`));
-              return;
-            }
-            
-            resolve(compressedFile);
-          })
-          .catch(reject);
+
+        // toBlob en vez de fetch(dataURL): la CSP del sitio no permite connect-src data:
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            reject(new Error('Could not compress image'));
+            return;
+          }
+
+          const compressedFile = new File([blob], file.name, {
+            type: 'image/webp',
+            lastModified: Date.now()
+          });
+
+          if (compressedFile.size > maxSizeKB * 1024) {
+            reject(new Error(`File too large. Maximum size is ${maxSizeKB}KB`));
+            return;
+          }
+
+          resolve(compressedFile);
+        }, 'image/webp', 0.7);
       };
       
       img.onerror = () => {

@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { RequireAuth } from '../components/RequireAuth';
 import { useEffect } from 'react';
 
@@ -34,8 +34,11 @@ const AppRoutes: React.FC = () => {
       <ScrollHandler />
       <Routes>
         <Route path="/" element={lazyLoadPage(() => import('../pages/StoreFront'))} />
+        <Route path="/servicios" element={lazyLoadPage(() => import('../pages/ServicesPage'))} />
         <Route path="/about" element={lazyLoadPage(() => import('../pages/About'))} />
-        <Route path="/login" element={lazyLoadPage(() => import('../pages/LoginPage'))} />
+        <Route path="/login" element={<Navigate to="/cuenta" replace />} />
+        <Route path="/cuenta" element={lazyLoadPage(() => import('../pages/AccountPage'))} />
+        <Route path="/mis-cupones" element={lazyLoadPage(() => import('../pages/MyCouponsPage'))} />
         <Route path="/admin/login" element={lazyLoadPage(() => import('../pages/AdminLoginPage'))} />
         <Route 
           path="/admin" 
@@ -49,6 +52,7 @@ const AppRoutes: React.FC = () => {
           path="/information/*" 
           element={lazyLoadPage(() => import('../pages/Information'))} 
         />
+        <Route path="*" element={lazyLoadPage(() => import('../pages/NotFound'))} />
         {/* Añade más rutas según necesites */}
       </Routes>
     </>

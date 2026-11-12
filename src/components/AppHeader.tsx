@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { FaWhatsapp, FaUserShield } from 'react-icons/fa';
+import { FaWhatsapp } from 'react-icons/fa';
 import { ChevronRight, Menu, Search, ShoppingCart, User, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -26,8 +26,10 @@ const informationLabels: Record<string, string> = {
 
 function getBreadcrumbs(pathname: string): BreadcrumbItem[] {
   if (pathname === '/') return [{ label: 'Inicio' }];
+  if (pathname === '/servicios') return [{ label: 'Inicio', to: '/' }, { label: 'Servicios' }];
   if (pathname === '/about') return [{ label: 'Inicio', to: '/' }, { label: 'Sobre nosotros' }];
   if (pathname === '/login') return [{ label: 'Inicio', to: '/' }, { label: 'Login' }];
+  if (pathname === '/cuenta') return [{ label: 'Inicio', to: '/' }, { label: 'Mi cuenta' }];
   if (pathname === '/admin/login') return [{ label: 'Inicio', to: '/' }, { label: 'Acceso administrativo' }];
   if (pathname === '/admin') return [{ label: 'Inicio', to: '/' }, { label: 'Administración' }];
 
@@ -170,11 +172,11 @@ export function AppHeader({ onMenuToggle }: AppHeaderProps) {
           </button>
 
           {session ? (
-            <Link to="/admin" className="icon-button" aria-label="Ir a administración" title="Administración">
-              <FaUserShield size={19} />
+            <Link to="/cuenta" className="icon-button" aria-label="Ir a mi cuenta" title="Mi cuenta">
+              <User size={20} />
             </Link>
           ) : (
-            <Link to="/login" className="icon-button" aria-label="Abrir login" title="Login">
+            <Link to="/cuenta" className="icon-button" aria-label="Iniciar sesión" title="Iniciar sesión">
               <User size={20} />
             </Link>
           )}

@@ -5,8 +5,10 @@ import {
   Home,
   Info,
   FileText,
+  Wrench,
   User,
   Shield,
+  Ticket,
   X,
   type LucideIcon,
 } from 'lucide-react';
@@ -23,10 +25,12 @@ interface SidebarItem {
   to: string;
   icon: LucideIcon;
   activePrefix?: string;
+  avatarUrl?: string;
 }
 
 const primaryItems: SidebarItem[] = [
-  { label: 'Inicio', to: '/', icon: Home },
+  { label: 'Tienda', to: '/', icon: Home },
+  { label: 'Servicios', to: '/servicios', icon: Wrench },
   { label: 'Sobre nosotros', to: '/about', icon: Info },
   { label: 'Información', to: '/information/general', icon: FileText, activePrefix: '/information' },
 ];
@@ -37,37 +41,58 @@ function isItemActive(pathname: string, item: SidebarItem) {
 
 export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   const location = useLocation();
-  const { session } = useAuth();
+  const { isAdmin, profile } = useAuth();
 
   useEffect(() => {
     onClose();
   }, [location.pathname, onClose]);
 
-  const accountItem: SidebarItem = session
-    ? { label: 'Administración', to: '/admin', icon: Shield }
-    : { label: 'Login', to: '/login', icon: User };
-  const navigationItems = [...primaryItems, accountItem];
+  const accountItem: SidebarItem = {
+    label: 'Cuenta',
+    to: '/cuenta',
+    icon: User,
+    avatarUrl: profile?.avatar_url ?? undefined,
+  };
+  const navigationItems = [
+    ...primaryItems,
+    accountItem,
+    { label: 'Mis Cupones', to: '/mis-cupones', icon: Ticket },
+    ...(isAdmin ? [{ label: 'Admin', to: '/admin', icon: Shield }] : []),
+  ];
 
   const renderNav = (showCloseButton = false) => (
-    <div className="flex h-full flex-col items-center border-r border-slate-200 bg-white px-2 py-4">
-      <div className="flex h-12 w-12 items-center justify-center">
-        {showCloseButton ? (
-          <button type="button" onClick={onClose} className="sidebar-icon" aria-label="Cerrar menú">
+    <div className="flex h-full w-full flex-col border-r border-slate-200 bg-white px-3 py-4">
+      <div className="flex w-full items-center justify-between gap-2">
+        <Link
+          to="/"
+          className="flex min-w-0 items-center gap-3 rounded-xl p-1 transition-transform duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-teal-300"
+          aria-label="Ir al inicio de Gatotaku"
+          onClick={() => {
+            window.dispatchEvent(new CustomEvent('reset-store-filters'));
+            onClose();
+          }}
+        >
+          <img
+            src="/logo.png"
+            alt="Logo de Gatotaku"
+            className="h-10 w-10 shrink-0 rounded-xl object-cover"
+          />
+          <span className="truncate text-lg font-bold text-slate-900">Gatotaku</span>
+        </Link>
+
+        {showCloseButton && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="sidebar-icon shrink-0"
+            aria-label="Cerrar menú"
+          >
             <X size={22} />
           </button>
-        ) : (
-          <Link
-            to="/"
-            className="flex h-12 w-12 items-center justify-center rounded-xl transition-transform duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:rotate-6 hover:scale-110 active:scale-90 focus:outline-none focus:ring-2 focus:ring-teal-300"
-            aria-label="Ir al inicio de Gatotaku"
-            onClick={() => window.dispatchEvent(new CustomEvent('reset-store-filters'))}
-          >
-            <img src="/logo.png" alt="Logo de Gatotaku" className="h-11 w-11 rounded-xl object-cover" />
-          </Link>
         )}
       </div>
 
-      <nav className="mt-6 flex w-full flex-col items-center gap-2" aria-label="Navegación principal">
+      <nav className="mt-6 flex w-full flex-col gap-1.5" aria-label="Navegación principal">
         {navigationItems.map((item) => {
           const Icon = item.icon;
           const active = isItemActive(location.pathname, item);
@@ -75,59 +100,72 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
             <Link
               key={item.to}
               to={item.to}
-              className={`sidebar-icon ${active ? 'active' : ''}`}
+              className={`sidebar-link ${active ? 'active' : ''}`}
               aria-label={item.label}
               title={item.label}
               aria-current={active ? 'page' : undefined}
             >
-              <Icon size={22} strokeWidth={2} />
+              {item.avatarUrl ? (
+                <img
+                  src={item.avatarUrl}
+                  alt=""
+                  className="h-5 w-5 shrink-0 rounded-full object-cover"
+                />
+              ) : (
+                <Icon size={20} strokeWidth={2} className="shrink-0" />
+              )}
+              <span className="truncate">{item.label}</span>
             </Link>
           );
         })}
       </nav>
 
-      <div className="my-5 h-px w-10 bg-slate-200" aria-hidden="true" />
+      <div className="my-5 h-px w-full bg-slate-200" aria-hidden="true" />
 
-      <nav className="flex w-full flex-col items-center gap-2" aria-label="Redes sociales">
+      <nav className="flex w-full flex-col gap-1.5" aria-label="Redes sociales">
         <a
           href={SOCIAL_MEDIA.whatsapp.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex h-12 w-12 items-center justify-center rounded-xl bg-teal-600 text-white shadow-sm transition-all duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-1 hover:scale-110 hover:bg-teal-700 active:scale-90 focus:outline-none focus:ring-2 focus:ring-teal-200"
+          className="sidebar-link-primary"
           aria-label="Pedir por WhatsApp"
           title="Pedir por WhatsApp"
         >
-          <FaWhatsapp size={24} />
+          <FaWhatsapp size={20} className="shrink-0" />
+          <span>WhatsApp</span>
         </a>
         <a
           href={SOCIAL_MEDIA.facebook}
           target="_blank"
           rel="noopener noreferrer"
-          className="sidebar-icon"
+          className="sidebar-link"
           aria-label="Facebook"
           title="Facebook"
         >
-          <FaFacebook size={20} />
+          <FaFacebook size={18} className="shrink-0" />
+          <span>Facebook</span>
         </a>
         <a
           href={SOCIAL_MEDIA.instagram}
           target="_blank"
           rel="noopener noreferrer"
-          className="sidebar-icon"
+          className="sidebar-link"
           aria-label="Instagram"
           title="Instagram"
         >
-          <FaInstagram size={20} />
+          <FaInstagram size={18} className="shrink-0" />
+          <span>Instagram</span>
         </a>
         <a
           href={SOCIAL_MEDIA.tiktok}
           target="_blank"
           rel="noopener noreferrer"
-          className="sidebar-icon"
+          className="sidebar-link"
           aria-label="TikTok"
           title="TikTok"
         >
-          <FaTiktok size={20} />
+          <FaTiktok size={18} className="shrink-0" />
+          <span>TikTok</span>
         </a>
       </nav>
     </div>
@@ -135,7 +173,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
 
   return (
     <>
-      <aside className="hidden w-20 shrink-0 lg:block" aria-label="Barra lateral">
+      <aside className="hidden w-56 shrink-0 lg:block" aria-label="Barra lateral">
         {renderNav()}
       </aside>
 
@@ -147,7 +185,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
             aria-label="Cerrar menú"
             onClick={onClose}
           />
-          <div className="absolute inset-y-0 left-0 w-20 animate-slide-in-left">
+          <div className="absolute inset-y-0 left-0 w-64 animate-slide-in-left">
             {renderNav(true)}
           </div>
         </div>

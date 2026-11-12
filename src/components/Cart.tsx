@@ -1,32 +1,108 @@
-import { X, Plus, Minus, ShoppingCart, Trash2, Loader } from 'lucide-react';
+import { X, Plus, Minus, ShoppingCart, Trash2, Loader, Ticket, Tag } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { useAuth } from '../context/AuthContext';
+import { redeemCoupon } from '../lib/coupons';
 
 export function Cart() {
-  const { items, removeItem, updateQuantity, total, isOpen, setIsOpen, clearCart } = useCart();
+  const {
+    items,
+    removeItem,
+    updateQuantity,
+    total,
+    finalTotal,
+    discountTotal,
+    isOpen,
+    setIsOpen,
+    clearCart,
+    couponCode,
+    couponQuote,
+    couponError,
+    isApplyingCoupon,
+    applyCoupon,
+    removeCoupon,
+  } = useCart();
+  const { session } = useAuth();
   const [isOrdering, setIsOrdering] = useState(false);
+  const [couponInput, setCouponInput] = useState('');
+
+  const handleApplyCoupon = async () => {
+    if (!session) {
+      toast.info('Inicia sesión para aplicar tu cupón (puedes comprar sin cuenta)');
+      return;
+    }
+
+    const applied = await applyCoupon(couponInput);
+    if (applied) {
+      toast.success('Cupón aplicado');
+      setCouponInput('');
+    } else {
+      toast.error('No se pudo aplicar el cupón');
+    }
+  };
 
   const handleOrder = async () => {
     if (!window.confirm('¿Estás seguro de realizar el pedido?')) return;
 
     try {
       setIsOrdering(true);
+
+      let appliedCode = couponCode;
+      let appliedDiscount = discountTotal;
+      let appliedTotal = finalTotal;
+      let validationCode: string | null = null;
+
+      // El uso del cupón se registra al confirmar el pedido.
+      // Si ya no es válido, el pedido se envía igual pero sin descuento.
+      if (couponCode && couponQuote) {
+        try {
+          const redemption = await redeemCoupon(
+            couponCode,
+            items.map(item => ({ product_id: item.product.id, quantity: item.quantity })),
+          );
+          validationCode = redemption.redemption?.code ?? null;
+        } catch (couponError) {
+          toast.warning(
+            couponError instanceof Error
+              ? `${couponError.message}. El pedido se envía sin descuento.`
+              : 'El cupón ya no se pudo aplicar. El pedido se envía sin descuento.',
+          );
+          appliedCode = null;
+          appliedDiscount = 0;
+          appliedTotal = total;
+          removeCoupon();
+        }
+      }
+
       const message = items
-        .map(item =>
-          `• ${item.quantity}x ${item.product.name} - C$${(item.product.price * item.quantity).toFixed(2)}`
-        )
+        .map(item => {
+          const line = couponQuote?.lines.find(l => l.product_id === item.product.id);
+          const lineTotal = item.product.price * item.quantity;
+          const discount = appliedDiscount > 0 ? (line?.discount ?? 0) : 0;
+          const priceText = discount > 0
+            ? `C$${lineTotal.toFixed(2)} - C$${discount.toFixed(2)}`
+            : `C$${lineTotal.toFixed(2)}`;
+          return `• ${item.quantity}x ${item.product.name} - ${priceText}`;
+        })
         .join('\n');
 
-      const totalMessage = `\n\nTotal: C$${total.toFixed(2)}`;
-      const encodedMessage = encodeURIComponent(`¡Hola! Me gustaría ordenar:\n${message}${totalMessage}`);
+      const couponText = appliedCode ? `\n\nCupón: ${appliedCode}` : '';
+      const validationText = validationCode ? `\nCódigo de validación: ${validationCode}` : '';
+      const discountText = appliedDiscount > 0 ? `\nDescuento: -C$${appliedDiscount.toFixed(2)}` : '';
+      const totalMessage = `\n\nTotal: C$${appliedTotal.toFixed(2)}`;
+
+      const encodedMessage = encodeURIComponent(
+        `¡Hola! Me gustaría ordenar:\n${message}${couponText}${validationText}${discountText}${totalMessage}`
+      );
 
       window.open(`https://wa.me/50578364365?text=${encodedMessage}`, '_blank');
       clearCart();
       setIsOpen(false);
       toast.success('¡Pedido enviado exitosamente!');
-    } catch {
-      toast.error('Error al procesar el pedido');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Error al procesar el pedido');
     } finally {
       setIsOrdering(false);
     }
@@ -94,6 +170,16 @@ export function Cart() {
                             <div className="flex-1">
                               <h3 className="font-semibold text-gray-800 text-sm">{item.product.name}</h3>
                               <p className="text-teal-700 font-bold">C${item.product.price.toFixed(2)}</p>
+                              {(() => {
+                                const line = couponQuote?.lines.find(l => l.product_id === item.product.id);
+                                if (!line || line.discount <= 0) return null;
+                                return (
+                                  <p className="mt-1 inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                                    <Tag size={11} aria-hidden="true" />
+                                    -{line.discount.toFixed(2)} C$
+                                  </p>
+                                );
+                              })()}
                             </div>
                           </div>
                           <div className="flex items-center space-x-2">
@@ -130,9 +216,90 @@ export function Cart() {
                 {/* Total and order button */}
                 {items.length > 0 && (
                   <div className="p-5 sm:p-6 bg-slate-50 border-t border-slate-200">
+                    {/* Cupón */}
+                    <div className="mb-4 rounded-xl border border-slate-200 bg-white p-4">
+                      {couponCode && couponQuote ? (
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex min-w-0 items-center gap-2">
+                            <Ticket className="shrink-0 text-teal-600" size={18} aria-hidden="true" />
+                            <div className="min-w-0">
+                              <p className="truncate font-mono text-sm font-bold text-slate-800">{couponCode}</p>
+                              <p className="text-xs font-semibold text-emerald-700">
+                                -{discountTotal.toFixed(2)} C$ de descuento
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={removeCoupon}
+                            className="shrink-0 text-xs font-semibold text-red-600 hover:text-red-700"
+                          >
+                            Quitar
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={couponInput}
+                              onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  void handleApplyCoupon();
+                                }
+                              }}
+                              placeholder="Código del cupón"
+                              aria-label="Código del cupón"
+                              className="field flex-1 uppercase"
+                            />
+                            <button
+                              type="button"
+                              onClick={handleApplyCoupon}
+                              disabled={isApplyingCoupon}
+                              className="btn-secondary shrink-0"
+                            >
+                              {isApplyingCoupon ? (
+                                <Loader className="animate-spin" size={15} aria-hidden="true" />
+                              ) : (
+                                <Ticket size={15} aria-hidden="true" />
+                              )}
+                              Aplicar
+                            </button>
+                          </div>
+                          {!session && (
+                            <p className="mt-2 text-xs text-slate-500">
+                              Puedes comprar sin cuenta.{' '}
+                              <Link to="/cuenta" className="font-semibold text-teal-700 hover:underline">
+                                Inicia sesión
+                              </Link>{' '}
+                              si tienes un cupón para aplicar.
+                            </p>
+                          )}
+                          {couponError && (
+                            <p className="mt-2 text-xs font-semibold text-red-600">{couponError}</p>
+                          )}
+                        </>
+                      )}
+                    </div>
+
+                    <div className="mb-4 space-y-1 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-slate-600">Subtotal</span>
+                        <span className="font-semibold text-slate-800">C${total.toFixed(2)}</span>
+                      </div>
+                      {discountTotal > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-slate-600">Descuento ({couponCode})</span>
+                          <span className="font-semibold text-emerald-700">-C${discountTotal.toFixed(2)}</span>
+                        </div>
+                      )}
+                    </div>
+
                     <div className="flex justify-between items-center mb-5 p-4 bg-white rounded-xl border border-slate-200">
                       <span className="text-base font-semibold text-slate-600">Total</span>
-                      <span key={total.toFixed(2)} className="text-2xl font-bold text-teal-700 inline-block animate-pop">C${total.toFixed(2)}</span>
+                      <span key={finalTotal.toFixed(2)} className="text-2xl font-bold text-teal-700 inline-block animate-pop">C${finalTotal.toFixed(2)}</span>
                     </div>
                     <button
                       onClick={handleOrder}
