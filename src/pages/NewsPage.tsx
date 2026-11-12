@@ -1,12 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  ArrowLeft,
-  ChevronLeft,
-  ChevronRight,
-  Heart,
-  MessageCircle,
-  Newspaper,
-} from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ArrowLeft, Heart, MessageCircle, Newspaper } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { SEO } from '../components/SEO';
 import { PostComments } from '../components/PostComments';
@@ -26,8 +19,7 @@ export default function NewsPage() {
   const [posts, setPosts] = useState<NewsPost[]>([]);
   const [engagement, setEngagement] = useState<PostEngagement>(EMPTY_ENGAGEMENT);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -70,23 +62,15 @@ export default function NewsPage() {
     }
   };
 
-  const scrollCarousel = (direction: 1 | -1) => {
-    const scroller = scrollerRef.current;
-    if (!scroller) return;
-
-    scroller.scrollBy({ left: direction * Math.max(scroller.clientWidth * 0.75, 280), behavior: 'smooth' });
-  };
-
-  const selected = selectedIndex !== null ? posts[selectedIndex] : null;
+  const selected = selectedId ? posts.find((post) => post.id === selectedId) ?? null : null;
 
   const selectedComments = useMemo(
     () => (selected ? engagement.comments.filter((comment) => comment.post_id === selected.id) : []),
     [engagement.comments, selected],
   );
 
-  const goTo = (index: number) => {
-    if (index < 0 || index >= posts.length) return;
-    setSelectedIndex(index);
+  const openPost = (postId: string) => {
+    setSelectedId(postId);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -95,7 +79,7 @@ export default function NewsPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl">
+    <div className="mx-auto w-full max-w-4xl">
       <SEO
         title="Novedades - Gatotaku"
         description="Noticias, nuevos productos y promociones de Gatotaku."
@@ -104,41 +88,15 @@ export default function NewsPage() {
       {selected ? (
         /* ---------------------------- Detalle ---------------------------- */
         <article className="panel overflow-hidden">
-          <div className="flex items-center justify-between gap-2 border-b border-slate-200 px-4 py-3">
+          <div className="border-b border-slate-200 px-4 py-3">
             <button
               type="button"
-              onClick={() => setSelectedIndex(null)}
+              onClick={() => setSelectedId(null)}
               className="inline-flex items-center gap-1 text-sm font-semibold text-slate-600 transition hover:text-teal-700"
             >
               <ArrowLeft size={16} aria-hidden="true" />
               Todas las novedades
             </button>
-
-            <div className="flex items-center gap-2 text-xs text-slate-500">
-              <button
-                type="button"
-                onClick={() => goTo((selectedIndex ?? 0) - 1)}
-                disabled={(selectedIndex ?? 0) === 0}
-                className="icon-button disabled:opacity-30"
-                aria-label="Novedad anterior"
-                title="Anterior"
-              >
-                <ChevronLeft size={20} />
-              </button>
-              <span className="min-w-[3rem] text-center">
-                {(selectedIndex ?? 0) + 1} / {posts.length}
-              </span>
-              <button
-                type="button"
-                onClick={() => goTo((selectedIndex ?? 0) + 1)}
-                disabled={(selectedIndex ?? 0) >= posts.length - 1}
-                className="icon-button disabled:opacity-30"
-                aria-label="Siguiente novedad"
-                title="Siguiente"
-              >
-                <ChevronRight size={20} />
-              </button>
-            </div>
           </div>
 
           {selected.image_url && (
@@ -202,36 +160,11 @@ export default function NewsPage() {
           </div>
         </article>
       ) : (
-        /* ---------------------------- Lista ---------------------------- */
+        /* ----------------------------- Lista ----------------------------- */
         <>
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <Newspaper className="text-teal-600" size={22} aria-hidden="true" />
-              <h1 className="section-title">Novedades</h1>
-            </div>
-
-            {posts.length > 1 && (
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => scrollCarousel(-1)}
-                  className="icon-button"
-                  aria-label="Novedades anteriores"
-                  title="Anterior"
-                >
-                  <ChevronLeft size={20} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => scrollCarousel(1)}
-                  className="icon-button"
-                  aria-label="Siguientes novedades"
-                  title="Siguiente"
-                >
-                  <ChevronRight size={20} />
-                </button>
-              </div>
-            )}
+          <div className="mb-4 flex items-center gap-2">
+            <Newspaper className="text-teal-600" size={22} aria-hidden="true" />
+            <h1 className="section-title">Novedades</h1>
           </div>
 
           {posts.length === 0 ? (
@@ -243,65 +176,67 @@ export default function NewsPage() {
               </p>
             </div>
           ) : (
-            <div
-              ref={scrollerRef}
-              className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3"
-              role="list"
-              aria-label="Novedades"
-            >
-              {posts.map((post, index) => (
+            <div className="space-y-3">
+              {posts.map((post) => (
                 <article
                   key={post.id}
-                  role="listitem"
-                  className="w-[85%] shrink-0 snap-start overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-teal-200 hover:shadow-md sm:w-[48%] lg:w-[32%]"
+                  role="link"
+                  tabIndex={0}
+                  onClick={() => openPost(post.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      openPost(post.id);
+                    }
+                  }}
+                  aria-label={`Leer ${post.title}`}
+                  className="flex cursor-pointer gap-3 rounded-xl border border-slate-200 bg-white p-3 transition hover:-translate-y-0.5 hover:border-teal-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-teal-200 sm:gap-4"
                 >
-                  <button
-                    type="button"
-                    onClick={() => goTo(index)}
-                    className="block w-full text-left"
-                    aria-label={`Leer ${post.title}`}
-                  >
-                    <div className="aspect-[16/10] w-full overflow-hidden bg-slate-100">
-                      {post.image_url ? (
-                        <img
-                          src={post.image_url}
-                          alt={post.title}
-                          className="h-full w-full object-cover transition duration-300 hover:scale-105"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-slate-300">
-                          <Newspaper size={34} aria-hidden="true" />
-                        </div>
-                      )}
-                    </div>
+                  <div className="h-28 w-24 shrink-0 overflow-hidden rounded-lg bg-slate-100 sm:h-32 sm:w-44">
+                    {post.image_url ? (
+                      <img
+                        src={post.image_url}
+                        alt=""
+                        className="h-full w-full object-cover transition duration-300 hover:scale-105"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-slate-300">
+                        <Newspaper size={30} aria-hidden="true" />
+                      </div>
+                    )}
+                  </div>
 
-                    <div className="p-4">
-                      <h2 className="line-clamp-2 text-base font-bold text-slate-900">{post.title}</h2>
-                      {post.excerpt && (
-                        <p className="mt-1 line-clamp-2 text-sm text-slate-500">{post.excerpt}</p>
-                      )}
-                    </div>
-                  </button>
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <h2 className="line-clamp-2 text-base font-bold leading-snug text-slate-900">
+                      {post.title}
+                    </h2>
+                    {post.excerpt && (
+                      <p className="mt-1 line-clamp-2 text-sm text-slate-500">{post.excerpt}</p>
+                    )}
 
-                  <div className="flex items-center gap-4 px-4 pb-4 text-xs text-slate-500">
-                    <button
-                      type="button"
-                      onClick={() => void handleLike(post)}
-                      className={[
-                        'inline-flex items-center gap-1 font-semibold transition',
-                        likedByMe(post.id) ? 'text-rose-600' : 'hover:text-rose-600',
-                      ].join(' ')}
-                      aria-pressed={likedByMe(post.id)}
-                      aria-label={`Me gusta ${post.title}`}
-                    >
-                      <Heart size={13} className={likedByMe(post.id) ? 'fill-rose-600' : ''} aria-hidden="true" />
-                      {likeCount(post.id)}
-                    </button>
-                    <span className="inline-flex items-center gap-1">
-                      <MessageCircle size={13} aria-hidden="true" />
-                      {commentCount(post.id)}
-                    </span>
+                    <div className="mt-auto flex items-center gap-4 pt-2 text-xs text-slate-500">
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          void handleLike(post);
+                        }}
+                        className={[
+                          'inline-flex items-center gap-1 font-semibold transition',
+                          likedByMe(post.id) ? 'text-rose-600' : 'hover:text-rose-600',
+                        ].join(' ')}
+                        aria-pressed={likedByMe(post.id)}
+                        aria-label={`Me gusta ${post.title}`}
+                      >
+                        <Heart size={13} className={likedByMe(post.id) ? 'fill-rose-600' : ''} aria-hidden="true" />
+                        {likeCount(post.id)}
+                      </button>
+                      <span className="inline-flex items-center gap-1">
+                        <MessageCircle size={13} aria-hidden="true" />
+                        {commentCount(post.id)} comentario(s)
+                      </span>
+                    </div>
                   </div>
                 </article>
               ))}
