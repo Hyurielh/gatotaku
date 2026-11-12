@@ -14,10 +14,22 @@
     <!-- Load Google Fonts (stylesheet) -->
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="preconnect" href="https://qpxjmkwebtehwbxbsefs.supabase.co">
-    <script type="module" crossorigin src="/assets/index-iWqSxc9_.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/vendor-Bv9Cv4qf.js">
+    <script>
+      // Aplica el tema guardado antes de pintar (evita el flash)
+      (function () {
+        try {
+          var stored = localStorage.getItem('gatotaku:theme');
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (stored === 'dark' || (!stored && prefersDark)) {
+            document.documentElement.classList.add('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-DllYL6Rp.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-CU45fdXN.js">
     <link rel="stylesheet" crossorigin href="/assets/vendor-B4zyQOk2.css">
-    <link rel="stylesheet" crossorigin href="/assets/index-CbOICgJX.css">
+    <link rel="stylesheet" crossorigin href="/assets/index-DEG07m_H.css">
   </head>
   <body>
     <div id="root"></div>
