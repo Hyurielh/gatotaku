@@ -129,6 +129,7 @@ export default function MyCouponsPage() {
     text: string;
     list: string[];
     collapsible: boolean;
+    excluded?: boolean;
   }
 
   const eligibilityInfo = (coupon: Coupon): EligibilityInfo => {
@@ -156,7 +157,12 @@ export default function MyCouponsPage() {
       }
 
       if (names.length <= 3) {
-        return { text: `Excluidos: ${names.join(', ')}`, list: names, collapsible: false };
+        return {
+          text: `Todos excepto: ${names.join(', ')}`,
+          list: names,
+          collapsible: false,
+          excluded: true,
+        };
       }
 
       return {
@@ -329,7 +335,9 @@ export default function MyCouponsPage() {
                               </ul>
                             </details>
                           ) : (
-                            <span>{info.text}</span>
+                            <span className={info.excluded ? 'font-semibold text-red-600' : undefined}>
+                              {info.text}
+                            </span>
                           )}
                         </div>
 
