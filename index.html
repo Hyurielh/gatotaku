@@ -14,6 +14,18 @@
     <!-- Load Google Fonts (stylesheet) -->
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="preconnect" href="https://qpxjmkwebtehwbxbsefs.supabase.co">
+    <script>
+      // Aplica el tema guardado antes de pintar (evita el flash)
+      (function () {
+        try {
+          var stored = localStorage.getItem('gatotaku:theme');
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (stored === 'dark' || (!stored && prefersDark)) {
+            document.documentElement.classList.add('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -19,7 +19,7 @@ export function AppShell({ children }: AppShellProps) {
   }, [location.pathname]);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#d6f5ec]">
+    <div className="app-bg relative min-h-screen overflow-hidden bg-[#d6f5ec]">
       <svg
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 h-full w-full"

@@ -319,3 +319,172 @@
     }
   }
 }
+
+/* ============================================================
+   Modo oscuro (clase `dark` en <html>)
+   ============================================================ */
+.dark {
+  color-scheme: dark;
+}
+
+.dark body {
+  background-color: #070f1c;
+  color: #e7eef8;
+}
+
+/* Superficies */
+.dark .bg-white {
+  background-color: #0f1a2b;
+}
+.dark .bg-slate-50,
+.dark .bg-gray-50 {
+  background-color: #0b1526;
+}
+.dark .bg-slate-100 {
+  background-color: #16243a;
+}
+.dark .bg-slate-200 {
+  background-color: #1f2f47;
+}
+
+/* Textos */
+.dark .text-slate-900,
+.dark .text-gray-900 {
+  color: #e7eef8;
+}
+.dark .text-slate-800 {
+  color: #d8e2f0;
+}
+.dark .text-slate-700,
+.dark .text-gray-700 {
+  color: #c3d0e2;
+}
+.dark .text-slate-600,
+.dark .text-gray-600 {
+  color: #a7b5c9;
+}
+.dark .text-slate-500,
+.dark .text-gray-500 {
+  color: #8e9cb0;
+}
+.dark .text-slate-400 {
+  color: #71809a;
+}
+
+/* Bordes */
+.dark .border-slate-200,
+.dark .border-gray-200 {
+  border-color: #1f2f47;
+}
+.dark .border-slate-100 {
+  border-color: #17243a;
+}
+.dark .border-white\/80 {
+  border-color: #1f2f47;
+}
+.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]),
+.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #1f2f47;
+}
+
+/* Componentes */
+.dark .panel,
+.dark .card {
+  background-color: #0f1a2b;
+  border-color: #1f2f47;
+}
+.dark .panel-muted {
+  background-color: #0b1526;
+  border-color: #1f2f47;
+}
+.dark .section-title {
+  color: #e7eef8;
+  box-shadow: inset 0 -0.35em 0 0 #0d4f49;
+}
+.dark .info-text,
+.dark .list-item {
+  color: #a7b5c9;
+}
+.dark .field {
+  background-color: #0b1526;
+  border-color: #1f2f47;
+  color: #e7eef8;
+}
+.dark .field::placeholder {
+  color: #64748b;
+}
+.dark .field:focus {
+  border-color: #14b8a6;
+  box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.25);
+}
+.dark .btn-secondary {
+  background-color: #16243a;
+  border-color: #24344e;
+  color: #d8e2f0;
+}
+.dark .btn-secondary:hover:not(:disabled) {
+  border-color: #14b8a6;
+  color: #5eead4;
+}
+.dark .btn-danger {
+  background-color: #3b1220;
+  color: #fca5a5;
+}
+.dark .icon-button {
+  color: #a7b5c9;
+}
+.dark .icon-button:hover {
+  background-color: #16243a;
+  color: #5eead4;
+}
+.dark .icon-container {
+  background-color: #0d2b28;
+  color: #5eead4;
+}
+.dark .chip {
+  background-color: #0d2b28;
+  border-color: #134e4a;
+  color: #5eead4;
+}
+.dark .sidebar-icon {
+  color: #a7b5c9;
+}
+.dark .sidebar-icon:hover {
+  background-color: #16243a;
+  color: #5eead4;
+}
+.dark .sidebar-link {
+  color: #a7b5c9;
+}
+.dark .sidebar-link:hover {
+  background-color: #16243a;
+  color: #5eead4;
+}
+.dark .field-label {
+  color: #8e9cb0;
+}
+
+/* Fondos con hex arbitrario del layout */
+.dark .app-bg {
+  background-color: #070f1c;
+}
+
+/* Scrollbar */
+.dark ::-webkit-scrollbar-track {
+  background: #0b1526;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #14b8a6;
+  border-color: #0b1526;
+}
+
+/* Variantes con opacidad (bg-white/95, bg-slate-50/60, ...) */
+.dark [class*="bg-white/"] {
+  background-color: rgba(15, 26, 43, 0.94);
+}
+.dark [class*="bg-slate-50/"] {
+  background-color: rgba(11, 21, 38, 0.92);
+}
+.dark [class*="border-white/"] {
+  border-color: #1f2f47;
+}

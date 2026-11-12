@@ -1,9 +1,10 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { FaWhatsapp } from 'react-icons/fa';
-import { ChevronRight, Menu, Search, ShoppingCart, User, X } from 'lucide-react';
+import { ChevronRight, Menu, Search, ShoppingCart, User, X, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { profileDisplayName, profileInitials } from '../lib/profile';
+import { useTheme } from '../hooks/useTheme';
 import { useCart } from '../context/CartContext';
 import { SOCIAL_MEDIA } from '../constants/social';
 
@@ -52,6 +53,7 @@ export function AppHeader({ onMenuToggle }: AppHeaderProps) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { session, profile } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const { items, setIsOpen } = useCart();
   const [search, setSearch] = useState(() => searchParams.get('q') ?? '');
 
@@ -116,17 +118,14 @@ export function AppHeader({ onMenuToggle }: AppHeaderProps) {
         </nav>
 
         {displayName && (
-          <p className="pointer-events-none absolute left-1/2 hidden max-w-[16rem] -translate-x-1/2 truncate text-sm font-semibold text-slate-800 md:block">
+          <span className="max-w-[6.5rem] shrink-0 truncate text-sm font-semibold text-slate-800 sm:max-w-[11rem]">
             {displayName}
-          </p>
+          </span>
         )}
 
         <form
           onSubmit={submitSearch}
-          className={[
-            'hidden w-full items-center sm:flex',
-            displayName ? 'ml-auto max-w-xs lg:max-w-sm' : 'mx-auto max-w-md',
-          ].join(' ')}
+          className="mx-auto hidden w-full max-w-md items-center sm:flex"
           role="search"
         >
           <label className="relative flex w-full items-center">
@@ -160,6 +159,16 @@ export function AppHeader({ onMenuToggle }: AppHeaderProps) {
               <option value="ES">ES</option>
             </select>
           </label>
+
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="icon-button"
+            aria-label={theme === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}
+            title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+          >
+            {theme === 'dark' ? <Sun size={19} aria-hidden="true" /> : <Moon size={19} aria-hidden="true" />}
+          </button>
 
           <a
             href={SOCIAL_MEDIA.whatsapp.url}
