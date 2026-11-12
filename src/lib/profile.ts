@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import { uploadImageToImageKit } from './imagekit';
 import type { UserProfile } from '../types/database';
+import { formatWhatsapp, isWhatsappAccountEmail } from './authIdentifier';
 
 export interface ProfileInput {
   display_name: string;
@@ -51,7 +52,10 @@ export async function uploadAvatar(file: File): Promise<string> {
 /** Nombre a mostrar: display_name > username > correo. */
 export function profileDisplayName(profile: UserProfile | null): string {
   if (!profile) return '';
-  return profile.display_name || profile.username || profile.email;
+  const fallback = isWhatsappAccountEmail(profile.email)
+    ? formatWhatsapp(profile.whatsapp)
+    : profile.email;
+  return profile.display_name || profile.username || fallback;
 }
 
 /** Iniciales para el avatar cuando no hay foto. */

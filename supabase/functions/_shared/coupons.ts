@@ -89,6 +89,17 @@ export async function authenticate(req: Request): Promise<{ id: string; email: s
   return { id: data.user.id, email: data.user.email ?? '' };
 }
 
+/** Cuenta suspendida: no puede usar cupones. */
+export async function isUserSuspended(supabase: SupabaseClient, userId: string): Promise<boolean> {
+  const { data } = await supabase
+    .from('users')
+    .select('is_suspended')
+    .eq('id', userId)
+    .maybeSingle();
+
+  return Boolean(data?.is_suspended);
+}
+
 /** Busca el cupón por código (ignora mayúsculas y espacios). */
 export async function findCoupon(supabase: SupabaseClient, code: string): Promise<Coupon | null> {
   const normalized = code.trim().toUpperCase();

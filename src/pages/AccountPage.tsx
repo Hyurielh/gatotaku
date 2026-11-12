@@ -7,11 +7,17 @@ import { useAuth } from '../context/AuthContext';
 import { SEO } from '../components/SEO';
 import { profileDisplayName, profileInitials, updateMyProfile, uploadAvatar } from '../lib/profile';
 import { fetchAccountStatus } from '../lib/adminUsers';
+import {
+  formatWhatsapp,
+  isWhatsappAccountEmail,
+  resolveAuthIdentifier,
+} from '../lib/authIdentifier';
 import type { Anime } from '../types/database';
 
 export default function AccountPage() {
-  const { session, user, profile, loading, login, logout, refreshProfile } = useAuth();
+  const { session, user, profile, loading, login, logout, refreshProfile, suspensionNotice, clearSuspensionNotice } = useAuth();
   const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [identifier, setIdentifier] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -27,6 +33,7 @@ export default function AccountPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  const isWhatsappAccount = isWhatsappAccountEmail(profile?.email);
 
   useEffect(() => {
     if (!profile) return;
@@ -54,17 +61,29 @@ export default function AccountPage() {
   const handleSubmitAuth = async (event: React.FormEvent) => {
     event.preventDefault();
     setAuthError(null);
+    clearSuspensionNotice();
     setIsSubmitting(true);
 
+    let authEmail = '';
+
     try {
+      // Acepta correo o WhatsApp (el WhatsApp usa un correo sintético interno)
+      const resolved = resolveAuthIdentifier(identifier);
+      authEmail = resolved.email;
+
       if (mode === 'login') {
-        await login(email, password);
+        await login(resolved.email, password);
         toast.success('Sesión iniciada');
       } else {
         const { error } = await supabase.auth.signUp({
-          email,
+          email: resolved.email,
           password,
-          options: { data: { full_name: fullName } },
+          options: {
+            data: {
+              full_name: fullName,
+              whatsapp: resolved.whatsapp ?? '',
+            },
+          },
         });
         if (error) throw error;
         toast.success('¡Cuenta creada! Ya podés ver tus cupones');
@@ -73,10 +92,12 @@ export default function AccountPage() {
       const authMessage = err instanceof Error ? err.message : 'No se pudo completar la operación';
 
       // Cuenta suspendida: mostrar el motivo que dejó el administrador
-      const status = await fetchAccountStatus(email);
-      if (status.suspended) {
-        setAuthError(`Tu cuenta está suspendida: ${status.message}`);
-        return;
+      if (authEmail) {
+        const status = await fetchAccountStatus(authEmail);
+        if (status.suspended) {
+          setAuthError(`Tu cuenta está suspendida: ${status.message}`);
+          return;
+        }
       }
 
       setAuthError(authMessage);
@@ -150,8 +171,14 @@ export default function AccountPage() {
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-teal-700">Gatotaku</p>
           <h1 className="section-title mt-1">Mi cuenta</h1>
           <p className="mt-1 text-sm text-slate-500">
-            Inicia sesión o crea tu cuenta para ver tus cupones.
+            Inicia sesión o crea tu cuenta con tu WhatsApp o correo.
           </p>
+
+          {suspensionNotice && (
+            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" role="alert">
+              Tu cuenta está suspendida: {suspensionNotice}
+            </div>
+          )}
 
           <div className="mt-5 flex gap-2">
             <button
@@ -188,16 +215,21 @@ export default function AccountPage() {
             )}
 
             <div>
-              <label className="field-label" htmlFor="account-email">Correo</label>
+              <label className="field-label" htmlFor="account-email">WhatsApp o correo</label>
               <input
                 id="account-email"
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                type="text"
+                inputMode="email"
+                value={identifier}
+                onChange={(event) => setIdentifier(event.target.value)}
                 className="field"
+                placeholder="+505 8888 8888 o correo@ejemplo.com"
                 required
-                autoComplete="email"
+                autoComplete="username"
               />
+              <p className="mt-1 text-[11px] text-slate-400">
+                Usamos tu WhatsApp o correo para identificarte como cliente.
+              </p>
             </div>
 
             <div>
@@ -269,7 +301,11 @@ export default function AccountPage() {
                 <h1 className="mt-1 truncate text-xl font-bold text-slate-900">
                   {profileDisplayName(profile) || 'Tu perfil'}
                 </h1>
-                <p className="truncate text-sm text-slate-500">{profile?.email ?? user?.email}</p>
+                <p className="truncate text-sm text-slate-500">
+                  {isWhatsappAccount
+                    ? formatWhatsapp(profile?.whatsapp)
+                    : (profile?.email ?? user?.email)}
+                </p>
               </div>
 
               <button type="button" onClick={() => void logout()} className="btn-secondary shrink-0">
@@ -308,33 +344,50 @@ export default function AccountPage() {
                 />
               </div>
 
-              <div>
-                <label className="field-label" htmlFor="profile-email">Correo electrónico</label>
-                <input
-                  id="profile-email"
-                  type="email"
-                  value={email || profile?.email || ''}
-                  onChange={(event) => setEmail(event.target.value)}
-                  className="field"
-                  autoComplete="email"
-                />
-                <p className="mt-1 text-[11px] text-slate-400">
-                  Cambiarlo requiere confirmar con el correo nuevo.
-                </p>
-              </div>
+              {isWhatsappAccount ? (
+                <div>
+                  <label className="field-label">WhatsApp (tu forma de entrar)</label>
+                  <input
+                    className="field"
+                    value={formatWhatsapp(profile?.whatsapp)}
+                    readOnly
+                    disabled
+                  />
+                  <p className="mt-1 text-[11px] text-slate-400">
+                    Es tu usuario de acceso. Para cambiarlo, escríbenos por WhatsApp.
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <label className="field-label" htmlFor="profile-email">Correo electrónico</label>
+                  <input
+                    id="profile-email"
+                    type="email"
+                    value={email || profile?.email || ''}
+                    onChange={(event) => setEmail(event.target.value)}
+                    className="field"
+                    autoComplete="email"
+                  />
+                  <p className="mt-1 text-[11px] text-slate-400">
+                    Cambiarlo requiere confirmar con el correo nuevo.
+                  </p>
+                </div>
+              )}
 
-              <div>
-                <label className="field-label" htmlFor="profile-whatsapp">WhatsApp (opcional)</label>
-                <input
-                  id="profile-whatsapp"
-                  type="tel"
-                  value={whatsapp}
-                  onChange={(event) => setWhatsapp(event.target.value)}
-                  className="field"
-                  placeholder="+505 0000 0000"
-                  autoComplete="tel"
-                />
-              </div>
+              {!isWhatsappAccount && (
+                <div>
+                  <label className="field-label" htmlFor="profile-whatsapp">WhatsApp (opcional)</label>
+                  <input
+                    id="profile-whatsapp"
+                    type="tel"
+                    value={whatsapp}
+                    onChange={(event) => setWhatsapp(event.target.value)}
+                    className="field"
+                    placeholder="+505 0000 0000"
+                    autoComplete="tel"
+                  />
+                </div>
+              )}
 
               <div className="sm:col-span-2">
                 <label className="field-label" htmlFor="profile-anime">Anime favorito (opcional)</label>

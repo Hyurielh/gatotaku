@@ -3,6 +3,7 @@ import { Search, Shield, ShieldCheck, Ticket, User as UserIcon, Ban, RotateCcw, 
 import { toast } from 'react-toastify';
 import { supabase } from '../../lib/supabase';
 import { deleteUser, reactivateUser, suspendUser } from '../../lib/adminUsers';
+import { formatWhatsapp, isWhatsappAccountEmail } from '../../lib/authIdentifier';
 import type {
   Coupon,
   CouponAssignment,
@@ -231,10 +232,15 @@ export function UserManager() {
                             </span>
                           )}
                           <div className="min-w-0">
-                            <p className="truncate text-sm font-medium text-gray-900">{user.email}</p>
+                            <p className="truncate text-sm font-medium text-gray-900">
+                              {isWhatsappAccountEmail(user.email)
+                                ? formatWhatsapp(user.whatsapp)
+                                : user.email}
+                            </p>
                             <p className="truncate text-xs text-gray-500">
-                              {user.display_name || user.username || '—'}
-                              {user.whatsapp ? ` · ${user.whatsapp}` : ''}
+                              {isWhatsappAccountEmail(user.email) ? 'Cuenta con WhatsApp' : 'Cuenta con correo'}
+                              {user.display_name ? ` · ${user.display_name}` : ''}
+                              {!isWhatsappAccountEmail(user.email) && user.whatsapp ? ` · ${user.whatsapp}` : ''}
                             </p>
                             {user.is_suspended && (
                               <p className="mt-1 inline-flex rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-700">

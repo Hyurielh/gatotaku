@@ -11,6 +11,8 @@ interface AuthContextType {
   isAuthenticating: boolean;
   isAdmin: boolean;
   isAdminLoading: boolean;
+  suspensionNotice: string | null;
+  clearSuspensionNotice: () => void;
   error: string | null;
   logout: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
@@ -26,6 +28,8 @@ const AuthContext = createContext<AuthContextType>({
   isAuthenticating: false,
   isAdmin: false,
   isAdminLoading: true,
+  suspensionNotice: null,
+  clearSuspensionNotice: () => {},
   error: null,
   logout: async () => {},
   login: async () => {},
@@ -41,9 +45,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAdminLoading, setIsAdminLoading] = useState(true);
+  const [suspensionNotice, setSuspensionNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const clearError = () => setError(null);
+  const clearSuspensionNotice = () => setSuspensionNotice(null);
 
   /** Perfil en `public.users` (avatar, nombre, usuario, permisos de administrador). */
   const loadProfile = useCallback(async (userId: string | undefined) => {
@@ -111,6 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setProfile(null);
       setIsAdmin(false);
       setIsAdminLoading(false);
+      setSuspensionNotice(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred during logout');
       throw err;
@@ -145,6 +152,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [loadProfile]);
 
+  // Si la cuenta es suspendida mientras hay sesión, se cierra sesión al instante
+  useEffect(() => {
+    const userId = session?.user?.id;
+    if (!userId) return;
+
+    let cancelled = false;
+
+    const checkSuspension = async () => {
+      const { data } = await supabase
+        .from('users')
+        .select('is_suspended, suspension_message')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (cancelled || !data?.is_suspended) return;
+
+      setSuspensionNotice(data.suspension_message || 'Tu cuenta ha sido suspendida.');
+      await supabase.auth.signOut();
+      setSession(null);
+      setUser(null);
+      setProfile(null);
+      setIsAdmin(false);
+    };
+
+    const interval = window.setInterval(() => void checkSuspension(), 45000);
+
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void checkSuspension();
+    };
+
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onVisible);
+    void checkSuspension();
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onVisible);
+    };
+  }, [session?.user?.id]);
+
   return (
     <AuthContext.Provider 
       value={{ 
@@ -155,6 +204,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticating,
         isAdmin,
         isAdminLoading,
+        suspensionNotice,
+        clearSuspensionNotice,
         error,
         logout,
         login,

@@ -3,6 +3,7 @@ import {
   buildQuote,
   findCoupon,
   getServiceClient,
+  isUserSuspended,
   jsonResponse,
   validateCoupon,
   corsHeaders,
@@ -46,6 +47,11 @@ Deno.serve(async (req) => {
       : [];
 
     const supabase = getServiceClient();
+
+    if (await isUserSuspended(supabase, user.id)) {
+      return jsonResponse({ error: 'Tu cuenta está suspendida' }, 403);
+    }
+
     const coupon = await findCoupon(supabase, code);
 
     if (!coupon) {
