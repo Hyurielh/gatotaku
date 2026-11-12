@@ -223,12 +223,13 @@ export default function AccountPage() {
                 value={identifier}
                 onChange={(event) => setIdentifier(event.target.value)}
                 className="field"
-                placeholder="+505 8888 8888 o correo@ejemplo.com"
+                placeholder="+505 8888 8888, 8888 8888 o correo@ejemplo.com"
                 required
                 autoComplete="username"
               />
               <p className="mt-1 text-[11px] text-slate-400">
-                Usamos tu WhatsApp o correo para identificarte como cliente.
+                Usamos tu WhatsApp o correo para identificarte como cliente. El número puede ir con
+                o sin +505 (ej. 8812 3456).
               </p>
             </div>
 
@@ -376,16 +377,21 @@ export default function AccountPage() {
 
               {!isWhatsappAccount && (
                 <div>
-                  <label className="field-label" htmlFor="profile-whatsapp">WhatsApp (opcional)</label>
+                  <label className="field-label" htmlFor="profile-whatsapp">
+                    WhatsApp (opcional, otro identificador)
+                  </label>
                   <input
                     id="profile-whatsapp"
                     type="tel"
                     value={whatsapp}
                     onChange={(event) => setWhatsapp(event.target.value)}
                     className="field"
-                    placeholder="+505 0000 0000"
+                    placeholder="8812 3456 o +505 8812 3456"
                     autoComplete="tel"
                   />
+                  <p className="mt-1 text-[11px] text-slate-400">
+                    Se guarda normalizado con +505. Sirve para contactarte.
+                  </p>
                 </div>
               )}
 

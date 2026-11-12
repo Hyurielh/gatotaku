@@ -4,6 +4,7 @@ import {
   getServiceClient,
   jsonResponse,
 } from '../_shared/coupons.ts';
+import { deleteImageKitFileByUrl } from '../_shared/imagekit.ts';
 
 /**
  * Acciones administrativas sobre cuentas: suspender, reactivar y eliminar.
@@ -54,7 +55,7 @@ Deno.serve(async (req) => {
 
     const { data: target } = await supabase
       .from('users')
-      .select('id, email, is_admin, is_suspended')
+      .select('id, email, is_admin, is_suspended, avatar_url')
       .eq('id', userId)
       .maybeSingle();
 
@@ -114,13 +115,18 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'delete') {
+      // Borra la foto de perfil de ImageKit antes de eliminar la cuenta
+      const avatarDeleted = await deleteImageKitFileByUrl(target.avatar_url);
+
+      // Elimina la cuenta: por las cascadas se van perfil, cupones asignados,
+      // redenciones y pedidos del usuario
       const { error: deleteError } = await supabase.auth.admin.deleteUser(userId);
       if (deleteError) {
         console.error('delete user error', deleteError);
         return jsonResponse({ error: deleteError.message }, 500);
       }
 
-      return jsonResponse({ ok: true, deleted: true });
+      return jsonResponse({ ok: true, deleted: true, avatarDeleted });
     }
 
     return jsonResponse({ error: 'Acción no válida' }, 400);

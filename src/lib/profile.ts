@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 import { uploadImageToImageKit } from './imagekit';
 import type { UserProfile } from '../types/database';
-import { formatWhatsapp, isWhatsappAccountEmail } from './authIdentifier';
+import { formatWhatsapp, isWhatsappAccountEmail, normalizeWhatsapp } from './authIdentifier';
 
 export interface ProfileInput {
   display_name: string;
@@ -27,11 +27,18 @@ export function titleCaseWords(value: string): string {
  * (nunca `is_admin` ni el id).
  */
 export async function updateMyProfile(input: ProfileInput): Promise<UserProfile> {
+  const rawWhatsapp = input.whatsapp.trim();
+  const normalizedWhatsapp = rawWhatsapp ? normalizeWhatsapp(rawWhatsapp) : '';
+
+  if (rawWhatsapp && !normalizedWhatsapp) {
+    throw new ProfileError('Escribe un WhatsApp válido (mínimo 8 dígitos)');
+  }
+
   const { data, error } = await supabase.rpc('update_my_profile', {
     p_display_name: input.display_name,
     p_username: input.username,
     p_favorite_anime: titleCaseWords(input.favorite_anime),
-    p_whatsapp: input.whatsapp,
+    p_whatsapp: normalizedWhatsapp ?? '',
     p_avatar_url: input.avatar_url,
   });
 
