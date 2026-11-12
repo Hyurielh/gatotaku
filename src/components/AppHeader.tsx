@@ -84,6 +84,7 @@ export function AppHeader({ onMenuToggle }: AppHeaderProps) {
   const clearSearch = () => updateSearch('');
   const breadcrumbs = getBreadcrumbs(location.pathname);
   const displayName = session ? profileDisplayName(profile) : '';
+  const firstName = displayName.split(/\s+/).filter(Boolean)[0] ?? '';
 
   return (
     <header className="border-b border-slate-200 bg-white" role="banner">
@@ -117,9 +118,20 @@ export function AppHeader({ onMenuToggle }: AppHeaderProps) {
           })}
         </nav>
 
+        <Link
+          to="/"
+          onClick={() => window.dispatchEvent(new CustomEvent('reset-store-filters'))}
+          className="shrink-0 transition-transform duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-300 lg:hidden"
+          aria-label="Ir al inicio de Gatotaku"
+          title="Ir al inicio"
+        >
+          <img src="/logo.png" alt="" className="h-8 w-8 rounded-lg object-cover" />
+        </Link>
+
         {displayName && (
-          <span className="max-w-[6.5rem] shrink-0 truncate text-sm font-semibold text-slate-800 sm:max-w-[11rem]">
-            {displayName}
+          <span className="max-w-[7rem] shrink-0 truncate text-sm font-semibold text-slate-800 lg:max-w-[12rem]">
+            <span className="lg:hidden">{firstName}</span>
+            <span className="hidden lg:inline">{displayName}</span>
           </span>
         )}
 
