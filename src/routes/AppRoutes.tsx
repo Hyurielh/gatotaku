@@ -1,22 +1,23 @@
-import React, { lazy, Suspense } from 'react';
+import React, { lazy } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { RequireAuth } from '../components/RequireAuth';
 import { useEffect } from 'react';
 
-const Spinner = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-600"></div>
-  </div>
-);
-
-const lazyLoadPage = (importFn: () => Promise<{ default: React.ComponentType }>) => {
-  const LazyComponent = lazy(importFn);
-  return (
-    <Suspense fallback={<Spinner />}>
-      <LazyComponent />
-    </Suspense>
-  );
-};
+/**
+ * IMPORTANTE: los componentes perezosos se crean UNA sola vez a nivel de módulo.
+ * Si se hiciera `lazy()` dentro del render, cada re-render crearía un componente
+ * nuevo y React volvería a suspender la ruta (pantalla "Cargando..." trabada).
+ */
+const StoreFrontPage = lazy(() => import('../pages/StoreFront'));
+const ServicesPage = lazy(() => import('../pages/ServicesPage'));
+const AboutPage = lazy(() => import('../pages/About'));
+const AccountPage = lazy(() => import('../pages/AccountPage'));
+const MyCouponsPage = lazy(() => import('../pages/MyCouponsPage'));
+const MyOrdersPage = lazy(() => import('../pages/MyOrdersPage'));
+const AdminLoginPage = lazy(() => import('../pages/AdminLoginPage'));
+const AdminPanel = lazy(() => import('../pages/AdminPanel'));
+const InformationPage = lazy(() => import('../pages/Information'));
+const NotFoundPage = lazy(() => import('../pages/NotFound'));
 
 const ScrollHandler: React.FC = () => {
   const location = useLocation();
@@ -33,28 +34,24 @@ const AppRoutes: React.FC = () => {
     <>
       <ScrollHandler />
       <Routes>
-        <Route path="/" element={lazyLoadPage(() => import('../pages/StoreFront'))} />
-        <Route path="/servicios" element={lazyLoadPage(() => import('../pages/ServicesPage'))} />
-        <Route path="/about" element={lazyLoadPage(() => import('../pages/About'))} />
+        <Route path="/" element={<StoreFrontPage />} />
+        <Route path="/servicios" element={<ServicesPage />} />
+        <Route path="/about" element={<AboutPage />} />
         <Route path="/login" element={<Navigate to="/cuenta" replace />} />
-        <Route path="/cuenta" element={lazyLoadPage(() => import('../pages/AccountPage'))} />
-        <Route path="/mis-cupones" element={lazyLoadPage(() => import('../pages/MyCouponsPage'))} />
-        <Route path="/mis-pedidos" element={lazyLoadPage(() => import('../pages/MyOrdersPage'))} />
-        <Route path="/admin/login" element={lazyLoadPage(() => import('../pages/AdminLoginPage'))} />
-        <Route 
-          path="/admin" 
+        <Route path="/cuenta" element={<AccountPage />} />
+        <Route path="/mis-cupones" element={<MyCouponsPage />} />
+        <Route path="/mis-pedidos" element={<MyOrdersPage />} />
+        <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route
+          path="/admin"
           element={
             <RequireAuth>
-              {lazyLoadPage(() => import('../pages/AdminPanel'))}
+              <AdminPanel />
             </RequireAuth>
-          } 
+          }
         />
-        <Route 
-          path="/information/*" 
-          element={lazyLoadPage(() => import('../pages/Information'))} 
-        />
-        <Route path="*" element={lazyLoadPage(() => import('../pages/NotFound'))} />
-        {/* Añade más rutas según necesites */}
+        <Route path="/information/*" element={<InformationPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </>
   );

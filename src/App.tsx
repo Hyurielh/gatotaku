@@ -7,6 +7,7 @@ import { CartProvider } from './context/CartContext';
 import { SEO } from './components/SEO';
 import { AppShell } from './components/AppShell';
 import { Cart } from './components/Cart';
+import { RouteErrorBoundary } from './components/RouteErrorBoundary';
 import AppRoutes from './routes/AppRoutes';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -33,9 +34,11 @@ function App() {
           <CartProvider>
             <Router>
               <AppShell>
-                <Suspense fallback={<div className="flex justify-center py-16 text-sm font-medium text-slate-500">Cargando...</div>}>
-                  <AppRoutes />
-                </Suspense>
+                <RouteErrorBoundary>
+                  <Suspense fallback={<div className="flex justify-center py-16 text-sm font-medium text-slate-500">Cargando...</div>}>
+                    <AppRoutes />
+                  </Suspense>
+                </RouteErrorBoundary>
               </AppShell>
               <Cart />
               <ToastContainer
