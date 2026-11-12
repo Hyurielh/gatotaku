@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LogOut, Package, Users, Ticket, ClipboardList } from 'lucide-react';
+import { LogOut, Package, Users, Ticket, ClipboardList, Newspaper } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
@@ -8,14 +8,16 @@ import { InventoryManager } from '../components/admin/InventoryManager';
 import { UserManager } from '../components/admin/UserManager';
 import { CouponManager } from '../components/admin/CouponManager';
 import { OrderManager } from '../components/admin/OrderManager';
+import { PostManager } from '../components/admin/PostManager';
 
-type AdminSection = 'inventario' | 'pedidos' | 'usuarios' | 'cupones';
+type AdminSection = 'inventario' | 'pedidos' | 'usuarios' | 'cupones' | 'novedades';
 
 const SECTIONS: { id: AdminSection; label: string; icon: typeof Package }[] = [
   { id: 'inventario', label: 'Inventario', icon: Package },
   { id: 'pedidos', label: 'Pedidos', icon: ClipboardList },
   { id: 'usuarios', label: 'Usuarios', icon: Users },
   { id: 'cupones', label: 'Cupones', icon: Ticket },
+  { id: 'novedades', label: 'Novedades', icon: Newspaper },
 ];
 
 export default function AdminPanel() {
@@ -54,7 +56,7 @@ export default function AdminPanel() {
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-teal-700">Administración</p>
             <h1 className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl">Panel de Administración</h1>
             <p className="mt-1 text-sm text-slate-500">
-              Inventario, pedidos, usuarios y cupones desde un solo lugar.
+              Inventario, pedidos, usuarios, cupones y novedades desde un solo lugar.
             </p>
           </div>
           <button type="button" onClick={handleLogout} className="btn-secondary shrink-0" aria-label="Cerrar sesión">
@@ -90,6 +92,7 @@ export default function AdminPanel() {
         {section === 'pedidos' && <OrderManager />}
         {section === 'usuarios' && <UserManager />}
         {section === 'cupones' && <CouponManager />}
+        {section === 'novedades' && <PostManager />}
       </div>
     </div>
   );

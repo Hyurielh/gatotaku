@@ -113,6 +113,46 @@ export interface CouponRedemption {
   created_at: string;
 }
 
+export interface NewsPost {
+  id: string;
+  user_id: string | null;
+  title: string;
+  excerpt: string | null;
+  body: string | null;
+  image_url: string | null;
+  is_published: boolean;
+  published_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PostComment {
+  id: string;
+  post_id: string;
+  user_id: string;
+  parent_id: string | null;
+  body: string;
+  created_at: string;
+}
+
+export interface PostLike {
+  post_id: string;
+  user_id: string;
+}
+
+export interface CommentLike {
+  comment_id: string;
+  user_id: string;
+}
+
+export interface PublicProfile {
+  id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  favorite_anime: string | null;
+  is_admin: boolean;
+}
+
 export interface CouponProduct {
   coupon_id: string;
   product_id: string;
