@@ -1,13 +1,13 @@
 import { supabase } from './supabase';
 import { uploadImageToImageKit } from './imagekit';
 import type { UserProfile } from '../types/database';
-import { formatWhatsapp, isWhatsappAccountEmail, normalizeWhatsapp } from './authIdentifier';
+import { formatWhatsapp, isWhatsappAccountEmail } from './authIdentifier';
 
 export interface ProfileInput {
   display_name: string;
-  username: string;
   favorite_anime: string;
   whatsapp: string;
+  email: string;
   avatar_url: string;
 }
 
@@ -21,42 +21,46 @@ export function titleCaseWords(value: string): string {
     .replace(/(^|\s)(\S)/g, (_match, space: string, letter: string) => space + letter.toUpperCase());
 }
 
-/**
- * Guarda el perfil vía RPC del servidor.
- * La RPC solo permite tocar las columnas seguras de la propia fila
- * (nunca `is_admin` ni el id).
- */
-export async function updateMyProfile(input: ProfileInput): Promise<UserProfile> {
-  const rawWhatsapp = input.whatsapp.trim();
-  const normalizedWhatsapp = rawWhatsapp ? normalizeWhatsapp(rawWhatsapp) : '';
+async function readFunctionError(error: unknown): Promise<string | null> {
+  const context = (error as { context?: unknown })?.context;
 
-  if (rawWhatsapp && !normalizedWhatsapp) {
-    throw new ProfileError('Escribe un WhatsApp válido (mínimo 8 dígitos)');
+  if (typeof Response !== 'undefined' && context instanceof Response) {
+    try {
+      const payload = await context.json();
+      if (payload && typeof payload.error === 'string') return payload.error;
+    } catch {
+      // sin cuerpo JSON
+    }
   }
 
-  const { data, error } = await supabase.rpc('update_my_profile', {
-    p_display_name: input.display_name,
-    p_username: input.username,
-    p_favorite_anime: titleCaseWords(input.favorite_anime),
-    p_whatsapp: normalizedWhatsapp ?? '',
-    p_avatar_url: input.avatar_url,
+  return null;
+}
+
+/**
+ * Guarda el perfil y las dos formas de entrar (correo y WhatsApp).
+ * El backend decide el correo de Auth y valida que quede al menos una.
+ */
+export async function saveProfile(input: ProfileInput): Promise<UserProfile> {
+  const { data, error } = await supabase.functions.invoke<{ profile: UserProfile }>('account-profile', {
+    body: {
+      display_name: input.display_name,
+      favorite_anime: input.favorite_anime,
+      whatsapp: input.whatsapp,
+      email: input.email,
+      avatar_url: input.avatar_url,
+    },
   });
 
   if (error) {
-    if (error.message.includes('username_en_uso')) {
-      throw new ProfileError('Ese nombre de usuario ya está en uso');
-    }
-    if (error.message.includes('whatsapp_suspendido')) {
-      throw new ProfileError('Ese número de WhatsApp pertenece a una cuenta suspendida');
-    }
-    throw new ProfileError(error.message || 'No se pudo guardar el perfil');
+    const serverMessage = await readFunctionError(error);
+    throw new ProfileError(serverMessage || error.message || 'No se pudo guardar el perfil');
   }
 
-  if (!data) {
+  if (!data?.profile) {
     throw new ProfileError('No se pudo guardar el perfil');
   }
 
-  return data as UserProfile;
+  return data.profile;
 }
 
 /** Sube la foto de perfil a ImageKit y devuelve la URL. */
@@ -64,7 +68,7 @@ export async function uploadAvatar(file: File): Promise<string> {
   return uploadImageToImageKit(file, { folder: 'AVATARS' });
 }
 
-/** Nombre a mostrar: display_name > username > correo. */
+/** Nombre a mostrar: display_name > username > correo/WhatsApp. */
 export function profileDisplayName(profile: UserProfile | null): string {
   if (!profile) return '';
   const fallback = isWhatsappAccountEmail(profile.email)
@@ -82,4 +86,10 @@ export function profileInitials(profile: UserProfile | null): string {
   const letters = parts.slice(0, 2).map((part) => part[0]?.toUpperCase() ?? '');
 
   return letters.join('') || (name[0]?.toUpperCase() ?? '?');
+}
+
+/** Correo "real" del perfil (vacío si la cuenta solo usa WhatsApp). */
+export function profileRealEmail(profile: UserProfile | null): string {
+  if (!profile || isWhatsappAccountEmail(profile.email)) return '';
+  return profile.email;
 }

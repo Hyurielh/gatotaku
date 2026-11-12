@@ -5,7 +5,13 @@ import { toast } from 'react-toastify';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { SEO } from '../components/SEO';
-import { profileDisplayName, profileInitials, updateMyProfile, uploadAvatar } from '../lib/profile';
+import {
+  profileDisplayName,
+  profileInitials,
+  profileRealEmail,
+  saveProfile,
+  uploadAvatar,
+} from '../lib/profile';
 import { fetchAccountStatus } from '../lib/adminUsers';
 import {
   formatWhatsapp,
@@ -25,7 +31,6 @@ export default function AccountPage() {
   const [authError, setAuthError] = useState<string | null>(null);
 
   const [displayName, setDisplayName] = useState('');
-  const [username, setUsername] = useState('');
   const [favoriteAnime, setFavoriteAnime] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
@@ -39,9 +44,9 @@ export default function AccountPage() {
     if (!profile) return;
 
     setDisplayName(profile.display_name ?? '');
-    setUsername(profile.username ?? '');
     setFavoriteAnime(profile.favorite_anime ?? '');
     setWhatsapp(profile.whatsapp ?? '');
+    setEmail(profileRealEmail(profile));
     setAvatarUrl(profile.avatar_url ?? '');
   }, [profile]);
 
@@ -72,7 +77,7 @@ export default function AccountPage() {
       authEmail = resolved.email;
 
       if (mode === 'login') {
-        await login(resolved.email, password);
+        await login(identifier, password);
         toast.success('Sesión iniciada');
       } else {
         const { error } = await supabase.auth.signUp({
@@ -93,7 +98,7 @@ export default function AccountPage() {
 
       // Cuenta suspendida: mostrar el motivo que dejó el administrador
       if (authEmail) {
-        const status = await fetchAccountStatus(authEmail);
+        const status = await fetchAccountStatus(identifier);
         if (status.suspended) {
           setAuthError(`Tu cuenta está suspendida: ${status.message}`);
           return;
@@ -127,24 +132,22 @@ export default function AccountPage() {
 
   const handleSaveProfile = async (event: React.FormEvent) => {
     event.preventDefault();
+
+    if (!email.trim() && !whatsapp.trim()) {
+      toast.error('Deja al menos un correo o un WhatsApp para poder entrar');
+      return;
+    }
+
     setIsSaving(true);
 
     try {
-      await updateMyProfile({
+      await saveProfile({
         display_name: displayName,
-        username,
         favorite_anime: favoriteAnime,
         whatsapp,
+        email,
         avatar_url: avatarUrl,
       });
-
-      // El correo vive en auth.users y requiere confirmación
-      const currentEmail = profile?.email ?? user?.email ?? '';
-      if (email.trim() && email.trim().toLowerCase() !== currentEmail.toLowerCase()) {
-        const { error: emailError } = await supabase.auth.updateUser({ email: email.trim() });
-        if (emailError) throw emailError;
-        toast.info('Te enviamos un correo para confirmar el cambio de correo');
-      }
 
       await refreshProfile();
       toast.success('Perfil guardado');
@@ -333,67 +336,58 @@ export default function AccountPage() {
               </div>
 
               <div>
-                <label className="field-label" htmlFor="profile-username">Nombre de usuario</label>
+                <div className="flex items-center justify-between gap-2">
+                  <label className="field-label" htmlFor="profile-email">Correo electrónico</label>
+                  {email.trim() && whatsapp.trim() && (
+                    <button
+                      type="button"
+                      onClick={() => setEmail('')}
+                      className="text-[11px] font-semibold text-red-600 hover:text-red-800"
+                    >
+                      Quitar correo
+                    </button>
+                  )}
+                </div>
                 <input
-                  id="profile-username"
-                  type="text"
-                  value={username}
-                  onChange={(event) => setUsername(event.target.value.toLowerCase().replace(/\s/g, ''))}
+                  id="profile-email"
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
                   className="field"
-                  placeholder="usuario123"
-                  autoComplete="username"
+                  placeholder="correo@ejemplo.com"
+                  autoComplete="email"
                 />
+                <p className="mt-1 text-[11px] text-slate-400">
+                  Puedes entrar con tu correo.
+                </p>
               </div>
 
-              {isWhatsappAccount ? (
-                <div>
-                  <label className="field-label">WhatsApp (tu forma de entrar)</label>
-                  <input
-                    className="field"
-                    value={formatWhatsapp(profile?.whatsapp)}
-                    readOnly
-                    disabled
-                  />
-                  <p className="mt-1 text-[11px] text-slate-400">
-                    Es tu usuario de acceso. Para cambiarlo, escríbenos por WhatsApp.
-                  </p>
+              <div>
+                <div className="flex items-center justify-between gap-2">
+                  <label className="field-label" htmlFor="profile-whatsapp">WhatsApp</label>
+                  {whatsapp.trim() && email.trim() && (
+                    <button
+                      type="button"
+                      onClick={() => setWhatsapp('')}
+                      className="text-[11px] font-semibold text-red-600 hover:text-red-800"
+                    >
+                      Quitar WhatsApp
+                    </button>
+                  )}
                 </div>
-              ) : (
-                <div>
-                  <label className="field-label" htmlFor="profile-email">Correo electrónico</label>
-                  <input
-                    id="profile-email"
-                    type="email"
-                    value={email || profile?.email || ''}
-                    onChange={(event) => setEmail(event.target.value)}
-                    className="field"
-                    autoComplete="email"
-                  />
-                  <p className="mt-1 text-[11px] text-slate-400">
-                    Cambiarlo requiere confirmar con el correo nuevo.
-                  </p>
-                </div>
-              )}
-
-              {!isWhatsappAccount && (
-                <div>
-                  <label className="field-label" htmlFor="profile-whatsapp">
-                    WhatsApp (opcional, otro identificador)
-                  </label>
-                  <input
-                    id="profile-whatsapp"
-                    type="tel"
-                    value={whatsapp}
-                    onChange={(event) => setWhatsapp(event.target.value)}
-                    className="field"
-                    placeholder="8812 3456 o +505 8812 3456"
-                    autoComplete="tel"
-                  />
-                  <p className="mt-1 text-[11px] text-slate-400">
-                    Se guarda normalizado con +505. Sirve para contactarte.
-                  </p>
-                </div>
-              )}
+                <input
+                  id="profile-whatsapp"
+                  type="tel"
+                  value={whatsapp}
+                  onChange={(event) => setWhatsapp(event.target.value)}
+                  className="field"
+                  placeholder="8812 3456 o +505 8812 3456"
+                  autoComplete="tel"
+                />
+                <p className="mt-1 text-[11px] text-slate-400">
+                  Puedes entrar con tu WhatsApp. Deja al menos uno de los dos.
+                </p>
+              </div>
 
               <div className="sm:col-span-2">
                 <label className="field-label" htmlFor="profile-anime">Anime favorito (opcional)</label>

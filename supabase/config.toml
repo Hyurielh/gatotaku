@@ -14,3 +14,9 @@ verify_jwt = true
 
 [functions.account-status]
 verify_jwt = false
+
+[functions.account-login]
+verify_jwt = false
+
+[functions.account-profile]
+verify_jwt = true

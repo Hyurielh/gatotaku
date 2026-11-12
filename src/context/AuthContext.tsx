@@ -51,6 +51,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const clearError = () => setError(null);
   const clearSuspensionNotice = () => setSuspensionNotice(null);
 
+  const readFunctionError = async (error: unknown): Promise<string | null> => {
+    const context = (error as { context?: unknown })?.context;
+    if (typeof Response !== 'undefined' && context instanceof Response) {
+      try {
+        const payload = await context.json();
+        if (payload && typeof payload.error === 'string') return payload.error;
+      } catch {
+        // sin cuerpo JSON
+      }
+    }
+    return null;
+  };
+
   /** Perfil en `public.users` (avatar, nombre, usuario, permisos de administrador). */
   const loadProfile = useCallback(async (userId: string | undefined) => {
     if (!userId) {
@@ -84,20 +97,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await loadProfile(session?.user?.id);
   }, [loadProfile, session?.user?.id]);
 
-  const login = async (email: string, password: string) => {
+  const login = async (identifier: string, password: string) => {
     try {
       setIsAuthenticating(true);
       clearError();
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      
-      if (signInError) throw signInError;
-      
-      setSession(data.session);
-      setUser(data.user);
-      await loadProfile(data.user?.id);
+
+      const value = identifier.trim();
+
+      if (value.includes('@')) {
+        // Correo: flujo normal de Supabase Auth
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({
+          email: value.toLowerCase(),
+          password,
+        });
+
+        if (signInError) throw signInError;
+
+        setSession(data.session);
+        setUser(data.user);
+        await loadProfile(data.user?.id);
+      } else {
+        // WhatsApp: el backend resuelve la cuenta y crea la sesión
+        const { data, error: functionError } = await supabase.functions.invoke<{
+          access_token: string;
+          refresh_token: string;
+        }>('account-login', { body: { identifier: value, password } });
+
+        if (functionError) {
+          const message = await readFunctionError(functionError);
+          throw new Error(message || 'No se pudo iniciar sesión');
+        }
+
+        if (!data?.access_token || !data?.refresh_token) {
+          throw new Error('No se pudo iniciar sesión');
+        }
+
+        const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+          access_token: data.access_token,
+          refresh_token: data.refresh_token,
+        });
+
+        if (sessionError) throw sessionError;
+
+        setSession(sessionData.session);
+        setUser(sessionData.user);
+        await loadProfile(sessionData.user?.id);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred during login');
       throw err;

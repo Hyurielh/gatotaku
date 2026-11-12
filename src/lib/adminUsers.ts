@@ -46,11 +46,11 @@ export interface AccountStatus {
   message?: string;
 }
 
-/** Consulta pública: ¿la cuenta de este correo está suspendida? */
-export async function fetchAccountStatus(email: string): Promise<AccountStatus> {
+/** Consulta pública: ¿la cuenta de este correo o WhatsApp está suspendida? */
+export async function fetchAccountStatus(identifier: string): Promise<AccountStatus> {
   try {
     const { data, error } = await supabase.functions.invoke<AccountStatus>(ACCOUNT_STATUS_FUNCTION, {
-      body: { email },
+      body: { identifier },
     });
 
     if (error || !data) return { suspended: false };
