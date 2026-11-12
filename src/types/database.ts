@@ -57,6 +57,8 @@ export interface UserProfile {
   avatar_url: string | null;
   favorite_anime: string | null;
   whatsapp: string | null;
+  birthdate: string | null;
+  birthdate_locked: boolean;
   is_admin: boolean;
   is_suspended: boolean;
   suspension_message: string | null;

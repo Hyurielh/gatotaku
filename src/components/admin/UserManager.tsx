@@ -1,5 +1,5 @@
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
-import { Search, Shield, ShieldCheck, Ticket, User as UserIcon, Ban, RotateCcw, Trash2, X } from 'lucide-react';
+import { Search, Shield, ShieldCheck, Ticket, User as UserIcon, Ban, RotateCcw, Trash2, X, Cake, Pencil } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { supabase } from '../../lib/supabase';
 import { deleteUser, reactivateUser, suspendUser } from '../../lib/adminUsers';
@@ -11,6 +11,24 @@ import type {
   UserProfile,
 } from '../../types/database';
 
+/** Fecha local (sin desfase de zona horaria) */
+function parseBirthdate(value: string): Date {
+  const [year, month, day] = value.split('-').map(Number);
+  return new Date(year, (month ?? 1) - 1, day ?? 1);
+}
+
+function formatBirthdate(value: string | null): string {
+  if (!value) return '—';
+  return parseBirthdate(value).toLocaleDateString('es-NI');
+}
+
+function isBirthdayToday(value: string | null): boolean {
+  if (!value) return false;
+  const birth = parseBirthdate(value);
+  const today = new Date();
+  return birth.getDate() === today.getDate() && birth.getMonth() === today.getMonth();
+}
+
 export function UserManager() {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [assignments, setAssignments] = useState<CouponAssignment[]>([]);
@@ -19,6 +37,9 @@ export function UserManager() {
   const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const [birthdateTarget, setBirthdateTarget] = useState<UserProfile | null>(null);
+  const [birthdateValue, setBirthdateValue] = useState('');
 
   const [suspendTarget, setSuspendTarget] = useState<UserProfile | null>(null);
   const [suspendMessage, setSuspendMessage] = useState('');
@@ -93,6 +114,29 @@ export function UserManager() {
       await loadAll();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'No se pudo suspender la cuenta');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const saveBirthdate = async () => {
+    if (!birthdateTarget) return;
+
+    setIsSubmitting(true);
+
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ birthdate: birthdateValue || null })
+        .eq('id', birthdateTarget.id);
+
+      if (error) throw error;
+
+      toast.success('Fecha de nacimiento actualizada');
+      setBirthdateTarget(null);
+      await loadAll();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'No se pudo guardar la fecha');
     } finally {
       setIsSubmitting(false);
     }
@@ -190,6 +234,7 @@ export function UserManager() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cumpleaños</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registro</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cupones</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
@@ -199,14 +244,14 @@ export function UserManager() {
             <tbody className="bg-white divide-y divide-gray-200">
               {isLoading && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-6 text-center text-sm text-gray-500">
+                  <td colSpan={6} className="px-6 py-6 text-center text-sm text-gray-500">
                     Cargando usuarios...
                   </td>
                 </tr>
               )}
               {!isLoading && filteredUsers.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-6 text-center text-sm text-gray-500">
+                  <td colSpan={6} className="px-6 py-6 text-center text-sm text-gray-500">
                     No hay usuarios que coincidan con la búsqueda.
                   </td>
                 </tr>
@@ -250,6 +295,30 @@ export function UserManager() {
                           </div>
                         </div>
                       </td>
+                      <td className="px-4 py-4 text-xs text-gray-600">
+                        <div className="flex items-center gap-2">
+                          <span>{formatBirthdate(user.birthdate)}</span>
+                          {isBirthdayToday(user.birthdate) && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-pink-100 px-2 py-0.5 text-[10px] font-bold uppercase text-pink-700">
+                              <Cake size={10} aria-hidden="true" />
+                              Hoy
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setBirthdateTarget(user);
+                              setBirthdateValue(user.birthdate ?? '');
+                            }}
+                            className="text-slate-400 transition hover:text-teal-700"
+                            aria-label={`Cambiar fecha de nacimiento de ${user.email}`}
+                            title="Cambiar fecha de nacimiento"
+                          >
+                            <Pencil size={12} aria-hidden="true" />
+                          </button>
+                        </div>
+                      </td>
+
                       <td className="px-4 py-4 text-xs text-gray-600">
                         {user.created_at
                           ? new Date(user.created_at).toLocaleDateString('es-NI')
@@ -332,7 +401,7 @@ export function UserManager() {
                     </tr>
                     {isExpanded && entries.length > 0 && (
                       <tr>
-                        <td colSpan={5} className="bg-slate-50 px-4 py-3">
+                        <td colSpan={6} className="bg-slate-50 px-4 py-3">
                           <ul className="space-y-1">
                             {entries.map((entry) => (
                               <li
@@ -364,6 +433,51 @@ export function UserManager() {
           </table>
         </div>
       </div>
+
+      {birthdateTarget && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-900/50 p-4">
+          <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">Fecha de nacimiento</h3>
+                <p className="mt-1 text-sm text-slate-500">{birthdateTarget.email}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setBirthdateTarget(null)}
+                className="text-slate-400 hover:text-slate-600"
+                aria-label="Cerrar"
+              >
+                <X size={18} aria-hidden="true" />
+              </button>
+            </div>
+
+            <div className="mt-4">
+              <label className="field-label" htmlFor="birthdate-input">Fecha</label>
+              <input
+                id="birthdate-input"
+                type="date"
+                value={birthdateValue}
+                onChange={(event) => setBirthdateValue(event.target.value)}
+                className="field"
+                max={new Date().toISOString().slice(0, 10)}
+              />
+              <p className="mt-2 text-[11px] text-slate-400">
+                Solo los administradores pueden cambiarla después de que el cliente la guarde.
+              </p>
+            </div>
+
+            <div className="mt-4 flex justify-end gap-2">
+              <button type="button" onClick={() => setBirthdateTarget(null)} className="btn-secondary">
+                Cancelar
+              </button>
+              <button type="button" onClick={() => void saveBirthdate()} disabled={isSubmitting} className="btn-primary">
+                {isSubmitting ? 'Guardando...' : 'Guardar fecha'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {suspendTarget && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-900/50 p-4">

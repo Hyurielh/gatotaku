@@ -50,6 +50,7 @@ Deno.serve(async (req) => {
     const avatarUrl = String(body?.avatar_url ?? '').trim();
     const rawEmail = String(body?.email ?? '').trim().toLowerCase();
     const rawWhatsapp = String(body?.whatsapp ?? '').trim();
+    const rawBirthdate = String(body?.birthdate ?? '').trim();
 
     const whatsapp = rawWhatsapp ? normalizeWhatsapp(rawWhatsapp) : null;
 
@@ -114,6 +115,19 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Fecha de nacimiento: el cliente solo puede guardarla una vez
+    let birthdate = current.birthdate as string | null;
+    let birthdateLocked = Boolean(current.birthdate_locked);
+
+    if (!birthdateLocked && rawBirthdate) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(rawBirthdate)) {
+        return jsonResponse({ error: 'Fecha de nacimiento inválida' }, 400);
+      }
+
+      birthdate = rawBirthdate;
+      birthdateLocked = true;
+    }
+
     const { data: updated, error: updateError } = await supabase
       .from('users')
       .update({
@@ -122,6 +136,8 @@ Deno.serve(async (req) => {
         favorite_anime: favoriteAnime || null,
         whatsapp: whatsapp,
         avatar_url: avatarUrl || null,
+        birthdate,
+        birthdate_locked: birthdateLocked,
         updated_at: new Date().toISOString(),
       })
       .eq('id', user.id)

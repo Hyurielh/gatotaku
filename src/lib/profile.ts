@@ -9,6 +9,7 @@ export interface ProfileInput {
   whatsapp: string;
   email: string;
   avatar_url: string;
+  birthdate: string;
 }
 
 export class ProfileError extends Error {}
@@ -48,6 +49,7 @@ export async function saveProfile(input: ProfileInput): Promise<UserProfile> {
       whatsapp: input.whatsapp,
       email: input.email,
       avatar_url: input.avatar_url,
+      birthdate: input.birthdate,
     },
   });
 

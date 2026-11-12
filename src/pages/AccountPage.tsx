@@ -34,6 +34,7 @@ export default function AccountPage() {
   const [favoriteAnime, setFavoriteAnime] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
+  const [birthdate, setBirthdate] = useState('');
   const [animes, setAnimes] = useState<Anime[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -48,6 +49,7 @@ export default function AccountPage() {
     setWhatsapp(profile.whatsapp ?? '');
     setEmail(profileRealEmail(profile));
     setAvatarUrl(profile.avatar_url ?? '');
+    setBirthdate(profile.birthdate ?? '');
   }, [profile]);
 
   useEffect(() => {
@@ -147,6 +149,7 @@ export default function AccountPage() {
         whatsapp,
         email,
         avatar_url: avatarUrl,
+        birthdate,
       });
 
       await refreshProfile();
@@ -386,6 +389,26 @@ export default function AccountPage() {
                 />
                 <p className="mt-1 text-[11px] text-slate-400">
                   Puedes entrar con tu WhatsApp. Deja al menos uno de los dos.
+                </p>
+              </div>
+
+              <div>
+                <label className="field-label" htmlFor="profile-birthdate">
+                  Fecha de nacimiento (opcional)
+                </label>
+                <input
+                  id="profile-birthdate"
+                  type="date"
+                  value={birthdate}
+                  onChange={(event) => setBirthdate(event.target.value)}
+                  className="field disabled:opacity-60"
+                  max={new Date().toISOString().slice(0, 10)}
+                  disabled={Boolean(profile?.birthdate_locked)}
+                />
+                <p className="mt-1 text-[11px] text-slate-400">
+                  {profile?.birthdate_locked
+                    ? 'Ya la guardaste. Si te equivocaste, escríbenos para cambiarla.'
+                    : 'Solo puedes guardarla una vez (así te celebramos el cumpleaños 🎂).'}
                 </p>
               </div>
 
