@@ -5,6 +5,15 @@ import { uploadImageToImageKit } from '../../lib/imagekit';
 import { deletePost, fetchNews, savePost, setPostPublished, type PostInput } from '../../lib/news';
 import type { NewsPost } from '../../types/database';
 
+const DRAFT_KEY = 'gatotaku:novedad-borrador';
+const DRAFT_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+
+interface PostDraft {
+  editingId: string | null;
+  form: PostInput;
+  savedAt: number;
+}
+
 const EMPTY_POST: PostInput = {
   title: '',
   excerpt: '',
@@ -21,6 +30,7 @@ export function PostManager() {
   const [form, setForm] = useState<PostInput>(EMPTY_POST);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [hasDraft, setHasDraft] = useState(false);
 
   const loadAll = useCallback(async () => {
     setIsLoading(true);
@@ -37,7 +47,64 @@ export function PostManager() {
     void loadAll();
   }, [loadAll]);
 
+  // Recupera el borrador si el navegador recargó la página (cambio de pestaña, etc.)
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+
+      const draft = JSON.parse(raw) as PostDraft;
+      const isFresh = draft?.form && Date.now() - (draft.savedAt ?? 0) < DRAFT_MAX_AGE_MS;
+
+      if (!isFresh) {
+        window.localStorage.removeItem(DRAFT_KEY);
+        return;
+      }
+
+      setForm(draft.form);
+      setEditingId(draft.editingId ?? null);
+      setIsFormOpen(true);
+      setHasDraft(true);
+      toast.info('Recuperamos el borrador de tu novedad');
+    } catch {
+      // borrador corrupto: se ignora
+    }
+  }, []);
+
+  // Autoguardado del borrador mientras se edita
+  useEffect(() => {
+    if (!isFormOpen) return;
+
+    const hasContent = Boolean(form.title || form.excerpt || form.body || form.image_url);
+    if (!hasContent) return;
+
+    try {
+      window.localStorage.setItem(
+        DRAFT_KEY,
+        JSON.stringify({ editingId, form, savedAt: Date.now() } satisfies PostDraft),
+      );
+      setHasDraft(true);
+    } catch {
+      // sin almacenamiento disponible
+    }
+  }, [form, editingId, isFormOpen]);
+
+  const clearDraft = () => {
+    try {
+      window.localStorage.removeItem(DRAFT_KEY);
+    } catch {
+      // ignore
+    }
+    setHasDraft(false);
+  };
+
+  const closeForm = () => {
+    clearDraft();
+    setIsFormOpen(false);
+  };
+
   const openCreate = () => {
+    clearDraft();
     setForm(EMPTY_POST);
     setEditingId(null);
     setIsFormOpen(true);
@@ -51,6 +118,7 @@ export function PostManager() {
       image_url: post.image_url ?? '',
       is_published: post.is_published,
     });
+    clearDraft();
     setEditingId(post.id);
     setIsFormOpen(true);
   };
@@ -87,6 +155,7 @@ export function PostManager() {
     try {
       await savePost(form, editingId ?? undefined);
       toast.success(editingId ? 'Novedad actualizada' : 'Novedad publicada');
+      clearDraft();
       setIsFormOpen(false);
       setEditingId(null);
       await loadAll();
@@ -135,13 +204,20 @@ export function PostManager() {
 
       {isFormOpen && (
         <form onSubmit={submit} className="panel space-y-4 p-5">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-slate-900">
-              {editingId ? 'Editar novedad' : 'Nueva novedad'}
-            </h3>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-lg font-semibold text-slate-900">
+                {editingId ? 'Editar novedad' : 'Nueva novedad'}
+              </h3>
+              {hasDraft && (
+                <span className="rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-700">
+                  Borrador guardado
+                </span>
+              )}
+            </div>
             <button
               type="button"
-              onClick={() => setIsFormOpen(false)}
+              onClick={closeForm}
               className="text-slate-400 hover:text-slate-600"
               aria-label="Cerrar formulario"
             >
@@ -239,7 +315,7 @@ export function PostManager() {
           </label>
 
           <div className="flex justify-end gap-2">
-            <button type="button" onClick={() => setIsFormOpen(false)} className="btn-secondary">
+            <button type="button" onClick={closeForm} className="btn-secondary">
               Cancelar
             </button>
             <button type="submit" disabled={isSaving} className="btn-primary">
