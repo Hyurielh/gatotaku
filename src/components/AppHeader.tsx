@@ -29,6 +29,7 @@ function getBreadcrumbs(pathname: string): BreadcrumbItem[] {
   if (pathname === '/') return [{ label: 'Inicio' }];
   if (pathname === '/servicios') return [{ label: 'Inicio', to: '/' }, { label: 'Servicios' }];
   if (pathname === '/about') return [{ label: 'Inicio', to: '/' }, { label: 'Sobre nosotros' }];
+  if (pathname === '/novedades') return [{ label: 'Inicio', to: '/' }, { label: 'Novedades' }];
   if (pathname === '/login') return [{ label: 'Inicio', to: '/' }, { label: 'Login' }];
   if (pathname === '/cuenta') return [{ label: 'Inicio', to: '/' }, { label: 'Mi cuenta' }];
   if (pathname === '/admin/login') return [{ label: 'Inicio', to: '/' }, { label: 'Acceso administrativo' }];

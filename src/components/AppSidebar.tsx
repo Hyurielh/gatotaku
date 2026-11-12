@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { FaWhatsapp, FaFacebook, FaInstagram, FaTiktok } from 'react-icons/fa';
 import {
   ShoppingBag,
+  Newspaper,
   Info,
   Wrench,
   User,
@@ -32,6 +33,7 @@ interface SidebarItem {
 const primaryItems: SidebarItem[] = [
   { label: 'Tienda', to: '/', icon: ShoppingBag },
   { label: 'Servicios', to: '/servicios', icon: Wrench },
+  { label: 'Novedades', to: '/novedades', icon: Newspaper },
   { label: 'Información', to: '/information/general', icon: Info, activePrefix: '/information' },
 ];
 

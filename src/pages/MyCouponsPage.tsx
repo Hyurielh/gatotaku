@@ -125,22 +125,60 @@ export default function MyCouponsPage() {
     return buckets;
   }, [coupons, redemptions, assignments]);
 
-  const eligibleLabel = (coupon: Coupon): string => {
-    if (coupon.applies_to === 'all') return 'Todos los productos';
+  interface EligibilityInfo {
+    text: string;
+    list: string[];
+    collapsible: boolean;
+  }
 
-    if (coupon.applies_to === 'products') {
-      const names = couponProducts
-        .filter((row) => row.coupon_id === coupon.id)
-        .map((row) => productNames[row.product_id])
-        .filter(Boolean);
-      return names.length > 0 ? names.join(', ') : 'Productos seleccionados';
+  const eligibilityInfo = (coupon: Coupon): EligibilityInfo => {
+    if (coupon.applies_to === 'all') {
+      return { text: 'Aplica a todos los productos', list: [], collapsible: false };
     }
 
-    const names = couponCategories
-      .filter((row) => row.coupon_id === coupon.id)
-      .map((row) => categoryNames[row.category_id])
-      .filter(Boolean);
-    return names.length > 0 ? `Categorías: ${names.join(', ')}` : 'Categorías seleccionadas';
+    const isProducts = coupon.applies_to === 'products';
+
+    const names = isProducts
+      ? couponProducts
+          .filter((row) => row.coupon_id === coupon.id)
+          .map((row) => productNames[row.product_id])
+          .filter(Boolean)
+      : couponCategories
+          .filter((row) => row.coupon_id === coupon.id)
+          .map((row) => categoryNames[row.category_id])
+          .filter(Boolean);
+
+    const noun = isProducts ? 'productos' : 'categorías';
+
+    if (coupon.is_exclusion) {
+      if (names.length === 0) {
+        return { text: 'Aplica a todos los productos', list: [], collapsible: false };
+      }
+
+      if (names.length <= 3) {
+        return { text: `Excluidos: ${names.join(', ')}`, list: names, collapsible: false };
+      }
+
+      return {
+        text: isProducts ? 'Algunos productos no aplican' : 'Algunas categorías no aplican',
+        list: names,
+        collapsible: true,
+      };
+    }
+
+    if (names.length === 0) {
+      return { text: `No aplica a ningún producto`, list: [], collapsible: false };
+    }
+
+    if (names.length <= 3) {
+      return { text: `Aplica a ${names.join(', ')}`, list: names, collapsible: false };
+    }
+
+    return {
+      text: `Aplica a algunos ${noun}`,
+      list: names,
+      collapsible: true,
+    };
   };
 
   const unavailableReason = (coupon: Coupon): string => {
@@ -217,6 +255,7 @@ export default function MyCouponsPage() {
                   {list.map((coupon) => {
                     const isAvailable = bucket === 'disponibles';
                     const isUsed = bucket === 'usados';
+                    const info = eligibilityInfo(coupon);
 
                     return (
                       <article
@@ -276,10 +315,23 @@ export default function MyCouponsPage() {
                           <Copy size={14} aria-hidden="true" />
                         </button>
 
-                        <p className="mt-3 text-xs text-slate-600">
+                        <div className="mt-3 text-xs text-slate-600">
                           <span className="font-semibold text-slate-700">Aplica a:</span>{' '}
-                          {eligibleLabel(coupon)}
-                        </p>
+                          {info.collapsible ? (
+                            <details className="mt-1">
+                              <summary className="cursor-pointer text-teal-700 transition hover:text-teal-900">
+                                {info.text} <span className="font-semibold">· ver lista</span>
+                              </summary>
+                              <ul className="mt-1 max-h-32 list-disc space-y-0.5 overflow-y-auto pl-5">
+                                {info.list.map((name) => (
+                                  <li key={name}>{name}</li>
+                                ))}
+                              </ul>
+                            </details>
+                          ) : (
+                            <span>{info.text}</span>
+                          )}
+                        </div>
 
                         <ul className="mt-2 space-y-1 text-[11px] text-slate-500">
                           {describeCouponConditions(coupon).map((condition) => (

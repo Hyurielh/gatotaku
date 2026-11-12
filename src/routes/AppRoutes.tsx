@@ -10,6 +10,7 @@ import { useEffect } from 'react';
  */
 const StoreFrontPage = lazy(() => import('../pages/StoreFront'));
 const ServicesPage = lazy(() => import('../pages/ServicesPage'));
+const NewsPage = lazy(() => import('../pages/NewsPage'));
 const AboutPage = lazy(() => import('../pages/About'));
 const AccountPage = lazy(() => import('../pages/AccountPage'));
 const MyCouponsPage = lazy(() => import('../pages/MyCouponsPage'));
@@ -37,6 +38,7 @@ const AppRoutes: React.FC = () => {
       <Routes>
         <Route path="/" element={<StoreFrontPage />} />
         <Route path="/servicios" element={<ServicesPage />} />
+        <Route path="/novedades" element={<NewsPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/login" element={<Navigate to="/cuenta" replace />} />
         <Route path="/cuenta" element={<AccountPage />} />
