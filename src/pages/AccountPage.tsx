@@ -408,7 +408,7 @@ export default function AccountPage() {
                 <p className="mt-1 text-[11px] text-slate-400">
                   {profile?.birthdate_locked
                     ? 'Ya la guardaste. Si te equivocaste, escríbenos para cambiarla.'
-                    : 'Solo puedes guardarla una vez (así te celebramos el cumpleaños 🎂).'}
+                    : 'Solo puedes guardarla una vez.'}
                 </p>
               </div>
 
