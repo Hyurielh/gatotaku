@@ -120,3 +120,39 @@ export interface CouponCategory {
   coupon_id: string;
   category_id: string;
 }
+
+export interface OrderStatus {
+  id: string;
+  name: string;
+  description: string | null;
+  icon: string | null;
+  is_completed: boolean;
+  position: number;
+  created_at?: string;
+}
+
+export interface OrderItem {
+  product_id: string;
+  name: string;
+  quantity: number;
+  unit_price: number;
+  line_total: number;
+  discount: number;
+}
+
+export interface Order {
+  id: string;
+  code: string | null;
+  user_id: string | null;
+  status_id: string | null;
+  subtotal: number;
+  discount_total: number;
+  total: number;
+  coupon_code: string | null;
+  coupon_validation_code: string | null;
+  items: OrderItem[];
+  customer_note: string | null;
+  created_at: string;
+  updated_at: string;
+  status?: OrderStatus | null;
+}

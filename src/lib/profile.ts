@@ -13,6 +13,14 @@ export interface ProfileInput {
 
 export class ProfileError extends Error {}
 
+/** "death note" -> "Death Note"; "highscool DXD" -> "Highschool DXD" */
+export function titleCaseWords(value: string): string {
+  return value
+    .trim()
+    .replace(/\s+/g, ' ')
+    .replace(/(^|\s)(\S)/g, (_match, space: string, letter: string) => space + letter.toUpperCase());
+}
+
 /**
  * Guarda el perfil vía RPC del servidor.
  * La RPC solo permite tocar las columnas seguras de la propia fila
@@ -22,7 +30,7 @@ export async function updateMyProfile(input: ProfileInput): Promise<UserProfile>
   const { data, error } = await supabase.rpc('update_my_profile', {
     p_display_name: input.display_name,
     p_username: input.username,
-    p_favorite_anime: input.favorite_anime,
+    p_favorite_anime: titleCaseWords(input.favorite_anime),
     p_whatsapp: input.whatsapp,
     p_avatar_url: input.avatar_url,
   });

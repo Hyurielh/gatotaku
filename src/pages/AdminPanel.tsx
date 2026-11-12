@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LogOut, Package, Users, Ticket } from 'lucide-react';
+import { LogOut, Package, Users, Ticket, ClipboardList } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
@@ -7,11 +7,13 @@ import { SEO } from '../components/SEO';
 import { InventoryManager } from '../components/admin/InventoryManager';
 import { UserManager } from '../components/admin/UserManager';
 import { CouponManager } from '../components/admin/CouponManager';
+import { OrderManager } from '../components/admin/OrderManager';
 
-type AdminSection = 'inventario' | 'usuarios' | 'cupones';
+type AdminSection = 'inventario' | 'pedidos' | 'usuarios' | 'cupones';
 
 const SECTIONS: { id: AdminSection; label: string; icon: typeof Package }[] = [
   { id: 'inventario', label: 'Inventario', icon: Package },
+  { id: 'pedidos', label: 'Pedidos', icon: ClipboardList },
   { id: 'usuarios', label: 'Usuarios', icon: Users },
   { id: 'cupones', label: 'Cupones', icon: Ticket },
 ];
@@ -52,7 +54,7 @@ export default function AdminPanel() {
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-teal-700">Administración</p>
             <h1 className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl">Panel de Administración</h1>
             <p className="mt-1 text-sm text-slate-500">
-              Inventario, usuarios y cupones desde un solo lugar.
+              Inventario, pedidos, usuarios y cupones desde un solo lugar.
             </p>
           </div>
           <button type="button" onClick={handleLogout} className="btn-secondary shrink-0" aria-label="Cerrar sesión">
@@ -85,6 +87,7 @@ export default function AdminPanel() {
         </div>
 
         {section === 'inventario' && <InventoryManager />}
+        {section === 'pedidos' && <OrderManager />}
         {section === 'usuarios' && <UserManager />}
         {section === 'cupones' && <CouponManager />}
       </div>

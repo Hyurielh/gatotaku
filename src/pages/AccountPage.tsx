@@ -391,19 +391,23 @@ export default function AccountPage() {
 
               <div className="sm:col-span-2">
                 <label className="field-label" htmlFor="profile-anime">Anime favorito (opcional)</label>
-                <select
+                <input
                   id="profile-anime"
+                  type="text"
                   value={favoriteAnime}
                   onChange={(event) => setFavoriteAnime(event.target.value)}
                   className="field"
-                >
-                  <option value="">Sin favorito</option>
+                  placeholder="Death Note"
+                  list="anime-suggestions"
+                />
+                <datalist id="anime-suggestions">
                   {animes.map((anime) => (
-                    <option key={anime.id} value={anime.name}>
-                      {anime.name}
-                    </option>
+                    <option key={anime.id} value={anime.name} />
                   ))}
-                </select>
+                </datalist>
+                <p className="mt-1 text-[11px] text-slate-400">
+                  Escribe el que quieras; se guarda con mayúscula inicial.
+                </p>
               </div>
             </div>
 

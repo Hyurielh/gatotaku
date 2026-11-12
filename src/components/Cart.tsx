@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
 import { redeemCoupon } from '../lib/coupons';
+import { clearOrderCoupon, createOrder } from '../lib/orders';
 
 export function Cart() {
   const {
@@ -76,6 +77,46 @@ export function Cart() {
         }
       }
 
+      // Pedido en el historial (solo con sesión iniciada)
+      let orderCode: string | null = null;
+
+      if (session) {
+        try {
+          const order = await createOrder({
+            items: items.map(item => {
+              const line = couponQuote?.lines.find(l => l.product_id === item.product.id);
+              const discount = appliedDiscount > 0 ? (line?.discount ?? 0) : 0;
+              return {
+                product_id: item.product.id,
+                name: item.product.name,
+                quantity: item.quantity,
+                unit_price: item.product.price,
+                line_total: Number((item.product.price * item.quantity).toFixed(2)),
+                discount,
+              };
+            }),
+            subtotal: Number(total.toFixed(2)),
+            discountTotal: Number(appliedDiscount.toFixed(2)),
+            total: Number(appliedTotal.toFixed(2)),
+            couponCode: appliedCode,
+            couponValidationCode: validationCode,
+          });
+
+          orderCode = order.code;
+
+          // El cupón no se pudo aplicar: el pedido queda sin descuento
+          if (!appliedCode && couponCode && order.id) {
+            await clearOrderCoupon(order.id, Number(total.toFixed(2)));
+          }
+        } catch (orderError) {
+          toast.warning(
+            orderError instanceof Error
+              ? `No se guardó en tu historial: ${orderError.message}`
+              : 'No se pudo guardar el pedido en tu historial',
+          );
+        }
+      }
+
       const message = items
         .map(item => {
           const line = couponQuote?.lines.find(l => l.product_id === item.product.id);
@@ -91,10 +132,11 @@ export function Cart() {
       const couponText = appliedCode ? `\n\nCupón: ${appliedCode}` : '';
       const validationText = validationCode ? `\nCódigo de validación: ${validationCode}` : '';
       const discountText = appliedDiscount > 0 ? `\nDescuento: -C$${appliedDiscount.toFixed(2)}` : '';
+      const orderText = orderCode ? `\n\nPedido: ${orderCode}` : '';
       const totalMessage = `\n\nTotal: C$${appliedTotal.toFixed(2)}`;
 
       const encodedMessage = encodeURIComponent(
-        `¡Hola! Me gustaría ordenar:\n${message}${couponText}${validationText}${discountText}${totalMessage}`
+        `¡Hola! Me gustaría ordenar:\n${message}${orderText}${couponText}${validationText}${discountText}${totalMessage}`
       );
 
       window.open(`https://wa.me/50578364365?text=${encodedMessage}`, '_blank');

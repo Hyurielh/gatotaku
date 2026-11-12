@@ -4,11 +4,11 @@ import { FaWhatsapp, FaFacebook, FaInstagram, FaTiktok } from 'react-icons/fa';
 import {
   Home,
   Info,
-  FileText,
   Wrench,
   User,
   Shield,
   Ticket,
+  ClipboardList,
   X,
   type LucideIcon,
 } from 'lucide-react';
@@ -31,8 +31,7 @@ interface SidebarItem {
 const primaryItems: SidebarItem[] = [
   { label: 'Tienda', to: '/', icon: Home },
   { label: 'Servicios', to: '/servicios', icon: Wrench },
-  { label: 'Sobre nosotros', to: '/about', icon: Info },
-  { label: 'Información', to: '/information/general', icon: FileText, activePrefix: '/information' },
+  { label: 'Información', to: '/information/general', icon: Info, activePrefix: '/information' },
 ];
 
 function isItemActive(pathname: string, item: SidebarItem) {
@@ -56,6 +55,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   const navigationItems = [
     ...primaryItems,
     accountItem,
+    { label: 'Mis Pedidos', to: '/mis-pedidos', icon: ClipboardList },
     { label: 'Mis Cupones', to: '/mis-cupones', icon: Ticket },
     ...(isAdmin ? [{ label: 'Admin', to: '/admin', icon: Shield }] : []),
   ];

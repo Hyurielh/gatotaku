@@ -39,6 +39,7 @@ const AppRoutes: React.FC = () => {
         <Route path="/login" element={<Navigate to="/cuenta" replace />} />
         <Route path="/cuenta" element={lazyLoadPage(() => import('../pages/AccountPage'))} />
         <Route path="/mis-cupones" element={lazyLoadPage(() => import('../pages/MyCouponsPage'))} />
+        <Route path="/mis-pedidos" element={lazyLoadPage(() => import('../pages/MyOrdersPage'))} />
         <Route path="/admin/login" element={lazyLoadPage(() => import('../pages/AdminLoginPage'))} />
         <Route 
           path="/admin" 

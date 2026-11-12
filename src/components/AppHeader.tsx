@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-do
 import { FaWhatsapp } from 'react-icons/fa';
 import { ChevronRight, Menu, Search, ShoppingCart, User, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { profileDisplayName, profileInitials } from '../lib/profile';
 import { useCart } from '../context/CartContext';
 import { SOCIAL_MEDIA } from '../constants/social';
 
@@ -49,7 +50,7 @@ export function AppHeader({ onMenuToggle }: AppHeaderProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { session } = useAuth();
+  const { session, profile } = useAuth();
   const { items, setIsOpen } = useCart();
   const [search, setSearch] = useState(() => searchParams.get('q') ?? '');
 
@@ -79,10 +80,11 @@ export function AppHeader({ onMenuToggle }: AppHeaderProps) {
 
   const clearSearch = () => updateSearch('');
   const breadcrumbs = getBreadcrumbs(location.pathname);
+  const displayName = session ? profileDisplayName(profile) : '';
 
   return (
     <header className="border-b border-slate-200 bg-white" role="banner">
-      <div className="flex h-14 items-center gap-2 px-3 sm:px-5 lg:h-16 lg:gap-4 lg:px-6">
+      <div className="relative flex h-14 items-center gap-2 px-3 sm:px-5 lg:h-16 lg:gap-4 lg:px-6">
         <button
           type="button"
           onClick={onMenuToggle}
@@ -112,7 +114,20 @@ export function AppHeader({ onMenuToggle }: AppHeaderProps) {
           })}
         </nav>
 
-        <form onSubmit={submitSearch} className="mx-auto hidden w-full max-w-md items-center sm:flex" role="search">
+        {displayName && (
+          <p className="pointer-events-none absolute left-1/2 hidden max-w-[16rem] -translate-x-1/2 truncate text-sm font-semibold text-slate-800 md:block">
+            {displayName}
+          </p>
+        )}
+
+        <form
+          onSubmit={submitSearch}
+          className={[
+            'hidden w-full items-center sm:flex',
+            displayName ? 'ml-auto max-w-xs lg:max-w-sm' : 'mx-auto max-w-md',
+          ].join(' ')}
+          role="search"
+        >
           <label className="relative flex w-full items-center">
             <Search size={18} className="pointer-events-none absolute left-3 text-slate-400" aria-hidden="true" />
             <span className="sr-only">Buscar productos</span>
@@ -171,15 +186,26 @@ export function AppHeader({ onMenuToggle }: AppHeaderProps) {
             )}
           </button>
 
-          {session ? (
-            <Link to="/cuenta" className="icon-button" aria-label="Ir a mi cuenta" title="Mi cuenta">
+          <Link
+            to="/cuenta"
+            className="icon-button"
+            aria-label={session ? 'Ir a mi cuenta' : 'Iniciar sesión'}
+            title={session ? 'Mi cuenta' : 'Iniciar sesión'}
+          >
+            {session && profile?.avatar_url ? (
+              <img
+                src={profile.avatar_url}
+                alt=""
+                className="h-7 w-7 rounded-full border border-slate-200 object-cover"
+              />
+            ) : session && profile ? (
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-teal-100 text-[11px] font-bold text-teal-700">
+                {profileInitials(profile)}
+              </span>
+            ) : (
               <User size={20} />
-            </Link>
-          ) : (
-            <Link to="/cuenta" className="icon-button" aria-label="Iniciar sesión" title="Iniciar sesión">
-              <User size={20} />
-            </Link>
-          )}
+            )}
+          </Link>
         </div>
       </div>
 
