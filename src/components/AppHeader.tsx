@@ -29,6 +29,7 @@ const informationLabels: Record<string, string> = {
 function getBreadcrumbs(pathname: string): BreadcrumbItem[] {
   if (pathname === '/') return [{ label: 'Inicio' }];
   if (pathname === '/servicios') return [{ label: 'Inicio', to: '/' }, { label: 'Servicios' }];
+  if (pathname.startsWith('/producto/')) return [{ label: 'Inicio', to: '/' }, { label: 'Producto' }];
   if (pathname === '/about') return [{ label: 'Inicio', to: '/' }, { label: 'Sobre nosotros' }];
   if (pathname === '/novedades') return [{ label: 'Inicio', to: '/' }, { label: 'Novedades' }];
   if (pathname === '/login') return [{ label: 'Inicio', to: '/' }, { label: 'Login' }];

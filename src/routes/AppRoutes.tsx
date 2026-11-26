@@ -9,6 +9,7 @@ import { useEffect } from 'react';
  * nuevo y React volvería a suspender la ruta (pantalla "Cargando..." trabada).
  */
 const StoreFrontPage = lazy(() => import('../pages/StoreFront'));
+const ProductDetailPage = lazy(() => import('../pages/ProductDetail'));
 const ServicesPage = lazy(() => import('../pages/ServicesPage'));
 const NewsPage = lazy(() => import('../pages/NewsPage'));
 const AboutPage = lazy(() => import('../pages/About'));
@@ -37,6 +38,7 @@ const AppRoutes: React.FC = () => {
       <ScrollHandler />
       <Routes>
         <Route path="/" element={<StoreFrontPage />} />
+        <Route path="/producto/:id" element={<ProductDetailPage />} />
         <Route path="/servicios" element={<ServicesPage />} />
         <Route path="/novedades" element={<NewsPage />} />
         <Route path="/about" element={<AboutPage />} />

@@ -1,22 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Minus, Plus, ShoppingCart } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { Product } from '../types/database';
 import { ImageCarousel } from '../components/ImageCarousel';
 import { SEO } from '../components/SEO';
+import { SakugaButton, type SakugaButtonHandle } from '../components/SakugaButton';
 import { useCart } from '../context/CartContext';
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { addItem } = useCart();
-  
+  const addButtonRef = useRef<SakugaButtonHandle>(null);
+
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
+    setProduct(null);
+    setQuantity(1);
+    setLoading(true);
+    setError(null);
+
     async function fetchProduct() {
       try {
         const { data, error } = await supabase
@@ -51,9 +59,10 @@ export default function ProductDetail() {
   }, [id]);
 
   const handleAddToCart = () => {
-    if (!product) return;
+    if (!product || product.stock === 0) return;
 
-    addItem(product, quantity);
+    addItem(product, quantity, { openCart: false });
+    addButtonRef.current?.done(0);
   };
 
   const handleQuantityChange = (change: number) => {
@@ -64,101 +73,112 @@ export default function ProductDetail() {
   };
 
   return (
-    <div className="relative min-h-screen bg-white overflow-x-hidden">
-      <div className="w-full max-w-full px-0 py-8 relative z-10">
-        <SEO 
-          title={`GATOTAKU - ${product?.name || 'Detalle del Producto'}`}
-          description={`Detalles de ${product?.name}`}
-        />
+    <div className="mx-auto w-full max-w-6xl">
+      <SEO
+        title={`GATOTAKU - ${product?.name || 'Detalle del Producto'}`}
+        description={`Detalles de ${product?.name}`}
+      />
 
-        {loading ? (
-          <div className="flex justify-center items-center min-h-[calc(100vh-200px)]">
-            <p>Cargando producto...</p>
-          </div>
-        ) : error ? (
-          <div className="text-center text-red-500">
-            <p>{error}</p>
-            <button 
-              onClick={() => navigate('/')} 
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
-            >
-              Volver a la tienda
-            </button>
-          </div>
-        ) : product ? (
-          <div className="grid md:grid-cols-2 gap-8 px-4 sm:px-6 lg:px-8">
-            {/* Imagen del producto */}
-            <div>
-              <ImageCarousel 
-                images={product.images} 
-                alt={`Imágenes de ${product.name}`} 
+      <Link
+        to="/"
+        className="inline-flex items-center gap-2 text-sm font-semibold text-teal-700 transition-colors hover:text-teal-800"
+      >
+        <ArrowLeft size={16} aria-hidden="true" />
+        Volver al catálogo
+      </Link>
+
+      {loading ? (
+        <div className="flex min-h-[calc(100vh-220px)] items-center justify-center">
+          <p className="text-sm font-medium text-slate-500">Cargando producto...</p>
+        </div>
+      ) : error ? (
+        <div className="mt-8 text-center text-red-600">
+          <p>{error}</p>
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="btn-primary mt-4"
+          >
+            Volver a la tienda
+          </button>
+        </div>
+      ) : product ? (
+        <div className="mt-5 grid gap-6 md:grid-cols-2">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-[#F0F0F0]">
+            <div className="aspect-square">
+              <ImageCarousel
+                images={product.images}
+                alt={`Imágenes de ${product.name}`}
               />
             </div>
+          </div>
 
-            {/* Detalles del producto */}
-            <div className="p-6 rounded-lg shadow-md py-3 px-4 flex-grow flex flex-col justify-between border-t border-gray-200 bg-white/80">
-              <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
-              
-              {product.anime && (
-                <p className="text-gray-600">
-                  Anime: {product.anime.name}
-                </p>
-              )}
-
+          <div className="panel flex flex-col p-5 sm:p-6">
+            <div className="flex flex-wrap gap-2">
               {product.category_ref && (
-                <p className="text-gray-600">
-                  Categoría: {product.category_ref.name}
-                </p>
+                <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-600">
+                  {product.category_ref.name}
+                </span>
               )}
+              {product.anime && (
+                <span className="inline-flex items-center rounded-full border border-teal-100 bg-teal-50 px-2.5 py-1 text-[11px] font-semibold text-teal-800">
+                  {product.anime.name}
+                </span>
+              )}
+            </div>
 
-              <p className="text-2xl font-bold text-orange-500">
-                ${product.price.toFixed(2)}
-              </p>
+            <h1 className="mt-3 text-2xl font-bold sm:text-3xl">{product.name}</h1>
+            <p className="mt-3 text-3xl font-bold text-teal-700">C${product.price.toFixed(2)}</p>
+            <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-slate-600">
+              {product.description}
+            </p>
 
-              <p className="text-gray-700">{product.description}</p>
-
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
-                  <button 
+            <div className="mt-auto pt-6">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center rounded-xl border border-slate-200 bg-white">
+                  <button
+                    type="button"
                     onClick={() => handleQuantityChange(-1)}
-                    className="bg-gray-200 px-3 py-1 rounded"
+                    disabled={quantity <= 1 || product.stock === 0}
+                    className="p-2.5 text-slate-600 transition-colors hover:bg-slate-100 disabled:opacity-40"
+                    aria-label="Quitar una unidad"
                   >
-                    -
+                    <Minus size={16} aria-hidden="true" />
                   </button>
-                  <span className="text-xl">{quantity}</span>
-                  <button 
+                  <span className="min-w-10 text-center text-sm font-bold text-slate-900">{quantity}</span>
+                  <button
+                    type="button"
                     onClick={() => handleQuantityChange(1)}
-                    className="bg-gray-200 px-3 py-1 rounded"
+                    disabled={quantity >= product.stock || product.stock === 0}
+                    className="p-2.5 text-slate-600 transition-colors hover:bg-slate-100 disabled:opacity-40"
+                    aria-label="Agregar una unidad"
                   >
-                    +
+                    <Plus size={16} aria-hidden="true" />
                   </button>
                 </div>
 
-                <button 
-                  onClick={handleAddToCart}
-                  disabled={product.stock === 0}
-                  className={`px-6 py-2 rounded text-white ${
-                    product.stock === 0 
-                      ? 'bg-gray-400 cursor-not-allowed' 
-                      : 'bg-orange-500 hover:bg-orange-600'
-                  }`}
-                >
-                  {product.stock === 0 ? 'Sin stock' : 'Agregar al carrito'}
-                </button>
+                <span className={`text-xs font-semibold uppercase tracking-wide ${product.stock > 0 ? 'text-teal-700' : 'text-red-600'}`}>
+                  {product.stock > 0 ? `Stock: ${product.stock}` : 'Agotado'}
+                </span>
               </div>
 
-              <p className="text-gray-500">
-                Stock disponible: {product.stock}
+              <SakugaButton
+                ref={addButtonRef}
+                onClick={handleAddToCart}
+                disabled={product.stock === 0}
+                className="sakuga-button-block mt-4"
+              >
+                <ShoppingCart size={19} aria-hidden="true" />
+                {product.stock === 0 ? 'Sin stock' : 'Agregar al carrito'}
+              </SakugaButton>
+
+              <p className="mt-3 text-xs text-slate-500">
+                Se agrega a tu carrito. Confirma el pedido por WhatsApp desde el carrito.
               </p>
             </div>
           </div>
-        ) : null}
-      </div>
-      <div className="absolute bottom-0 left-0 right-0 p-4 bg-white shadow-md">
-        <p className="text-gray-500">
-          Stock disponible: {product?.stock}
-        </p>
-      </div>
+        </div>
+      ) : null}
     </div>
   );
 }

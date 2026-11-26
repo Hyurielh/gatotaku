@@ -505,6 +505,69 @@
 .dark .bg-indigo-50 { background-color: #1a1f3a; }
 .dark .bg-sky-50 { background-color: #0f2536; }
 
+/* Sakuga VFX: botón de impacto */
+sakuga-button {
+  max-width: 100%;
+}
+
+sakuga-button:not([variant="secondary"]) {
+  --sk-card: #0d9488;
+  --sk-ink: #ffffff;
+  --sk-soft: #99f6e4;
+  --sk-btn-line: #0f766e;
+  --sk-alt-line: #0f766e;
+  --sk-tick: #ffffff;
+  --sk-fill: #0d9488;
+}
+
+sakuga-button.sakuga-button-block {
+  display: block;
+  width: 100%;
+}
+
+sakuga-button::part(button) {
+  font-family: 'Quicksand', sans-serif;
+}
+
+sakuga-button.sakuga-button-block::part(button) {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+/* El canvas queda sobre la página y el carrito, pero debajo de los toasts */
+body canvas.sakuga-fx {
+  z-index: 9998;
+}
+
+.dark sakuga-button {
+  --sk-card: #0f1a2b;
+  --sk-ink: #e7eef8;
+  --sk-dim: #94a3b8;
+  --sk-soft: #134e4a;
+  --sk-pri: #14b8a6;
+  --sk-pri-ink: #042f2e;
+  --sk-acc: #fb923c;
+  --sk-track: #24344e;
+  --sk-btn-line: #5eead4;
+  --sk-alt-line: #5eead4;
+  --sk-tick: #5eead4;
+  --sk-fill: #14b8a6;
+}
+
+.dark sakuga-button:not([variant="secondary"]) {
+  --sk-card: #14b8a6;
+  --sk-ink: #042f2e;
+  --sk-soft: #134e4a;
+  --sk-btn-line: #5eead4;
+  --sk-alt-line: #5eead4;
+  --sk-tick: #042f2e;
+  --sk-fill: #14b8a6;
+  --sk-acc: #fb923c;
+}
+
 /* Texto sobre esos tintes */
 .dark .text-teal-700,
 .dark .text-teal-800 { color: #5eead4; }

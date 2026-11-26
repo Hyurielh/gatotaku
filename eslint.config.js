@@ -8,7 +8,7 @@ import unusedImports from 'eslint-plugin-unused-imports';
 
 export default [
   {
-    ignores: ['dist', 'scripts'],
+    ignores: ['dist', 'scripts', 'src/vendor'],
   },
   js.configs.recommended,
   {

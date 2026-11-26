@@ -1,11 +1,12 @@
 import { X, Plus, Minus, ShoppingCart, Trash2, Loader, Ticket, Tag } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
 import { redeemCoupon } from '../lib/coupons';
 import { clearOrderCoupon, createOrder } from '../lib/orders';
+import { SakugaButton } from './SakugaButton';
 
 export function Cart() {
   const {
@@ -28,6 +29,14 @@ export function Cart() {
   const { session } = useAuth();
   const [isOrdering, setIsOrdering] = useState(false);
   const [couponInput, setCouponInput] = useState('');
+  const orderingRef = useRef(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Los efectos de la página no deben quedar encima del carrito.
+    window.SakugaFX?.clear?.();
+  }, [isOpen]);
 
   const handleApplyCoupon = async () => {
     if (!session) {
@@ -45,7 +54,10 @@ export function Cart() {
   };
 
   const handleOrder = async () => {
+    if (orderingRef.current) return;
     if (!window.confirm('¿Estás seguro de realizar el pedido?')) return;
+
+    orderingRef.current = true;
 
     try {
       setIsOrdering(true);
@@ -146,6 +158,7 @@ export function Cart() {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Error al procesar el pedido');
     } finally {
+      orderingRef.current = false;
       setIsOrdering(false);
     }
   };
@@ -343,21 +356,18 @@ export function Cart() {
                       <span className="text-base font-semibold text-slate-600">Total</span>
                       <span key={finalTotal.toFixed(2)} className="text-2xl font-bold text-teal-700 inline-block animate-pop">C${finalTotal.toFixed(2)}</span>
                     </div>
-                    <button
+                    <SakugaButton
                       onClick={handleOrder}
                       disabled={isOrdering}
-                      className="w-full bg-teal-600 text-white py-3.5 rounded-xl
-                               hover:bg-teal-700 transition-colors
-                               flex items-center justify-center disabled:opacity-50 shadow-sm font-semibold
-                               active:scale-[0.98]"
+                      className="sakuga-button-block"
                     >
                       {isOrdering ? (
-                        <Loader className="animate-spin mr-2" size={20} />
+                        <Loader className="animate-spin" size={20} aria-hidden="true" />
                       ) : (
-                        <ShoppingCart className="mr-2" size={20} />
+                        <ShoppingCart size={20} aria-hidden="true" />
                       )}
                       {isOrdering ? 'Procesando...' : 'Ordenar por WhatsApp'}
-                    </button>
+                    </SakugaButton>
                   </div>
                 )}
               </div>

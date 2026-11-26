@@ -10,8 +10,8 @@ export interface CartItem {
 
 interface CartContextType {
   items: CartItem[];
-  addItem: (product: Product, quantity?: number) => void;
-  addToCart: (product: Product, quantity?: number) => void;
+  addItem: (product: Product, quantity?: number, options?: { openCart?: boolean }) => void;
+  addToCart: (product: Product, quantity?: number, options?: { openCart?: boolean }) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -42,7 +42,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const couponCodeRef = useRef<string | null>(null);
 
-  const addItem = (product: Product, quantity: number = 1) => {
+  const addItem = (product: Product, quantity: number = 1, options?: { openCart?: boolean }) => {
     setItems(currentItems => {
       const existingItem = currentItems.find(item => item.product.id === product.id);
       if (existingItem) {
@@ -58,7 +58,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }
       return [...currentItems, { product, quantity }];
     });
-    setIsOpen(true); // Abre el carrito cuando se agrega un item
+    if (options?.openCart !== false) setIsOpen(true);
   };
 
   const addToCart = addItem;

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import type { Product } from '../types/database';
 import { ImageCarousel } from './ImageCarousel';
 import { generateWebPSrcset, generateLowResPlaceholder, optimizeImage } from '../utils/imageOptimization';
@@ -143,7 +144,12 @@ export function ProductCard({ product, className }: ProductCardProps) {
       {/* Contenido */}
       <div className="flex flex-grow flex-col p-3 sm:p-4">
         <h2 className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-snug text-slate-900">
-          {product.name}
+          <Link
+            to={`/producto/${product.id}`}
+            className="transition-colors hover:text-teal-700 focus:outline-none focus-visible:text-teal-700 focus-visible:underline"
+          >
+            {product.name}
+          </Link>
         </h2>
 
         <div className="mt-2 flex min-h-[1.5rem] flex-wrap gap-1.5">
